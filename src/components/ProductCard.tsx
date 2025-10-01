@@ -2,8 +2,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingCart } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 interface ProductCardProps {
+  id: string;
   name: string;
   price: number;
   originalPrice?: number;
@@ -11,12 +13,17 @@ interface ProductCardProps {
   badge?: string;
 }
 
-export const ProductCard = ({ name, price, originalPrice, image, badge }: ProductCardProps) => {
+export const ProductCard = ({ id, name, price, originalPrice, image, badge }: ProductCardProps) => {
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  const { addItem } = useCart();
+
+  const handleAddToCart = () => {
+    addItem({ id, name, price, image });
+  };
 
   return (
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300">
-      <div className="relative aspect-square overflow-hidden">
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 animate-in fade-in zoom-in-95">
+      <div className="relative aspect-square overflow-hidden bg-muted">
         <img
           src={image}
           alt={name}
@@ -48,7 +55,7 @@ export const ProductCard = ({ name, price, originalPrice, image, badge }: Produc
             <span className="text-sm text-muted-foreground line-through">₹{originalPrice}</span>
           )}
         </div>
-        <Button className="w-full" size="sm">
+        <Button className="w-full group-hover:bg-primary/90 transition-colors" size="sm" onClick={handleAddToCart}>
           <ShoppingCart className="h-4 w-4 mr-2" />
           Add to Cart
         </Button>

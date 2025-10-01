@@ -10,7 +10,7 @@ export const CategoryCard = ({ title, image, onClick }: CategoryCardProps) => {
   return (
     <Card
       onClick={onClick}
-      className="group cursor-pointer overflow-hidden border-2 hover:border-primary transition-all duration-300 hover:shadow-xl"
+      className="group cursor-pointer overflow-hidden border-2 hover:border-primary transition-all duration-300 hover:shadow-xl animate-in fade-in slide-in-from-bottom"
     >
       <div className="aspect-square relative overflow-hidden">
         <img

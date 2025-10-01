@@ -8,7 +8,7 @@ export const CircularCategoryCard = ({ title, image, onClick }: CircularCategory
   return (
     <div
       onClick={onClick}
-      className="flex flex-col items-center gap-3 cursor-pointer group"
+      className="flex flex-col items-center gap-3 cursor-pointer group animate-in fade-in zoom-in-95"
     >
       <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-border group-hover:border-primary transition-all duration-300 shadow-lg group-hover:shadow-xl">
         <img

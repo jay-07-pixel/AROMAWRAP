@@ -1,18 +1,12 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { CategoryCard } from "@/components/CategoryCard";
+import { CartDrawer } from "@/components/CartDrawer";
 import { CircularCategoryCard } from "@/components/CircularCategoryCard";
 import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Leaf, Recycle, Heart, Truck } from "lucide-react";
 
-import categoryAgarbatti from "@/assets/category-agarbatti.jpg";
-import categoryDhoop from "@/assets/category-dhoop.jpg";
-import categoryPuja from "@/assets/category-puja.jpg";
-import categoryCones from "@/assets/category-cones.jpg";
-import categoryGifts from "@/assets/category-gifts.jpg";
-import categoryAccessories from "@/assets/category-accessories.jpg";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
@@ -39,24 +33,17 @@ const Index = () => {
     { title: "Puja Accessories", image: circularAccessories },
   ];
 
-  const categories = [
-    { title: "Premium Agarbatti", image: categoryAgarbatti },
-    { title: "Dhoop Sticks", image: categoryDhoop },
-    { title: "Puja Essentials", image: categoryPuja },
-    { title: "Incense Cones", image: categoryCones },
-    { title: "Gift Sets", image: categoryGifts },
-    { title: "Accessories", image: categoryAccessories },
-  ];
-
-  const featuredProducts = [
+  const bestSellers = [
     {
-      name: "Lavender Bliss Agarbatti - Premium Collection (Pack of 12)",
+      id: "prod-1",
+      name: "Lavender Bliss Agarbatti - Premium Natural Collection (Pack of 12)",
       price: 299,
       originalPrice: 399,
       image: product1,
       badge: "Bestseller",
     },
     {
+      id: "prod-2",
       name: "Sandalwood Essence Dhoop Sticks - Traditional (Pack of 20)",
       price: 349,
       originalPrice: 449,
@@ -64,17 +51,49 @@ const Index = () => {
       badge: "New",
     },
     {
+      id: "prod-3",
       name: "Jasmine Dreams Incense Cones - Aromatic Collection",
       price: 199,
       originalPrice: 279,
       image: product3,
     },
     {
+      id: "prod-4",
       name: "Divine Puja Gift Set - Complete Essentials Kit",
       price: 799,
       originalPrice: 1099,
       image: product4,
       badge: "Limited",
+    },
+    {
+      id: "prod-5",
+      name: "Rose Garden Agarbatti - Natural Fragrance (Pack of 10)",
+      price: 249,
+      originalPrice: 329,
+      image: product1,
+    },
+    {
+      id: "prod-6",
+      name: "Tulsi Basil Dhoop Cones - Sacred Collection",
+      price: 179,
+      originalPrice: 249,
+      image: product3,
+      badge: "Bestseller",
+    },
+    {
+      id: "prod-7",
+      name: "Mogra Magic Incense Sticks - Evening Collection",
+      price: 279,
+      originalPrice: 349,
+      image: product2,
+    },
+    {
+      id: "prod-8",
+      name: "Camphor Pure Karpure - Natural Havan (Pack of 50)",
+      price: 399,
+      originalPrice: 499,
+      image: product4,
+      badge: "New",
     },
   ];
 
@@ -103,6 +122,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <CartDrawer />
       <Header />
 
       {/* Hero Section */}
@@ -151,49 +171,47 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="py-16">
+      {/* Best Sellers Section */}
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop by Category</h2>
-            <p className="text-muted-foreground text-lg">Explore our wide range of premium products</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-            {categories.map((category, index) => (
-              <CategoryCard key={index} {...category} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Products</h2>
-            <p className="text-muted-foreground text-lg">Handpicked favorites for you</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Best Sellers</h2>
+            <p className="text-muted-foreground text-lg">Our most loved natural fragrances</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product, index) => (
-              <ProductCard key={index} {...product} />
+            {bestSellers.map((product, index) => (
+              <div
+                key={product.id}
+                className="animate-in fade-in slide-in-from-bottom"
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                  animationFillMode: "backwards",
+                }}
+              >
+                <ProductCard {...product} />
+              </div>
             ))}
           </div>
           <div className="text-center mt-8">
-            <Button size="lg" variant="outline">View All Products</Button>
+            <Button size="lg" variant="outline" className="group">
+              View All Products
+              <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary via-accent to-accent/80">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-primary-foreground">
+      <section className="py-20 bg-gradient-to-r from-primary via-accent to-accent/80 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItMnptMC00djJoMnYtMmgtMnptLTIgMHYyaDJ2LTJoLTJ6bTAgMHYtMmgtMnYyaDJ6bTAgMnYtMmgtMnYyaDJ6bTIgMHYtMmgydjJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+        <div className="container mx-auto px-4 text-center relative">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-primary-foreground animate-in fade-in slide-in-from-bottom duration-700">
             Experience Nature's Divine Gift
           </h2>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-primary-foreground/90">
+          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-primary-foreground/90 animate-in fade-in slide-in-from-bottom duration-700 delay-100">
             Pure, natural, and sacred - Made with traditional wisdom using cow dung and natural herbs
           </p>
-          <Button size="lg" variant="secondary" className="text-lg">
+          <Button size="lg" variant="secondary" className="text-lg animate-in fade-in zoom-in duration-700 delay-200">
             Start Shopping
           </Button>
         </div>
