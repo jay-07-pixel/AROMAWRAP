@@ -9,11 +9,11 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About Section */}
           <div>
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent mb-4">
+            <h3 className="text-2xl font-bold text-primary mb-4">
               SuganShoppee
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Your trusted destination for premium incense, dhoop, and puja essentials. Experience divine fragrances for your spiritual journey.
+              Your trusted source for 100% natural, eco-friendly incense and puja essentials. Handcrafted with pure cow dung and traditional herbs for authentic spiritual experiences.
             </p>
             <div className="flex gap-2">
               <Button variant="outline" size="icon" className="rounded-full">
