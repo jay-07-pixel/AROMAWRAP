@@ -1,73 +1,162 @@
-# Welcome to your Lovable project
+# Sugandh - Natural Fragrances E-commerce
 
-## Project info
+A modern, responsive e-commerce website for natural fragrances and puja essentials, built with React, TypeScript, and Vite.
 
-**URL**: https://lovable.dev/projects/1bdce3b8-baa9-43ac-b511-16300e818a76
+## 🌟 Features
 
-## How can I edit this code?
+- **Modern UI/UX**: Clean, responsive design with smooth animations
+- **Product Catalog**: Browse through various categories of natural fragrances
+- **Shopping Cart**: Add to cart functionality with drawer interface
+- **Category Navigation**: Circular category cards for easy browsing
+- **Product Showcase**: Featured products with badges and pricing
+- **Mobile Responsive**: Optimized for all device sizes
+- **TypeScript**: Full type safety and better development experience
+- **Component Library**: Built with shadcn/ui components
 
-There are several ways of editing your application.
+## 🛍️ Product Categories
 
-**Use Lovable**
+- **Best Sellers**: Most popular natural fragrances
+- **Agarbatti**: Traditional incense sticks
+- **Puja Essentials**: Complete puja kits and accessories
+- **Bambooless Incense**: Eco-friendly dhoop sticks
+- **Incense Cones**: Aromatic cone collections
+- **Karpure**: Natural camphor products
+- **Eco-Friendly Havan Cups**: Sustainable havan materials
+- **Puja Accessories**: Traditional puja items
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1bdce3b8-baa9-43ac-b511-16300e818a76) and start prompting.
+## 🚀 Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend**: React 18, TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui (Radix UI primitives)
+- **Icons**: Lucide React
+- **State Management**: React Context API
+- **Routing**: React Router DOM
+- **Data Fetching**: TanStack Query
+- **Form Handling**: React Hook Form with Zod validation
+- **Animations**: Tailwind CSS animations
 
-**Use your preferred IDE**
+## 📦 Installation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd sugandh-clone-craft
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   bun install
+   ```
 
-Follow these steps:
+3. **Start the development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   bun dev
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+4. **Open your browser**
+   Navigate to `http://localhost:8080` to view the application.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 🛠️ Available Scripts
 
-# Step 3: Install the necessary dependencies.
-npm i
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run build:dev` - Build in development mode
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## 📁 Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # shadcn/ui components
+│   ├── Header.tsx      # Navigation header
+│   ├── Footer.tsx      # Site footer
+│   ├── CartDrawer.tsx  # Shopping cart drawer
+│   ├── ProductCard.tsx # Product display card
+│   └── ...
+├── context/            # React Context providers
+│   └── CartContext.tsx # Shopping cart state
+├── hooks/              # Custom React hooks
+├── lib/                # Utility functions
+├── pages/              # Page components
+│   ├── Index.tsx       # Home page
+│   └── NotFound.tsx    # 404 page
+├── assets/             # Images and static assets
+└── App.tsx             # Main app component
 ```
 
-**Edit a file directly in GitHub**
+## 🎨 Design Features
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Hero Section**: Eye-catching banner with call-to-action
+- **Category Grid**: Circular category cards for visual appeal
+- **Product Grid**: Responsive product showcase
+- **Feature Highlights**: Key selling points with icons
+- **Gradient Backgrounds**: Modern visual effects
+- **Smooth Animations**: Fade-in and slide-in effects
 
-**Use GitHub Codespaces**
+## 🛒 Shopping Features
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **Add to Cart**: Click to add products to cart
+- **Cart Drawer**: Slide-out cart interface
+- **Product Badges**: Bestseller, New, Limited edition labels
+- **Price Display**: Original and discounted pricing
+- **Responsive Design**: Works on all screen sizes
 
-## What technologies are used for this project?
+## 🌱 Natural & Eco-Friendly Focus
 
-This project is built with:
+This e-commerce site specializes in:
+- 100% natural ingredients
+- Eco-friendly and biodegradable products
+- Traditional wisdom with modern quality
+- Sustainable packaging
+- Cow dung and natural herb-based products
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🔧 Development
 
-## How can I deploy this project?
+The project uses modern development practices:
+- TypeScript for type safety
+- ESLint for code quality
+- Prettier for code formatting
+- Vite for fast development builds
+- Hot module replacement for instant updates
 
-Simply open [Lovable](https://lovable.dev/projects/1bdce3b8-baa9-43ac-b511-16300e818a76) and click on Share -> Publish.
+## 📱 Browser Support
 
-## Can I connect a custom domain to my Lovable project?
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
 
-Yes, you can!
+## 🤝 Contributing
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🙏 Acknowledgments
+
+- Built with [shadcn/ui](https://ui.shadcn.com/) components
+- Icons by [Lucide](https://lucide.dev/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/)
+- Powered by [Vite](https://vitejs.dev/)
+
+---
+
+**Experience the divine power of nature's gift** 🌿✨

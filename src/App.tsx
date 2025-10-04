@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/context/CartContext";
 import Index from "./pages/Index";
+import CategoryPage from "./pages/CategoryPage";
+import ProductPage from "./pages/ProductPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -16,11 +18,13 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/category/:category" element={<CategoryPage />} />
+                  <Route path="/product/:productId" element={<ProductPage />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </CartProvider>

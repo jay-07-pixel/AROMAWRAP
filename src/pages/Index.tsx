@@ -126,14 +126,14 @@ const Index = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative h-[500px] md:h-[600px] overflow-hidden">
+      <section className="relative h-[500px] md:h-[600px] overflow-hidden -mt-4 shadow-2xl border-b-2 border-gray-200">
         <img
           src={heroBanner}
           alt="Divine Fragrances"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
-        <div className="relative container mx-auto px-4 h-full flex items-center">
+        <div className="relative container mx-auto px-4 h-full flex items-center pt-8">
           <div className="max-w-2xl text-white">
             <Badge className="mb-4 bg-accent text-accent-foreground">100% Natural</Badge>
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
@@ -155,7 +155,7 @@ const Index = () => {
       </section>
 
       {/* Circular Categories Section */}
-      <section className="py-16 bg-background">
+      <section className="py-16 bg-background border-t-2 border-gray-200">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
@@ -164,7 +164,7 @@ const Index = () => {
             <p className="text-muted-foreground text-lg">Handpicked fragrances for every occasion</p>
           </div>
           <div className="flex flex-wrap justify-center gap-6 md:gap-8 lg:gap-12">
-            {circularCategories.map((category, index) => (
+            {circularCategories.slice(0, 6).map((category, index) => (
               <CircularCategoryCard key={index} {...category} />
             ))}
           </div>
@@ -201,35 +201,89 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary via-accent to-accent/80 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItMnptMC00djJoMnYtMmgtMnptLTIgMHYyaDJ2LTJoLTJ6bTAgMHYtMmgtMnYyaDJ6bTAgMnYtMmgtMnYyaDJ6bTIgMHYtMmgydjJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
-        <div className="container mx-auto px-4 text-center relative">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-primary-foreground animate-in fade-in slide-in-from-bottom duration-700">
-            Experience Nature's Divine Gift
-          </h2>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-primary-foreground/90 animate-in fade-in slide-in-from-bottom duration-700 delay-100">
-            Pure, natural, and sacred - Made with traditional wisdom using cow dung and natural herbs
-          </p>
-          <Button size="lg" variant="secondary" className="text-lg animate-in fade-in zoom-in duration-700 delay-200">
-            Start Shopping
-          </Button>
-        </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="py-12 bg-muted/50">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Enhanced Features Section */}
+      <section className="py-20 bg-gray-50 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-primary/5 rounded-full animate-pulse"></div>
+          <div className="absolute top-20 right-20 w-24 h-24 bg-primary/5 rounded-full animate-bounce"></div>
+          <div className="absolute bottom-20 left-1/4 w-20 h-20 bg-primary/10 rounded-full animate-ping"></div>
+          <div className="absolute bottom-10 right-1/4 w-28 h-28 bg-primary/5 rounded-full animate-pulse"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-primary">
+              Why Choose Us?
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Experience the difference with our commitment to quality, nature, and tradition
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="flex flex-col items-center text-center p-6 rounded-lg bg-background shadow-sm hover:shadow-md transition-shadow">
-                <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-accent" />
+              <div 
+                key={index} 
+                className="group relative"
+                style={{ animationDelay: `${index * 200}ms` }}
+              >
+                {/* Card Container */}
+                <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-white/20 overflow-hidden">
+                  {/* Animated Background */}
+                  <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  
+                  {/* Floating Particles */}
+                  <div className="absolute top-4 right-4 w-2 h-2 bg-primary/30 rounded-full animate-ping"></div>
+                  <div className="absolute bottom-4 left-4 w-1 h-1 bg-primary/40 rounded-full animate-pulse"></div>
+                  
+                  {/* Icon Container with Enhanced Effects */}
+                  <div className="relative mb-6">
+                    <div className="w-20 h-20 mx-auto bg-primary rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative overflow-hidden">
+                      {/* Icon Background Animation */}
+                      <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      <feature.icon className="h-10 w-10 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 w-20 h-20 mx-auto bg-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="relative z-10">
+                    <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors duration-300">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors duration-300">
+                      {feature.description}
+                    </p>
+                  </div>
+                  
+                  {/* Hover Indicator */}
+                  <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 group-hover:translate-x-0">
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                      <span className="text-primary text-sm">→</span>
+                    </div>
+                  </div>
+                  
+                  {/* Animated Border */}
+                  <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-primary/20 transition-colors duration-500"></div>
                 </div>
-                <h3 className="font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
+                
+                 {/* Connection Line (for desktop) */}
+                 {index < features.length - 1 && (
+                   <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-primary/30 transform -translate-y-1/2"></div>
+                 )}
               </div>
             ))}
+          </div>
+          
+          {/* Bottom CTA */}
+          <div className="text-center mt-16">
+            <div className="inline-flex items-center gap-2 bg-primary/10 px-6 py-3 rounded-full border border-primary/20">
+              <span className="text-sm font-medium text-primary">✨ Trusted by thousands of customers</span>
+            </div>
           </div>
         </div>
       </section>
