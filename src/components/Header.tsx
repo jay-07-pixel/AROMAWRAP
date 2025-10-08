@@ -31,39 +31,39 @@ export const Header = () => {
     let currentIndex = 0;
     let currentText = "";
     let isDeleting = false;
-    let typeSpeed = 100;
+    let typeSpeed = 150; // Slower typing speed
 
     const typeText = () => {
       const fullText = searchSuggestions[currentIndex];
       
       if (isDeleting) {
         currentText = fullText.substring(0, currentText.length - 1);
-        typeSpeed = 50; // Faster when deleting
+        typeSpeed = 80; // Slower when deleting
       } else {
         currentText = fullText.substring(0, currentText.length + 1);
-        typeSpeed = 100; // Normal speed when typing
+        typeSpeed = 150; // Slower normal speed when typing
       }
 
       setSearchPlaceholder(currentText);
 
       if (!isDeleting && currentText === fullText) {
-        // Wait before starting to delete
+        // Wait longer before starting to delete
         setTimeout(() => {
           isDeleting = true;
           typeText();
-        }, 2000);
+        }, 3000); // Increased wait time
       } else if (isDeleting && currentText === "") {
-        // Move to next suggestion
+        // Move to next suggestion with longer pause
         isDeleting = false;
         currentIndex = (currentIndex + 1) % searchSuggestions.length;
-        setTimeout(typeText, 500);
+        setTimeout(typeText, 1000); // Longer pause between suggestions
       } else {
         setTimeout(typeText, typeSpeed);
       }
     };
 
-    // Start typing after a short delay
-    const timer = setTimeout(typeText, 1000);
+    // Start typing after a longer delay
+    const timer = setTimeout(typeText, 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -168,7 +168,7 @@ export const Header = () => {
             {/* Logo */}
             <div className="flex items-center">
               <h1 className="text-3xl font-bold text-primary">
-                SuganShoppee
+                Sugandhshoppee
               </h1>
             </div>
 
@@ -202,6 +202,7 @@ export const Header = () => {
               <Button 
                 variant="ghost" 
                 className="h-14 px-4 flex items-center gap-3 hover:bg-primary/10 hover:text-primary transition-all duration-300 group relative overflow-hidden"
+                onClick={() => navigate("/account")}
               >
                 <div className="relative">
                   <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/50 transition-all duration-300">
@@ -271,7 +272,7 @@ export const Header = () => {
                       <DropdownMenuTrigger asChild>
                         <Button 
                           variant="ghost" 
-                          className="w-full md:w-auto justify-start md:justify-center font-semibold text-base hover:text-primary hover:bg-primary/10 transition-all duration-300 px-3 py-1.5 rounded-md"
+                          className="w-full md:w-auto justify-start md:justify-center font-semibold text-base text-primary hover:text-primary/80 hover:bg-primary/10 transition-all duration-300 px-3 py-1.5 rounded-md"
                         >
                           {category.name}
                           <ChevronDown className="ml-1 h-4 w-4" />

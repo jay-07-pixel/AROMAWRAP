@@ -29,7 +29,7 @@ const productData = {
     price: 399,
     originalPrice: 499,
     discount: 20,
-    image: "/src/assets/product-1.jpg",
+    image: "/src/assets/product-gemini-1.png",
     badge: "Bestseller",
     rating: 4.8,
     reviews: 124,
@@ -50,10 +50,10 @@ const productData = {
       "Certification": "FSSAI Approved"
     },
     images: [
-      "/src/assets/product-1.jpg",
-      "/src/assets/product-2.jpg", 
-      "/src/assets/product-3.jpg",
-      "/src/assets/product-4.jpg"
+      "/src/assets/product-gemini-1.png",
+      "/src/assets/product-gemini-2-new.png", 
+      "/src/assets/product-gemini-3.png",
+      "/src/assets/Gemini_Generated_Image_v7icsuv7icsuv7ic.png"
     ]
   },
   "rose-dhoop-1": {
@@ -167,30 +167,37 @@ const ProductPage = () => {
       </section>
 
       {/* Product Details */}
-      <section className="py-8 bg-background">
+      <section className="py-6 bg-gradient-to-br from-background to-muted/30">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Product Images */}
-            <div className="lg:col-span-1 space-y-4">
+            <div className="space-y-3 max-w-lg mx-auto lg:max-w-none">
               {/* Main Image */}
-              <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden max-w-md mx-auto lg:max-w-none">
+              <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden shadow-2xl group max-w-md mx-auto">
                 <img
                   src={product.images[selectedImage]}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                 />
+                
+                {/* Discount Badge */}
+                {product.discount > 0 && (
+                  <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-lg">
+                    {product.discount}% OFF
+                  </div>
+                )}
               </div>
               
               {/* Thumbnail Images */}
-              <div className="grid grid-cols-4 gap-2 max-w-md mx-auto lg:max-w-none">
+              <div className="grid grid-cols-4 gap-2">
                 {product.images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 ${
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-300 ${
                       selectedImage === index 
-                        ? 'border-primary' 
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-primary shadow-md' 
+                        : 'border-gray-200 hover:border-primary/50'
                     }`}
                   >
                     <img
@@ -204,24 +211,25 @@ const ProductPage = () => {
             </div>
 
             {/* Product Info */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="space-y-4">
               {/* Back Button */}
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all duration-300 mb-2"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to Products
               </Button>
 
-              {/* Product Title */}
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+              {/* Product Title & Rating */}
+              <div className="space-y-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
                   {product.name}
                 </h1>
-                <div className="flex items-center gap-3 mb-4">
+                
+                <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
                       <Star 
@@ -234,145 +242,144 @@ const ProductPage = () => {
                       />
                     ))}
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    {product.rating} ({product.reviews} reviews)
+                  <span className="font-semibold text-foreground">
+                    {product.rating}
+                  </span>
+                  <span className="text-muted-foreground">
+                    ({product.reviews} reviews)
                   </span>
                 </div>
               </div>
 
-              {/* Price */}
-              <div className="flex items-center gap-4">
-                <span className="text-3xl font-bold text-primary">₹{product.price}</span>
-                {product.originalPrice && (
-                  <>
-                    <span className="text-xl text-muted-foreground line-through">
-                      ₹{product.originalPrice}
-                    </span>
-                    <Badge className="bg-red-500 text-white">
-                      {product.discount}% OFF
-                    </Badge>
-                  </>
-                )}
-              </div>
+              {/* Price & Quantity Section */}
+              <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-4 border border-primary/10">
+                <div className="flex items-center justify-between gap-6">
+                  {/* Price Section */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="text-3xl font-bold text-primary">₹{product.price}</span>
+                      {product.originalPrice && (
+                        <span className="text-xl text-muted-foreground line-through">
+                          ₹{product.originalPrice}
+                        </span>
+                      )}
+                      {product.badge && (
+                        <Badge className="bg-primary text-white px-3 py-1 text-sm font-bold">
+                          {product.badge}
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {product.originalPrice && (
+                      <div className="text-green-600 font-semibold text-sm">
+                        You save ₹{product.originalPrice - product.price} ({product.discount}% OFF)
+                      </div>
+                    )}
+                  </div>
 
-              {/* Badge */}
-              {product.badge && (
-                <Badge className="bg-primary text-white w-fit">
-                  {product.badge}
-                </Badge>
-              )}
-
-              {/* Description */}
-              <p className="text-muted-foreground leading-relaxed">
-                {product.description}
-              </p>
-
-
-              {/* Quantity Selector */}
-              <div className="flex items-center gap-6">
-                <span className="text-lg font-semibold">Quantity:</span>
-                <div className="flex items-center gap-1 border-2 border-gray-300 rounded-xl bg-white shadow-sm">
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    onClick={() => handleQuantityChange(-1)}
-                    disabled={quantity <= 1}
-                    className="w-12 h-12 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Minus className="h-6 w-6" />
-                  </Button>
-                  <span className="px-6 py-3 min-w-[4rem] text-center text-xl font-bold text-primary">{quantity}</span>
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    onClick={() => handleQuantityChange(1)}
-                    className="w-12 h-12 hover:bg-gray-100"
-                  >
-                    <Plus className="h-6 w-6" />
-                  </Button>
+                  {/* Quantity Section */}
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium text-foreground">Qty:</span>
+                    <div className="flex items-center gap-1 border-2 border-primary/20 rounded-lg bg-white shadow-sm">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleQuantityChange(-1)}
+                        disabled={quantity <= 1}
+                        className="w-8 h-8 hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed text-primary"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="px-3 py-1 min-w-[2.5rem] text-center text-base font-bold text-primary">{quantity}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleQuantityChange(1)}
+                        className="w-8 h-8 hover:bg-primary/10 text-primary"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg" 
-                  className="flex-1"
-                  onClick={handleAddToCart}
-                >
-                  Add to Cart
-                </Button>
-                <div className="flex gap-2">
+              <div className="space-y-2">
+                <div className="flex gap-3">
                   <Button 
                     size="lg" 
+                    className="flex-1 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-bold py-3 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 min-w-0"
+                    onClick={handleAddToCart}
+                  >
+                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    Add to Cart
+                  </Button>
+                  
+                  <Button 
+                    size="lg" 
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 min-w-0"
+                    onClick={() => {
+                      // Add buy now functionality
+                      handleAddToCart();
+                      // Navigate to checkout or show success message
+                      alert('Redirecting to checkout...');
+                    }}
+                  >
+                    Buy Now
+                  </Button>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
                     variant="outline"
                     onClick={() => setIsWishlisted(!isWishlisted)}
-                    className={isWishlisted ? "text-red-500 border-red-500" : ""}
+                    className={`flex-1 py-2 rounded-lg transition-all duration-300 ${
+                      isWishlisted 
+                        ? "text-red-500 border-red-500 bg-red-50 hover:bg-red-100" 
+                        : "border-primary/20 hover:border-primary hover:bg-primary/5"
+                    }`}
                   >
-                    <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
+                    <Heart className={`h-4 w-4 mr-1 ${isWishlisted ? 'fill-current' : ''}`} />
+                    {isWishlisted ? 'Wishlisted' : 'Wishlist'}
                   </Button>
-                  <Button size="lg" variant="outline">
-                    <Share2 className="h-5 w-5" />
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="flex-1 py-2 rounded-lg border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300"
+                  >
+                    <Share2 className="h-4 w-4 mr-1" />
+                    Share
                   </Button>
                 </div>
               </div>
 
-              {/* Trust Indicators */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Truck className="h-6 w-6 text-primary flex-shrink-0" />
-                  <div>
-                    <div className="text-sm font-medium">Free Shipping</div>
-                    <div className="text-xs text-muted-foreground">On orders above ₹499</div>
-                  </div>
+              {/* Product Details Tabs */}
+              <div className="mt-6">
+                {/* Tab Navigation */}
+                <div className="flex flex-wrap gap-3 mb-6 justify-center">
+                  {[
+                    { id: "description", label: "Description" },
+                    { id: "specifications", label: "Specifications" },
+                    { id: "reviews", label: "Reviews" }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-6 py-3 rounded-lg font-semibold text-base transition-all duration-300 ${
+                        activeTab === tab.id
+                          ? 'bg-primary text-white shadow-lg'
+                          : 'bg-white text-foreground hover:bg-primary/10 hover:text-primary border border-gray-200 hover:border-primary/30'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <RotateCcw className="h-6 w-6 text-primary flex-shrink-0" />
-                  <div>
-                    <div className="text-sm font-medium">Easy Returns</div>
-                    <div className="text-xs text-muted-foreground">30 days return</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Shield className="h-6 w-6 text-primary flex-shrink-0" />
-                  <div>
-                    <div className="text-sm font-medium">Secure Payment</div>
-                    <div className="text-xs text-muted-foreground">100% secure</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Product Details Tabs */}
-      <section className="py-8 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            {/* Tab Navigation */}
-            <div className="flex gap-4 mb-8">
-              {[
-                { id: "description", label: "Description" },
-                { id: "specifications", label: "Specifications" },
-                { id: "reviews", label: "Reviews" }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                    activeTab === tab.id
-                      ? 'bg-primary text-white'
-                      : 'bg-white text-foreground hover:bg-gray-100'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Tab Content */}
-            <div className="bg-white rounded-lg p-6">
+                {/* Tab Content */}
+                <div className="bg-white rounded-lg p-4 shadow-md border border-gray-100">
               {activeTab === "description" && (
                 <div>
                   <h3 className="text-xl font-semibold mb-4">Product Description</h3>
@@ -457,6 +464,9 @@ const ProductPage = () => {
                   </div>
                 </div>
               )}
+                </div>
+              </div>
+
             </div>
           </div>
         </div>

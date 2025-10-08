@@ -1,4 +1,4 @@
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
@@ -15,6 +15,9 @@ export const CartDrawer = () => {
             <ShoppingBag className="h-5 w-5" />
             Shopping Cart ({items.length})
           </SheetTitle>
+          <SheetDescription>
+            Manage your shopping cart items
+          </SheetDescription>
         </SheetHeader>
 
         {items.length === 0 ? (
