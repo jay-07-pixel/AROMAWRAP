@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNavigate } from "react-router-dom";
 
 export const CartDrawer = () => {
   const { items, isCartOpen, setIsCartOpen, updateQuantity, removeItem, totalPrice, clearCart } = useCart();
+  const navigate = useNavigate();
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
@@ -88,7 +90,10 @@ export const CartDrawer = () => {
                 <Button variant="outline" onClick={clearCart}>
                   Clear Cart
                 </Button>
-                <Button className="w-full">Checkout</Button>
+                <Button className="w-full" onClick={() => {
+                  setIsCartOpen(false);
+                  navigate("/checkout");
+                }}>Checkout</Button>
               </div>
             </SheetFooter>
           </>

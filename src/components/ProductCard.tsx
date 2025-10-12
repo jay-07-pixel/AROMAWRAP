@@ -59,11 +59,12 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge }: Pr
 
   return (
     <div 
-      className="group bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer animate-in fade-in zoom-in-95"
+      className="group bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer animate-in fade-in zoom-in-95 hover:scale-[1.02]"
       onClick={handleProductClick}
       style={{
         animationDelay: `${Math.random() * 200}ms`,
-        animationFillMode: 'backwards'
+        animationFillMode: 'backwards',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
       }}
     >
       {/* Product Image Container */}
@@ -77,39 +78,40 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge }: Pr
         
         {/* Discount Badge - Top Right */}
         {discount > 0 && (
-          <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-md">
+          <div className="absolute top-1 right-1 sm:top-2 sm:right-2 md:top-3 md:right-3 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs md:text-sm font-bold shadow-md" style={{ backgroundColor: '#E53935' }}>
             {discount}% OFF
           </div>
         )}
       </div>
       
       {/* Product Info */}
-      <div className="p-4 space-y-3">
+      <div className="p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3">
         {/* Product Name */}
-        <h3 className="font-medium text-base text-gray-900 line-clamp-2 text-center">
+        <h3 className="font-medium text-xs sm:text-sm md:text-base text-gray-900 line-clamp-2 text-center">
           {name}
         </h3>
         
         {/* Combined Button and Pricing Box */}
-        <div className="bg-yellow-500 hover:bg-yellow-600 rounded-lg p-4 transition-all duration-300 hover:scale-105 shadow-md">
+        <div className="rounded-md sm:rounded-lg p-2 sm:p-3 md:p-4 transition-all duration-300 hover:scale-105 shadow-md" style={{ backgroundColor: '#DC143C' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#801030'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#DC143C'}>
           {/* Add to Cart Button */}
           <button 
-            className="w-full text-white font-bold text-lg flex items-center justify-center gap-2 mb-3" 
+            className="w-full text-white font-semibold sm:font-bold text-[10px] sm:text-xs md:text-sm lg:text-base flex items-center justify-center gap-1 sm:gap-2 mb-2 sm:mb-3" 
             onClick={handleAddToCart}
           >
-            <ShoppingCart className="h-5 w-5" />
-            ADD TO CART
+            <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+            <span className="hidden sm:inline">ADD TO CART</span>
+            <span className="sm:hidden">ADD</span>
           </button>
           
           {/* Pricing */}
-          <div className="flex justify-center items-center gap-4">
+          <div className="flex justify-center items-center gap-1 sm:gap-2 md:gap-4">
             {originalPrice && (
-              <div className="text-base text-white/80 line-through">
-                ₹ {originalPrice.toLocaleString()}
+              <div className="text-[10px] sm:text-xs md:text-sm lg:text-base text-white/80 line-through">
+                ₹{originalPrice.toLocaleString()}
               </div>
             )}
-            <div className="text-xl font-bold text-white">
-              ₹ {price.toLocaleString()}
+            <div className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white">
+              ₹{price.toLocaleString()}
             </div>
           </div>
         </div>

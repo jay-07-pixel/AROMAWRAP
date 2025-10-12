@@ -119,7 +119,7 @@ export const ProductShowcaseBox = ({ products, relatedProducts, compact = false 
                 />
               </div>
 
-              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-sans py-2 text-sm transition-colors duration-300">
+              <Button className="w-full bg-[#DC143C] hover:bg-[#801030] text-white font-sans py-2 text-sm transition-colors duration-300">
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Add to Cart
               </Button>
@@ -210,7 +210,7 @@ export const ProductShowcaseBox = ({ products, relatedProducts, compact = false 
               />
             </div>
 
-            <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-sans py-4 text-xl transition-colors duration-300">
+            <Button className="w-full bg-[#DC143C] hover:bg-[#801030] text-white font-sans py-4 text-xl transition-colors duration-300">
               <ShoppingCart className="mr-3 h-6 w-6" />
               Add to Cart
             </Button>

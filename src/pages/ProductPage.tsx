@@ -20,6 +20,10 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
+import sandalwoodCrimson from "@/assets/sandalwood crimson.png";
+import crimsonRed2 from "@/assets/crimson red 2 .png";
+import crimson3 from "@/assets/crimson 3.png";
+import crimson4 from "@/assets/crimson4.png";
 
 // Sample product data - in real app this would come from API
 const productData = {
@@ -29,7 +33,7 @@ const productData = {
     price: 399,
     originalPrice: 499,
     discount: 20,
-    image: "/src/assets/product-gemini-1.png",
+    image: sandalwoodCrimson,
     badge: "Bestseller",
     rating: 4.8,
     reviews: 124,
@@ -50,10 +54,10 @@ const productData = {
       "Certification": "FSSAI Approved"
     },
     images: [
-      "/src/assets/product-gemini-1.png",
-      "/src/assets/product-gemini-2-new.png", 
-      "/src/assets/product-gemini-3.png",
-      "/src/assets/Gemini_Generated_Image_v7icsuv7icsuv7ic.png"
+      sandalwoodCrimson,
+      sandalwoodCrimson, 
+      sandalwoodCrimson,
+      sandalwoodCrimson
     ]
   },
   "rose-dhoop-1": {
@@ -62,7 +66,7 @@ const productData = {
     price: 349,
     originalPrice: 449,
     discount: 22,
-    image: "/src/assets/product-2.jpg",
+    image: crimsonRed2,
     badge: "Popular",
     rating: 4.6,
     reviews: 89,
@@ -83,10 +87,10 @@ const productData = {
       "Certification": "FSSAI Approved"
     },
     images: [
-      "/src/assets/product-2.jpg",
-      "/src/assets/product-1.jpg",
-      "/src/assets/product-3.jpg",
-      "/src/assets/product-4.jpg"
+      crimsonRed2,
+      crimson3,
+      crimson4,
+      sandalwoodCrimson
     ]
   }
 };
@@ -139,29 +143,29 @@ const ProductPage = () => {
       {/* Breadcrumbs */}
       <section className="bg-background py-4 border-b">
         <div className="container mx-auto px-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm">
             <button 
               onClick={() => navigate("/")}
-              className="hover:text-foreground transition-colors"
+              className="text-[#C75D5D] hover:text-[#801030] transition-colors"
             >
               Home
             </button>
-            <span>/</span>
+            <span className="text-[#C75D5D]/60">/</span>
             <button 
               onClick={() => navigate("/")}
-              className="hover:text-foreground transition-colors"
+              className="text-[#C75D5D] hover:text-[#801030] transition-colors"
             >
               Collections
             </button>
-            <span>/</span>
+            <span className="text-[#C75D5D]/60">/</span>
             <button 
               onClick={() => navigate(-1)}
-              className="hover:text-foreground transition-colors"
+              className="text-[#C75D5D] hover:text-[#801030] transition-colors"
             >
               Products
             </button>
-            <span>/</span>
-            <span className="text-foreground font-medium">{product.name}</span>
+            <span className="text-[#C75D5D]/60">/</span>
+            <span className="text-[#2E1A1A] font-semibold">{product.name}</span>
           </div>
         </div>
       </section>

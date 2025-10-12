@@ -167,7 +167,7 @@ export const Header = () => {
           <div className="flex items-center justify-between py-4">
             {/* Logo */}
             <div className="flex items-center">
-              <h1 className="text-3xl font-bold text-primary">
+              <h1 className="text-3xl font-bold text-[#DC143C]">
                 Sugandhshoppee
               </h1>
             </div>
@@ -175,13 +175,13 @@ export const Header = () => {
             {/* Enhanced Search Bar - Hidden on mobile */}
             <div className="hidden md:flex flex-1 max-w-xl mx-8">
               <div className="relative w-full group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors duration-300">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-hover:text-[#DC143C] transition-colors duration-300">
                   <Search className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <Input
                   type="search"
                   placeholder={searchPlaceholder || "Search for incense, dhoop, puja items..."}
-                  className="pl-12 pr-4 h-12 text-base border-2 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-xl group-hover:shadow-primary/10 rounded-xl bg-gradient-to-r from-white to-gray-50/50 focus:from-white focus:to-primary/5 shadow-md hover:shadow-lg focus:shadow-xl focus:shadow-primary/20"
+                  className="pl-12 pr-4 h-12 text-base border-2 border-gray-200 focus:border-[#DC143C] focus:ring-2 focus:ring-[#DC143C]/20 transition-all duration-300 group-hover:border-[#C75D5D] group-hover:shadow-xl group-hover:shadow-[#DC143C]/10 rounded-xl bg-gradient-to-r from-white to-gray-50/50 focus:from-white focus:to-[#FFF1F1] shadow-md hover:shadow-lg focus:shadow-xl focus:shadow-[#DC143C]/20"
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -201,7 +201,7 @@ export const Header = () => {
               {/* Enhanced User Account Button */}
               <Button 
                 variant="ghost" 
-                className="h-14 px-4 flex items-center gap-3 hover:bg-primary/10 hover:text-primary transition-all duration-300 group relative overflow-hidden"
+                className="h-14 px-4 flex items-center gap-3 hover:bg-[#FFF1F1] hover:text-[#DC143C] transition-all duration-300 group relative overflow-hidden"
                 onClick={() => navigate("/account")}
               >
                 <div className="relative">
@@ -251,7 +251,7 @@ export const Header = () => {
               <Input
                 type="search"
                 placeholder={searchPlaceholder || "Search products..."}
-                className="pl-12 pr-4 h-12 text-base border-2 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-xl group-hover:shadow-primary/10 rounded-xl bg-gradient-to-r from-white to-gray-50/50 focus:from-white focus:to-primary/5 shadow-md hover:shadow-lg focus:shadow-xl focus:shadow-primary/20"
+                className="pl-12 pr-4 h-12 text-base border-2 border-gray-200 focus:border-[#DC143C] focus:ring-2 focus:ring-[#DC143C]/20 transition-all duration-300 group-hover:border-[#C75D5D] group-hover:shadow-xl group-hover:shadow-[#DC143C]/10 rounded-xl bg-gradient-to-r from-white to-gray-50/50 focus:from-white focus:to-[#FFF1F1] shadow-md hover:shadow-lg focus:shadow-xl focus:shadow-[#DC143C]/20"
               />
               <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -272,7 +272,7 @@ export const Header = () => {
                       <DropdownMenuTrigger asChild>
                         <Button 
                           variant="ghost" 
-                          className="w-full md:w-auto justify-start md:justify-center font-semibold text-base text-primary hover:text-primary/80 hover:bg-primary/10 transition-all duration-300 px-3 py-1.5 rounded-md"
+                          className="w-full md:w-auto justify-start md:justify-center font-semibold text-base text-[#DC143C] hover:text-[#801030] hover:bg-[#FFF1F1] transition-all duration-300 px-3 py-1.5 rounded-md"
                         >
                           {category.name}
                           <ChevronDown className="ml-1 h-4 w-4" />

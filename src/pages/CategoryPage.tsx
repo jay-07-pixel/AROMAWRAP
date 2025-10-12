@@ -14,6 +14,10 @@ import {
 import { ArrowLeft, Filter, SortAsc, ChevronDown } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import sandalwoodCrimson from "@/assets/sandalwood crimson.png";
+import crimsonRed2 from "@/assets/crimson red 2 .png";
+import crimson3 from "@/assets/crimson 3.png";
+import crimson4 from "@/assets/crimson4.png";
 
 // Sample products for different categories
 const categoryProducts = {
@@ -23,7 +27,7 @@ const categoryProducts = {
       name: "Premium Sandalwood Dhoop - Traditional (Pack of 20)",
       price: 399,
       originalPrice: 499,
-      image: "/src/assets/product-gemini-1.png",
+      image: sandalwoodCrimson,
       badge: "Bestseller",
     },
     {
@@ -31,7 +35,7 @@ const categoryProducts = {
       name: "Classic Sandalwood Dhoop - Handcrafted (Pack of 15)",
       price: 299,
       originalPrice: 399,
-      image: "/src/assets/product-gemini-2-new.png",
+      image: sandalwoodCrimson,
       badge: "New",
     },
     {
@@ -39,7 +43,7 @@ const categoryProducts = {
       name: "Pure Sandalwood Dhoop - Organic (Pack of 25)",
       price: 549,
       originalPrice: 699,
-      image: "/src/assets/product-gemini-3.png",
+      image: sandalwoodCrimson,
       badge: "Premium",
     },
   ],
@@ -49,7 +53,7 @@ const categoryProducts = {
       name: "Fragrant Rose Dhoop - Aromatic (Pack of 20)",
       price: 349,
       originalPrice: 449,
-      image: "/src/assets/product-1.jpg",
+      image: crimsonRed2,
       badge: "Popular",
     },
     {
@@ -57,7 +61,7 @@ const categoryProducts = {
       name: "Delicate Rose Dhoop - Traditional (Pack of 15)",
       price: 279,
       originalPrice: 349,
-      image: "/src/assets/product-2.jpg",
+      image: crimson3,
     },
   ],
   "jasmine-dhoop": [
@@ -66,7 +70,7 @@ const categoryProducts = {
       name: "Sweet Jasmine Dhoop - Natural (Pack of 20)",
       price: 329,
       originalPrice: 429,
-      image: "/src/assets/product-3.jpg",
+      image: crimson4,
       badge: "Limited",
     },
     {
@@ -74,7 +78,7 @@ const categoryProducts = {
       name: "Premium Jasmine Dhoop - Handcrafted (Pack of 15)",
       price: 399,
       originalPrice: 499,
-      image: "/src/assets/product-4.jpg",
+      image: sandalwoodCrimson,
       badge: "New",
     },
   ],
@@ -88,7 +92,7 @@ const relatedProducts = [
     name: "Premium Sandalwood Agarbatti - Traditional (Pack of 12)",
     price: 299,
     originalPrice: 399,
-    image: "/src/assets/product-gemini-1.png",
+    image: sandalwoodCrimson,
     badge: "Bestseller",
   },
   {
@@ -96,7 +100,7 @@ const relatedProducts = [
     name: "Rose Petal Incense Cones - Aromatic (Pack of 20)",
     price: 249,
     originalPrice: 329,
-    image: "/src/assets/product-gemini-2-new.png",
+    image: crimsonRed2,
     badge: "New",
   },
   {
@@ -104,7 +108,7 @@ const relatedProducts = [
     name: "Jasmine Essence Dhoop - Natural (Pack of 15)",
     price: 199,
     originalPrice: 279,
-    image: "/src/assets/product-gemini-3.png",
+    image: crimson3,
     badge: "Popular",
   },
   {
@@ -112,7 +116,7 @@ const relatedProducts = [
     name: "Lavender Bliss Agarbatti - Premium (Pack of 10)",
     price: 349,
     originalPrice: 449,
-    image: "/src/assets/Gemini_Generated_Image_v7icsuv7icsuv7ic.png",
+    image: crimson4,
     badge: "Limited",
   },
   {
@@ -120,14 +124,14 @@ const relatedProducts = [
     name: "Mogra Magic Incense - Handcrafted (Pack of 18)",
     price: 279,
     originalPrice: 359,
-    image: "/src/assets/product-gemini-1.png",
+    image: sandalwoodCrimson,
   },
   {
     id: "related-6",
     name: "Tulsi Basil Dhoop - Organic (Pack of 25)",
     price: 229,
     originalPrice: 299,
-    image: "/src/assets/product-gemini-2-new.png",
+    image: crimsonRed2,
     badge: "Eco-Friendly",
   },
 ];
@@ -257,49 +261,49 @@ const CategoryPage = () => {
       <Header />
 
       {/* Category Header */}
-      <section className="bg-background py-4">
-        <div className="container mx-auto px-4">
+      <section className="bg-background py-3 sm:py-4">
+        <div className="container mx-auto px-3 sm:px-4">
           {/* Breadcrumbs */}
-          <div className="flex items-center gap-2 text-sm text-primary/80 mb-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm mb-2">
             <button 
               onClick={() => navigate("/")}
-              className="text-primary hover:text-primary/80 transition-colors"
+              className="text-[#C75D5D] hover:text-[#801030] transition-colors"
             >
               Home
             </button>
-            <span className="text-primary/60">/</span>
+            <span className="text-[#C75D5D]/60">/</span>
             <button 
               onClick={() => navigate("/")}
-              className="text-primary hover:text-primary/80 transition-colors"
+              className="text-[#C75D5D] hover:text-[#801030] transition-colors"
             >
               Collections
             </button>
-            <span className="text-primary/60">/</span>
-            <span className="text-primary font-medium">{categoryName}</span>
+            <span className="text-[#C75D5D]/60">/</span>
+            <span className="text-[#2E1A1A] font-semibold">{categoryName}</span>
           </div>
           
           {/* Page Title */}
-          <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#DC143C] mb-2">
             {categoryName}
           </h1>
         </div>
       </section>
 
       {/* Filters Section */}
-      <section className="py-2 bg-background border-b">
-        <div className="container mx-auto px-4">
+      <section className="py-2 sm:py-3 bg-background border-b">
+        <div className="container mx-auto px-3 sm:px-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             {/* Left Side - Filters */}
             <div className="flex-1">
               {/* Filter Label */}
-              <div className="mb-4">
-                <span className="text-base font-medium text-primary">Filter:</span>
+              <div className="mb-2 sm:mb-3 md:mb-4">
+                <span className="text-sm sm:text-base font-medium text-[#2E1A1A]">Filter:</span>
               </div>
               
               {/* Filter Row 1 */}
-              <div className="flex flex-wrap gap-3 mb-4">
+              <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
                 <Select value={filters.price} onValueChange={(value) => handleFilterChange('price', value)}>
-                  <SelectTrigger className="w-36 h-11 border-2 border-primary text-base hover:border-primary/70 transition-colors [&>svg]:text-primary [&>svg]:h-5 [&>svg]:w-5">
+                  <SelectTrigger className="w-full sm:w-32 md:w-36 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
                     <SelectValue placeholder="Price" />
                   </SelectTrigger>
                   <SelectContent>
@@ -312,7 +316,7 @@ const CategoryPage = () => {
                 </Select>
                 
                 <Select value={filters.brand} onValueChange={(value) => handleFilterChange('brand', value)}>
-                  <SelectTrigger className="w-36 h-11 border-2 border-primary text-base hover:border-primary/70 transition-colors [&>svg]:text-primary [&>svg]:h-5 [&>svg]:w-5">
+                  <SelectTrigger className="w-full sm:w-32 md:w-36 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
                     <SelectValue placeholder="Brand" />
                   </SelectTrigger>
                   <SelectContent>
@@ -325,7 +329,7 @@ const CategoryPage = () => {
                 </Select>
                 
                 <Select value={filters.size} onValueChange={(value) => handleFilterChange('size', value)}>
-                  <SelectTrigger className="w-36 h-11 border-2 border-primary text-base hover:border-primary/70 transition-colors [&>svg]:text-primary [&>svg]:h-5 [&>svg]:w-5">
+                  <SelectTrigger className="w-full sm:w-32 md:w-36 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
                     <SelectValue placeholder="Size" />
                   </SelectTrigger>
                   <SelectContent>
@@ -338,7 +342,7 @@ const CategoryPage = () => {
                 </Select>
                 
                 <Select value={filters.productType} onValueChange={(value) => handleFilterChange('productType', value)}>
-                  <SelectTrigger className="w-40 h-11 border-2 border-primary text-base hover:border-primary/70 transition-colors [&>svg]:text-primary [&>svg]:h-5 [&>svg]:w-5">
+                  <SelectTrigger className="w-full sm:w-36 md:w-40 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
                     <SelectValue placeholder="Product type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -351,7 +355,7 @@ const CategoryPage = () => {
                 </Select>
                 
                 <Select value={filters.burningTime} onValueChange={(value) => handleFilterChange('burningTime', value)}>
-                  <SelectTrigger className="w-40 h-11 border-2 border-primary text-base hover:border-primary/70 transition-colors [&>svg]:text-primary [&>svg]:h-5 [&>svg]:w-5">
+                  <SelectTrigger className="w-full sm:w-36 md:w-40 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
                     <SelectValue placeholder="Burning Time" />
                   </SelectTrigger>
                   <SelectContent>
@@ -364,7 +368,7 @@ const CategoryPage = () => {
                 </Select>
                 
                 <Select value={filters.lengthOfStick} onValueChange={(value) => handleFilterChange('lengthOfStick', value)}>
-                  <SelectTrigger className="w-44 h-11 border-2 border-primary text-base hover:border-primary/70 transition-colors [&>svg]:text-primary [&>svg]:h-5 [&>svg]:w-5">
+                  <SelectTrigger className="w-full sm:w-40 md:w-44 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
                     <SelectValue placeholder="Length of Stick" />
                   </SelectTrigger>
                   <SelectContent>
@@ -378,9 +382,9 @@ const CategoryPage = () => {
               </div>
               
               {/* Filter Row 2 */}
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 <Select value={filters.typeOfBathi} onValueChange={(value) => handleFilterChange('typeOfBathi', value)}>
-                  <SelectTrigger className="w-40 h-11 border-2 border-primary text-base hover:border-primary/70 transition-colors [&>svg]:text-primary [&>svg]:h-5 [&>svg]:w-5">
+                  <SelectTrigger className="w-full sm:w-36 md:w-40 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
                     <SelectValue placeholder="Type of bathi" />
                   </SelectTrigger>
                   <SelectContent>
@@ -399,10 +403,10 @@ const CategoryPage = () => {
       </section>
 
       {/* Products Grid */}
-      <section className="py-8 bg-background">
-        <div className="container mx-auto px-4">
+      <section className="py-4 sm:py-6 md:py-8 bg-background">
+        <div className="container mx-auto px-3 sm:px-4">
           {products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
               {products.map((product, index) => (
                 <div
                   key={product.id}
