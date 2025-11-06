@@ -1,9 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, ShoppingCart, CheckCircle, Leaf, Star, Truck } from "lucide-react";
+import { Heart, ShoppingCart, CheckCircle, Leaf, Star, Truck, Eye } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { QuickViewModal } from "@/components/QuickViewModal";
 
 interface ProductCardProps {
   id: string;
@@ -12,20 +16,35 @@ interface ProductCardProps {
   originalPrice?: number;
   image: string;
   badge?: string;
+  description?: string;
 }
 
-export const ProductCard = ({ id, name, price, originalPrice, image, badge }: ProductCardProps) => {
+export const ProductCard = ({ id, name, price, originalPrice, image, badge, description }: ProductCardProps) => {
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
   const { addItem } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
+  const inWishlist = isInWishlist(id);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string>(image);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     addItem({ id, name, price, image });
   };
 
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleWishlist({ id, name, price, originalPrice, image, badge });
+  };
+
   const handleProductClick = () => {
     navigate(`/product/${id}`);
+  };
+
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsQuickViewOpen(true);
   };
 
   // Product features based on product type
@@ -58,31 +77,58 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge }: Pr
   const features = getProductFeatures();
 
   return (
-    <div 
-      className="group bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer animate-in fade-in zoom-in-95 hover:scale-[1.02]"
-      onClick={handleProductClick}
-      style={{
-        animationDelay: `${Math.random() * 200}ms`,
-        animationFillMode: 'backwards',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-      }}
-    >
-      {/* Product Image Container */}
-      <div className="relative aspect-square overflow-hidden">
-        {/* Product Image */}
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
-        />
-        
-        {/* Discount Badge - Top Right */}
-        {discount > 0 && (
-          <div className="absolute top-1 right-1 sm:top-2 sm:right-2 md:top-3 md:right-3 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs md:text-sm font-bold shadow-md" style={{ backgroundColor: '#E53935' }}>
-            {discount}% OFF
-          </div>
-        )}
-      </div>
+    <>
+      <div 
+        className="group bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer animate-in fade-in zoom-in-95 hover:scale-[1.02]"
+        onClick={handleProductClick}
+        style={{
+          animationDelay: `${Math.random() * 200}ms`,
+          animationFillMode: 'backwards',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+        }}
+      >
+        {/* Product Image Container */}
+        <div className="relative aspect-square overflow-hidden">
+          {/* Product Image */}
+          <img
+            src={imageSrc}
+            alt={name}
+            className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+            onError={() => setImageSrc('/placeholder.svg')}
+          />
+          
+          {/* Quick View Button - Center (appears on hover) */}
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileHover={{ scale: 1.05 }}
+            onClick={handleQuickView}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white text-primary px-4 py-2 rounded-full shadow-xl font-semibold text-sm flex items-center gap-2"
+          >
+            <Eye className="h-4 w-4" />
+            Quick View
+          </motion.button>
+          
+          {/* Wishlist Button - Top Left */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handleToggleWishlist}
+            className={`absolute top-2 left-2 sm:top-3 sm:left-3 p-1.5 sm:p-2 rounded-full shadow-lg transition-all duration-300 ${
+              inWishlist 
+                ? 'bg-red-500 text-white' 
+                : 'bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500'
+            }`}
+          >
+            <Heart className={`h-3 w-3 sm:h-4 sm:w-4 ${inWishlist ? 'fill-current' : ''}`} />
+          </motion.button>
+          
+          {/* Discount Badge - Top Right */}
+          {discount > 0 && (
+            <div className="absolute top-1 right-1 sm:top-2 sm:right-2 md:top-3 md:right-3 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs md:text-sm font-bold shadow-md" style={{ backgroundColor: '#E53935' }}>
+              {discount}% OFF
+            </div>
+          )}
+        </div>
       
       {/* Product Info */}
       <div className="p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3">
@@ -92,7 +138,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge }: Pr
         </h3>
         
         {/* Combined Button and Pricing Box */}
-        <div className="rounded-md sm:rounded-lg p-2 sm:p-3 md:p-4 transition-all duration-300 hover:scale-105 shadow-md" style={{ backgroundColor: '#DC143C' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#801030'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#DC143C'}>
+        <div className="rounded-md sm:rounded-lg p-2 sm:p-3 md:p-4 transition-all duration-300 hover:scale-105 shadow-md bg-primary hover:bg-secondary">
           {/* Add to Cart Button */}
           <button 
             className="w-full text-white font-semibold sm:font-bold text-[10px] sm:text-xs md:text-sm lg:text-base flex items-center justify-center gap-1 sm:gap-2 mb-2 sm:mb-3" 
@@ -117,5 +163,13 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge }: Pr
         </div>
       </div>
     </div>
+
+    {/* Quick View Modal */}
+    <QuickViewModal
+      isOpen={isQuickViewOpen}
+      onClose={() => setIsQuickViewOpen(false)}
+      product={{ id, name, price, originalPrice, image, badge, description }}
+    />
+  </>
   );
 };

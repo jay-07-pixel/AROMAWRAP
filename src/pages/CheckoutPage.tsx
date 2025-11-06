@@ -118,16 +118,43 @@ const CheckoutPage = () => {
 
     setIsProcessing(true);
 
+    // Create order object
+    const order = {
+      id: `ORD-${Date.now()}`,
+      date: new Date().toISOString(),
+      items: items,
+      totalPrice: totalPrice,
+      shippingCost: totalPrice >= 499 ? 0 : 49,
+      finalTotal: totalPrice + (totalPrice >= 499 ? 0 : 49),
+      status: "Processing",
+      paymentMethod: paymentMethod === "cod" ? "Cash on Delivery" : paymentMethod === "card" ? "Card" : "UPI",
+      shippingAddress: {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+      }
+    };
+
+    // Save order to localStorage
+    const existingOrders = localStorage.getItem("userOrders");
+    const orders = existingOrders ? JSON.parse(existingOrders) : [];
+    orders.unshift(order); // Add new order to the beginning
+    localStorage.setItem("userOrders", JSON.stringify(orders));
+
     // Simulate order processing
     setTimeout(() => {
       toast({
         title: "Order Placed Successfully! 🎉",
-        description: `Your order of ₹${totalPrice.toFixed(2)} has been confirmed. We'll send you a confirmation email shortly.`,
+        description: `Your order #${order.id} of ₹${totalPrice.toFixed(2)} has been confirmed. We'll send you a confirmation email shortly.`,
       });
       
       clearCart();
       setIsProcessing(false);
-      navigate("/");
+      navigate("/account");
     }, 2000);
   };
 

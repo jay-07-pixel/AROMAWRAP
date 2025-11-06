@@ -10,11 +10,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
+import { WishlistDrawer } from "@/components/WishlistDrawer";
 import { useNavigate } from "react-router-dom";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchPlaceholder, setSearchPlaceholder] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const { totalItems, setIsCartOpen } = useCart();
   const navigate = useNavigate();
 
@@ -70,6 +72,23 @@ export const Header = () => {
   // Function to convert category name to URL parameter
   const getCategoryUrl = (categoryName: string, itemName: string) => {
     return `/category/${itemName.toLowerCase().replace(/\s+/g, '-')}`;
+  };
+
+  // Handle search
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+    }
+  };
+
+  // Handle search on Enter key
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+    }
   };
 
   const categories = [
@@ -155,11 +174,6 @@ export const Header = () => {
 
   return (
     <>
-      {/* Top Banner */}
-      <div className="bg-banner text-banner-foreground py-2 text-center text-sm font-medium">
-        Free Shipping On All Orders Above ₹499
-      </div>
-
       {/* Main Header */}
       <header className="sticky top-0 z-50 bg-background border-b">
         <div className="container mx-auto px-4">
@@ -167,21 +181,29 @@ export const Header = () => {
           <div className="flex items-center justify-between py-4">
             {/* Logo */}
             <div className="flex items-center">
-              <h1 className="text-3xl font-bold text-[#DC143C]">
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="text-3xl font-bold text-primary hover:text-secondary transition-colors"
+                aria-label="Go to home"
+              >
                 Sugandhshoppee
-              </h1>
+              </button>
             </div>
 
             {/* Enhanced Search Bar - Hidden on mobile */}
             <div className="hidden md:flex flex-1 max-w-xl mx-8">
-              <div className="relative w-full group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-hover:text-[#DC143C] transition-colors duration-300">
+              <form onSubmit={handleSearch} className="relative w-full group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors duration-300">
                   <Search className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <Input
                   type="search"
                   placeholder={searchPlaceholder || "Search for incense, dhoop, puja items..."}
-                  className="pl-12 pr-4 h-12 text-base border-2 border-gray-200 focus:border-[#DC143C] focus:ring-2 focus:ring-[#DC143C]/20 transition-all duration-300 group-hover:border-[#C75D5D] group-hover:shadow-xl group-hover:shadow-[#DC143C]/10 rounded-xl bg-gradient-to-r from-white to-gray-50/50 focus:from-white focus:to-[#FFF1F1] shadow-md hover:shadow-lg focus:shadow-xl focus:shadow-[#DC143C]/20"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleSearchKeyPress}
+                  className="pl-12 pr-4 h-12 text-base border-2 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 group-hover:border-primary group-hover:shadow-xl group-hover:shadow-primary/10 rounded-xl bg-gradient-to-r from-white to-gray-50/50 focus:from-white focus:to-accent/20 shadow-md hover:shadow-lg focus:shadow-xl focus:shadow-primary/20"
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -189,19 +211,19 @@ export const Header = () => {
                     ⌘K
                   </kbd>
                 </div>
-              </div>
+              </form>
             </div>
 
             {/* Actions */}
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="hidden sm:inline-flex h-14 w-14 hover:bg-red-50 hover:text-red-600 transition-all duration-300 group">
-                <Heart className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
-              </Button>
+              <div className="hidden sm:inline-flex">
+                <WishlistDrawer />
+              </div>
               
               {/* Enhanced User Account Button */}
               <Button 
                 variant="ghost" 
-                className="h-14 px-4 flex items-center gap-3 hover:bg-[#FFF1F1] hover:text-[#DC143C] transition-all duration-300 group relative overflow-hidden"
+                className="h-14 px-4 flex items-center gap-3 hover:bg-accent/20 hover:text-primary transition-all duration-300 group relative overflow-hidden"
                 onClick={() => navigate("/account")}
               >
                 <div className="relative">
@@ -220,12 +242,12 @@ export const Header = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="relative h-14 w-14 hover:bg-orange-50 hover:text-orange-600 transition-all duration-300 group" 
+                className="relative h-14 w-14 hover:bg-primary/10 hover:text-primary transition-all duration-300 group" 
                 onClick={() => setIsCartOpen(true)}
               >
                 <ShoppingCart className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
                 {totalItems > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-6 min-w-6 flex items-center justify-center p-0 text-sm font-bold bg-orange-500 text-white animate-bounce">
+                  <Badge className="absolute -top-1 -right-1 h-6 min-w-6 flex items-center justify-center p-0 text-sm font-bold bg-primary text-primary-foreground animate-bounce">
                     {totalItems}
                   </Badge>
                 )}
@@ -244,14 +266,17 @@ export const Header = () => {
 
           {/* Enhanced Search Bar - Mobile */}
           <div className="md:hidden pb-4">
-            <div className="relative w-full group">
+            <form onSubmit={handleSearch} className="relative w-full group">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors duration-300">
                 <Search className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
               </div>
               <Input
                 type="search"
                 placeholder={searchPlaceholder || "Search products..."}
-                className="pl-12 pr-4 h-12 text-base border-2 border-gray-200 focus:border-[#DC143C] focus:ring-2 focus:ring-[#DC143C]/20 transition-all duration-300 group-hover:border-[#C75D5D] group-hover:shadow-xl group-hover:shadow-[#DC143C]/10 rounded-xl bg-gradient-to-r from-white to-gray-50/50 focus:from-white focus:to-[#FFF1F1] shadow-md hover:shadow-lg focus:shadow-xl focus:shadow-[#DC143C]/20"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleSearchKeyPress}
+                className="pl-12 pr-4 h-12 text-base border-2 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 group-hover:border-primary group-hover:shadow-xl group-hover:shadow-primary/10 rounded-xl bg-gradient-to-r from-white to-gray-50/50 focus:from-white focus:to-accent/20 shadow-md hover:shadow-lg focus:shadow-xl focus:shadow-primary/20"
               />
               <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -259,7 +284,7 @@ export const Header = () => {
                   ⌘K
                 </kbd>
               </div>
-            </div>
+            </form>
           </div>
 
           {/* Navigation */}
@@ -272,7 +297,7 @@ export const Header = () => {
                       <DropdownMenuTrigger asChild>
                         <Button 
                           variant="ghost" 
-                          className="w-full md:w-auto justify-start md:justify-center font-semibold text-base text-[#DC143C] hover:text-[#801030] hover:bg-[#FFF1F1] transition-all duration-300 px-3 py-1.5 rounded-md"
+                          className="w-full md:w-auto justify-start md:justify-center font-semibold text-base text-primary hover:text-secondary hover:bg-accent/20 transition-all duration-300 px-3 py-1.5 rounded-md"
                         >
                           {category.name}
                           <ChevronDown className="ml-1 h-4 w-4" />

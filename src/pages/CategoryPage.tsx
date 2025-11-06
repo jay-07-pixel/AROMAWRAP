@@ -14,10 +14,14 @@ import {
 import { ArrowLeft, Filter, SortAsc, ChevronDown } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import sandalwoodCrimson from "@/assets/sandalwood crimson.png";
-import crimsonRed2 from "@/assets/crimson red 2 .png";
-import crimson3 from "@/assets/crimson 3.png";
-import crimson4 from "@/assets/crimson4.png";
+// Product images served from public/products. Please place files there.
+const img1 = "/products/IMG-20251017-WA0022.jpg";
+const img2 = "/products/IMG-20251017-WA0023.jpg";
+const img3 = "/products/IMG-20251017-WA0024.jpg";
+const img4 = "/products/IMG-20251017-WA0033.jpg";
+const img5 = "/products/IMG-20251017-WA0037.jpg";
+const img6 = "/products/IMG-20251017-WA0025.jpg";
+const img7 = "/products/IMG-20251017-WA0026.jpg";
 
 // Sample products for different categories
 const categoryProducts = {
@@ -27,7 +31,7 @@ const categoryProducts = {
       name: "Premium Sandalwood Dhoop - Traditional (Pack of 20)",
       price: 399,
       originalPrice: 499,
-      image: sandalwoodCrimson,
+      image: img1,
       badge: "Bestseller",
     },
     {
@@ -35,7 +39,7 @@ const categoryProducts = {
       name: "Classic Sandalwood Dhoop - Handcrafted (Pack of 15)",
       price: 299,
       originalPrice: 399,
-      image: sandalwoodCrimson,
+      image: img4,
       badge: "New",
     },
     {
@@ -43,7 +47,7 @@ const categoryProducts = {
       name: "Pure Sandalwood Dhoop - Organic (Pack of 25)",
       price: 549,
       originalPrice: 699,
-      image: sandalwoodCrimson,
+      image: img6,
       badge: "Premium",
     },
   ],
@@ -53,7 +57,7 @@ const categoryProducts = {
       name: "Fragrant Rose Dhoop - Aromatic (Pack of 20)",
       price: 349,
       originalPrice: 449,
-      image: crimsonRed2,
+      image: img2,
       badge: "Popular",
     },
     {
@@ -61,7 +65,7 @@ const categoryProducts = {
       name: "Delicate Rose Dhoop - Traditional (Pack of 15)",
       price: 279,
       originalPrice: 349,
-      image: crimson3,
+      image: img3,
     },
   ],
   "jasmine-dhoop": [
@@ -70,7 +74,7 @@ const categoryProducts = {
       name: "Sweet Jasmine Dhoop - Natural (Pack of 20)",
       price: 329,
       originalPrice: 429,
-      image: crimson4,
+      image: img5,
       badge: "Limited",
     },
     {
@@ -78,7 +82,7 @@ const categoryProducts = {
       name: "Premium Jasmine Dhoop - Handcrafted (Pack of 15)",
       price: 399,
       originalPrice: 499,
-      image: sandalwoodCrimson,
+      image: img7,
       badge: "New",
     },
   ],
@@ -92,7 +96,7 @@ const relatedProducts = [
     name: "Premium Sandalwood Agarbatti - Traditional (Pack of 12)",
     price: 299,
     originalPrice: 399,
-    image: sandalwoodCrimson,
+      image: img4,
     badge: "Bestseller",
   },
   {
@@ -100,7 +104,7 @@ const relatedProducts = [
     name: "Rose Petal Incense Cones - Aromatic (Pack of 20)",
     price: 249,
     originalPrice: 329,
-    image: crimsonRed2,
+      image: img2,
     badge: "New",
   },
   {
@@ -108,7 +112,7 @@ const relatedProducts = [
     name: "Jasmine Essence Dhoop - Natural (Pack of 15)",
     price: 199,
     originalPrice: 279,
-    image: crimson3,
+      image: img3,
     badge: "Popular",
   },
   {
@@ -116,7 +120,7 @@ const relatedProducts = [
     name: "Lavender Bliss Agarbatti - Premium (Pack of 10)",
     price: 349,
     originalPrice: 449,
-    image: crimson4,
+      image: img5,
     badge: "Limited",
   },
   {
@@ -124,14 +128,14 @@ const relatedProducts = [
     name: "Mogra Magic Incense - Handcrafted (Pack of 18)",
     price: 279,
     originalPrice: 359,
-    image: sandalwoodCrimson,
+      image: img6,
   },
   {
     id: "related-6",
     name: "Tulsi Basil Dhoop - Organic (Pack of 25)",
     price: 229,
     originalPrice: 299,
-    image: crimsonRed2,
+      image: img2,
     badge: "Eco-Friendly",
   },
 ];
@@ -174,7 +178,59 @@ const CategoryPage = () => {
   };
 
   const categoryName = getCategoryName(category);
-  const products = categoryProducts[category as keyof typeof categoryProducts] || [];
+  const baseProducts = categoryProducts[category as keyof typeof categoryProducts] || [];
+
+  // Apply filters
+  const applyFilters = (products: any[]) => {
+    return products.filter(product => {
+      // Price filter
+      if (filters.price !== "all") {
+        const price = product.price;
+        switch (filters.price) {
+          case "under-500":
+            if (price >= 500) return false;
+            break;
+          case "500-1000":
+            if (price < 500 || price > 1000) return false;
+            break;
+          case "1000-2000":
+            if (price < 1000 || price > 2000) return false;
+            break;
+          case "above-2000":
+            if (price <= 2000) return false;
+            break;
+        }
+      }
+
+      // Brand filter (based on badge/name)
+      if (filters.brand !== "all") {
+        const productText = (product.name + " " + (product.badge || "")).toLowerCase();
+        if (!productText.includes(filters.brand.toLowerCase())) return false;
+      }
+
+      return true;
+    });
+  };
+
+  // Apply sorting
+  const applySorting = (products: any[]) => {
+    const sorted = [...products];
+    switch (sortBy) {
+      case "price-low":
+        return sorted.sort((a, b) => a.price - b.price);
+      case "price-high":
+        return sorted.sort((a, b) => b.price - a.price);
+      case "newest":
+        return sorted.sort((a, b) => b.id.localeCompare(a.id));
+      case "popular":
+        return sorted.sort((a, b) => (b.badge === "Bestseller" ? 1 : -1));
+      default:
+        return sorted;
+    }
+  };
+
+  const filteredProducts = applySorting(applyFilters(baseProducts));
+  const products = filteredProducts;
 
   // Filter options
   const filterOptions = {

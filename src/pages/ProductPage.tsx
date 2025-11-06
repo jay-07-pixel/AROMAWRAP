@@ -18,12 +18,17 @@ import {
   ShoppingCart
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
-import sandalwoodCrimson from "@/assets/sandalwood crimson.png";
-import crimsonRed2 from "@/assets/crimson red 2 .png";
-import crimson3 from "@/assets/crimson 3.png";
-import crimson4 from "@/assets/crimson4.png";
+import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
+// Product images served from public/products. Please place files there.
+const img1 = "/products/IMG-20251017-WA0022.jpg";
+const img2 = "/products/IMG-20251017-WA0023.jpg";
+const img3 = "/products/IMG-20251017-WA0024.jpg";
+const img4 = "/products/IMG-20251017-WA0033.jpg";
+const img5 = "/products/IMG-20251017-WA0037.jpg";
+const img6 = "/products/IMG-20251017-WA0025.jpg";
+const img7 = "/products/IMG-20251017-WA0026.jpg";
 
 // Sample product data - in real app this would come from API
 const productData = {
@@ -33,7 +38,7 @@ const productData = {
     price: 399,
     originalPrice: 499,
     discount: 20,
-    image: sandalwoodCrimson,
+    image: img1,
     badge: "Bestseller",
     rating: 4.8,
     reviews: 124,
@@ -54,10 +59,10 @@ const productData = {
       "Certification": "FSSAI Approved"
     },
     images: [
-      sandalwoodCrimson,
-      sandalwoodCrimson, 
-      sandalwoodCrimson,
-      sandalwoodCrimson
+      img1,
+      img4,
+      img6,
+      img7
     ]
   },
   "rose-dhoop-1": {
@@ -66,7 +71,7 @@ const productData = {
     price: 349,
     originalPrice: 449,
     discount: 22,
-    image: crimsonRed2,
+    image: img2,
     badge: "Popular",
     rating: 4.6,
     reviews: 89,
@@ -87,10 +92,10 @@ const productData = {
       "Certification": "FSSAI Approved"
     },
     images: [
-      crimsonRed2,
-      crimson3,
-      crimson4,
-      sandalwoodCrimson
+      img2,
+      img3,
+      img5,
+      img1
     ]
   }
 };
@@ -99,6 +104,7 @@ const ProductPage = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
+  const { addProduct } = useRecentlyViewed();
   
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -106,6 +112,20 @@ const ProductPage = () => {
   const [activeTab, setActiveTab] = useState("description");
 
   const product = productData[productId as keyof typeof productData];
+
+  // Track recently viewed products
+  useEffect(() => {
+    if (product) {
+      addProduct({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        image: product.image,
+        badge: product.badge,
+      });
+    }
+  }, [product, addProduct]);
 
   if (!product) {
     return (
