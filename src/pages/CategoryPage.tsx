@@ -339,7 +339,7 @@ const CategoryPage = () => {
           </div>
           
           {/* Page Title */}
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#DC143C] mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2">
             {categoryName}
           </h1>
         </div>
@@ -353,7 +353,7 @@ const CategoryPage = () => {
             <div className="flex-1">
               {/* Filter Label */}
               <div className="mb-2 sm:mb-3 md:mb-4">
-                <span className="text-sm sm:text-base font-medium text-[#2E1A1A]">Filter:</span>
+                <span className="text-sm sm:text-base font-medium text-foreground">Filter:</span>
               </div>
               
               {/* Filter Row 1 */}

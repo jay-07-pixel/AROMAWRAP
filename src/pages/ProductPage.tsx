@@ -166,26 +166,26 @@ const ProductPage = () => {
           <div className="flex items-center gap-2 text-sm">
             <button 
               onClick={() => navigate("/")}
-              className="text-[#C75D5D] hover:text-[#801030] transition-colors"
+              className="text-primary hover:text-secondary transition-colors"
             >
               Home
             </button>
-            <span className="text-[#C75D5D]/60">/</span>
+            <span className="text-muted-foreground">/</span>
             <button 
               onClick={() => navigate("/")}
-              className="text-[#C75D5D] hover:text-[#801030] transition-colors"
+              className="text-primary hover:text-secondary transition-colors"
             >
               Collections
             </button>
-            <span className="text-[#C75D5D]/60">/</span>
+            <span className="text-muted-foreground">/</span>
             <button 
               onClick={() => navigate(-1)}
-              className="text-[#C75D5D] hover:text-[#801030] transition-colors"
+              className="text-primary hover:text-secondary transition-colors"
             >
               Products
             </button>
-            <span className="text-[#C75D5D]/60">/</span>
-            <span className="text-[#2E1A1A] font-semibold">{product.name}</span>
+            <span className="text-muted-foreground">/</span>
+            <span className="text-foreground font-semibold">{product.name}</span>
           </div>
         </div>
       </section>

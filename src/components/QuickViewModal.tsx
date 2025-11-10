@@ -86,12 +86,12 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
               className="w-full h-full object-cover min-h-[300px] md:min-h-[500px]"
             />
             {product.badge && (
-              <Badge className="absolute top-4 right-4 bg-[#DC143C] text-white px-3 py-1">
+              <Badge className="absolute top-4 right-4 bg-primary text-white px-3 py-1">
                 {product.badge}
               </Badge>
             )}
             {discount > 0 && (
-              <div className="absolute top-4 left-4 bg-[#E53935] text-white px-3 py-1.5 rounded-lg font-bold">
+              <div className="absolute top-4 left-4 bg-destructive text-white px-3 py-1.5 rounded-lg font-bold">
                 {discount}% OFF
               </div>
             )}
@@ -124,7 +124,7 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
 
               {/* Price */}
               <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-bold text-[#DC143C]">
+                <span className="text-4xl font-bold text-primary">
                   ₹{product.price}
                 </span>
                 {product.originalPrice && (
@@ -162,8 +162,8 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
                       transition={{ delay: index * 0.1 }}
                       className="flex items-center gap-2 text-sm"
                     >
-                      <div className="h-8 w-8 bg-[#DC143C]/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <feature.icon className="h-4 w-4 text-[#DC143C]" />
+                      <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <feature.icon className="h-4 w-4 text-primary" />
                       </div>
                       <span className="text-muted-foreground">{feature.text}</span>
                     </motion.div>
@@ -178,7 +178,7 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
                 <div className="grid grid-cols-5 gap-3">
                   <Button
                     onClick={handleAddToCart}
-                    className="col-span-4 bg-[#DC143C] hover:bg-[#801030] h-12 text-base"
+                    className="col-span-4 bg-primary hover:bg-secondary h-12 text-base"
                   >
                     <ShoppingCart className="h-5 w-5 mr-2" />
                     Add to Cart
@@ -202,7 +202,7 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
                 <Button
                   variant="outline"
                   onClick={handleViewFullDetails}
-                  className="w-full h-11 border-2 border-[#DC143C] text-[#DC143C] hover:bg-[#DC143C] hover:text-white"
+                  className="w-full h-11 border-2 border-primary text-primary hover:bg-primary hover:text-white"
                 >
                   View Full Details
                 </Button>
@@ -227,6 +227,8 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
     </Dialog>
   );
 };
+
+
 
 
 

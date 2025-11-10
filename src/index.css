@@ -8,92 +8,105 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 50% 98%;
-    --foreground: 160 10% 10%;
+    /* Fresh Luxe Botanical Theme */
+    --background: 34 48% 96%;
+    --foreground: 0 0% 17%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 50% 10%;
+    --card-foreground: 0 0% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 50% 10%;
+    --popover-foreground: 0 0% 17%;
 
-    /* Primary brand: deep forest green */
-    --primary: 152 36% 26%;
+    /* Primary: Emerald Green #2E8B57 */
+    --primary: 152 50% 36%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary brand: logo yellow */
-    --secondary: 52 95% 50%;
-    --secondary-foreground: 160 10% 15%;
+    /* Secondary: Cocoa Brown #7B4B28 */
+    --secondary: 25 51% 32%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 160 20% 96%;
-    --muted-foreground: 160 6% 40%;
+    /* Muted: Champagne Beige variations */
+    --muted: 34 48% 91%;
+    --muted-foreground: 25 30% 35%;
 
-    --accent: 52 95% 50%;
-    --accent-foreground: 160 15% 15%;
+    /* Accent: Champagne Beige #F3E9DC */
+    --accent: 34 48% 91%;
+    --accent-foreground: 0 0% 17%;
+
+    /* Highlight: Golden Sand #D4AF37 (used for special accents) */
+    --highlight: 46 65% 52%;
+    --highlight-foreground: 0 0% 17%;
 
     --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 160 18% 80%;
-    --input: 160 18% 80%;
-    --ring: 152 36% 26%;
+    --border: 34 30% 85%;
+    --input: 34 30% 85%;
+    --ring: 152 50% 36%;
 
     --radius: 0.75rem;
 
-    --banner: 152 36% 26%;
+    --banner: 152 50% 36%;
     --banner-foreground: 0 0% 100%;
 
-    --sidebar-background: 0 50% 98%;
-    --sidebar-foreground: 160 10% 10%;
-    --sidebar-primary: 152 36% 26%;
+    --sidebar-background: 34 48% 96%;
+    --sidebar-foreground: 0 0% 17%;
+    --sidebar-primary: 152 50% 36%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 160 20% 96%;
-    --sidebar-accent-foreground: 160 10% 15%;
-    --sidebar-border: 160 18% 80%;
-    --sidebar-ring: 152 36% 26%;
+    --sidebar-accent: 34 48% 91%;
+    --sidebar-accent-foreground: 0 0% 17%;
+    --sidebar-border: 34 30% 85%;
+    --sidebar-ring: 152 50% 36%;
   }
 
   .dark {
-    --background: 160 22% 10%;
-    --foreground: 40 20% 95%;
+    /* Fresh Luxe Botanical Dark Theme */
+    --background: 25 30% 12%;
+    --foreground: 34 40% 90%;
 
-    --card: 160 20% 14%;
-    --card-foreground: 40 20% 95%;
+    --card: 25 25% 16%;
+    --card-foreground: 34 40% 90%;
 
-    --popover: 160 20% 14%;
-    --popover-foreground: 40 20% 95%;
+    --popover: 25 25% 16%;
+    --popover-foreground: 34 40% 90%;
 
-    /* In dark mode, let yellow pop as primary accent */
-    --primary: 52 95% 50%;
-    --primary-foreground: 160 15% 15%;
+    /* In dark mode, Emerald Green stays vibrant */
+    --primary: 152 50% 42%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 152 30% 28%;
+    /* Secondary: Lighter Cocoa Brown for dark mode */
+    --secondary: 25 45% 40%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 160 15% 20%;
-    --muted-foreground: 40 10% 70%;
+    --muted: 25 20% 22%;
+    --muted-foreground: 34 20% 70%;
 
-    --accent: 52 95% 50%;
-    --accent-foreground: 160 15% 15%;
+    /* Accent: Golden Sand pops in dark mode */
+    --accent: 46 65% 52%;
+    --accent-foreground: 0 0% 10%;
+
+    --highlight: 46 65% 52%;
+    --highlight-foreground: 0 0% 10%;
 
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 160 15% 25%;
-    --input: 160 15% 25%;
-    --ring: 52 95% 50%;
+    --border: 25 20% 28%;
+    --input: 25 20% 28%;
+    --ring: 152 50% 42%;
 
-    --banner: 152 36% 26%;
+    --banner: 152 50% 36%;
     --banner-foreground: 0 0% 100%;
 
-    --sidebar-background: 160 20% 12%;
-    --sidebar-foreground: 40 20% 95%;
-    --sidebar-primary: 52 95% 50%;
-    --sidebar-primary-foreground: 160 15% 15%;
-    --sidebar-accent: 160 15% 20%;
-    --sidebar-accent-foreground: 40 20% 95%;
-    --sidebar-border: 160 15% 25%;
-    --sidebar-ring: 52 95% 50%;
+    --sidebar-background: 25 30% 14%;
+    --sidebar-foreground: 34 40% 90%;
+    --sidebar-primary: 152 50% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 25 20% 22%;
+    --sidebar-accent-foreground: 34 40% 90%;
+    --sidebar-border: 25 20% 28%;
+    --sidebar-ring: 152 50% 42%;
   }
 }
 

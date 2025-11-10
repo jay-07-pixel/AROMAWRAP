@@ -41,7 +41,7 @@ export const BackToTop = () => {
           <Button
             onClick={scrollToTop}
             size="icon"
-            className="h-12 w-12 rounded-full bg-[#DC143C] hover:bg-[#801030] shadow-2xl hover:shadow-[#DC143C]/50 transition-all duration-300 group"
+            className="h-12 w-12 rounded-full bg-primary hover:bg-secondary shadow-2xl hover:shadow-primary/50 transition-all duration-300 group"
             aria-label="Back to top"
           >
             <ArrowUp className="h-6 w-6 group-hover:animate-bounce" />
@@ -51,6 +51,8 @@ export const BackToTop = () => {
     </AnimatePresence>
   );
 };
+
+
 
 
 

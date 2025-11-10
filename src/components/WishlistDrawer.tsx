@@ -49,7 +49,7 @@ export const WishlistDrawer = () => {
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader className="border-b pb-4">
-            <SheetTitle className="flex items-center gap-2 text-2xl text-[#DC143C]">
+            <SheetTitle className="flex items-center gap-2 text-2xl text-primary">
               <Heart className="h-6 w-6 fill-current" />
               My Wishlist
               {items.length > 0 && (
@@ -74,7 +74,7 @@ export const WishlistDrawer = () => {
                   setIsOpen(false);
                   navigate("/");
                 }}
-                className="bg-[#DC143C] hover:bg-[#801030]"
+                className="bg-primary hover:bg-secondary"
               >
                 Start Shopping
               </Button>
@@ -115,7 +115,7 @@ export const WishlistDrawer = () => {
                               className="w-full h-full object-cover"
                             />
                             {item.badge && (
-                              <Badge className="absolute top-1 right-1 text-xs bg-[#DC143C]">
+                              <Badge className="absolute top-1 right-1 text-xs bg-primary">
                                 {item.badge}
                               </Badge>
                             )}
@@ -137,7 +137,7 @@ export const WishlistDrawer = () => {
 
                             {/* Price */}
                             <div className="flex items-center gap-2 mb-3">
-                              <span className="text-lg font-bold text-[#DC143C]">
+                              <span className="text-lg font-bold text-primary">
                                 ₹{item.price}
                               </span>
                               {item.originalPrice && (
@@ -157,7 +157,7 @@ export const WishlistDrawer = () => {
                               <Button
                                 size="sm"
                                 onClick={() => handleMoveToCart(item)}
-                                className="flex-1 bg-[#DC143C] hover:bg-[#801030] h-9"
+                                className="flex-1 bg-primary hover:bg-secondary h-9"
                               >
                                 <ShoppingCart className="h-4 w-4 mr-1" />
                                 Move to Cart
@@ -186,7 +186,7 @@ export const WishlistDrawer = () => {
                     items.forEach(item => handleAddToCart(item));
                     clearWishlist();
                   }}
-                  className="w-full bg-[#DC143C] hover:bg-[#801030] h-12 text-lg"
+                  className="w-full bg-primary hover:bg-secondary h-12 text-lg"
                 >
                   <ShoppingCart className="h-5 w-5 mr-2" />
                   Add All to Cart

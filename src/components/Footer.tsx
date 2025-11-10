@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import cowImage from "@/assets/cows vagere nhi tkayche  (3)[1].png";
+import newsletterBg from "@/assets/cows vagere nhi tkayche  (5)[1].png";
 
 export const Footer = () => {
   const [email, setEmail] = useState("");
@@ -56,8 +58,19 @@ export const Footer = () => {
   return (
     <footer className="bg-gradient-to-b from-gray-50 to-gray-100 mt-8 sm:mt-12 md:mt-20 border-t">
       {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-primary to-secondary text-white py-12 md:py-16">
-        <div className="container mx-auto px-4">
+      <div 
+        className="relative bg-gradient-to-r from-primary to-secondary text-white py-12 md:py-16 overflow-hidden"
+        style={{
+          backgroundImage: `url(${newsletterBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-primary/80"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -133,6 +146,23 @@ export const Footer = () => {
             </div>
           </motion.div>
         </div>
+      </div>
+
+      {/* Image Section Below Newsletter */}
+      <div className="bg-white">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <img
+            src={cowImage}
+            alt="Sacred Cow Heritage"
+            className="w-full h-auto max-h-[400px] md:max-h-[500px] object-cover"
+            loading="lazy"
+          />
+        </motion.div>
       </div>
 
       {/* Main Footer */}
