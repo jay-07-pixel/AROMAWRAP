@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import cowImage from "@/assets/cows vagere nhi tkayche  (3)[1].png";
+import cowImage from "@/assets/cows vagere nhi tkayche  (5)[1].png";
 import newsletterBg from "@/assets/cows vagere nhi tkayche  (5)[1].png";
 
 export const Footer = () => {
