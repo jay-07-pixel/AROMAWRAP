@@ -22,121 +22,86 @@ const img4 = "/products/IMG-20251017-WA0033.jpg";
 const img5 = "/products/IMG-20251017-WA0037.jpg";
 const img6 = "/products/IMG-20251017-WA0025.jpg";
 const img7 = "/products/IMG-20251017-WA0026.jpg";
+const img8 = "/products/premium-sandalwood-agarbatti.jpg";
+const img9 = "/products/oudh-premium-dhoop.jpg";
+const img10 = "/products/delux-dhoop.jpg";
+const img11 = "/products/mahadev-dhoop.jpg";
+const img12 = "/products/sai-baba-dhoop.jpg";
+const img13 = "/products/tornado-dhoop.jpg";
+const img14 = "/products/devi-dhoop.jpg";
 
 // Sample products for different categories
 const categoryProducts = {
+  "agarbatti": [
+    {
+      id: "premium-sandalwood-agarbatti-new",
+      name: "Premium Sandalwood Agarbatti",
+      price: 150,
+      image: img8,
+      badge: "New",
+    },
+  ],
   "sandalwood-dhoop": [
     {
       id: "sandalwood-dhoop-1",
-      name: "Premium Sandalwood Dhoop - Traditional (Pack of 20)",
+      name: "AromaWrap Devi Premium Dhoop",
       price: 399,
       originalPrice: 499,
-      image: img1,
+      image: img14,
+      badge: "Premium",
+    },
+    {
+      id: "delux-dhoop",
+      name: "AromaWrap Mannat Delux Dhoop",
+      price: 449,
+      originalPrice: 549,
+      image: img10,
+      badge: "Premium",
+    },
+    {
+      id: "mahadev-dhoop",
+      name: "AromaWrap Mahadev Dhoop",
+      price: 399,
+      originalPrice: 499,
+      image: img11,
+      badge: "New",
+    },
+    {
+      id: "sai-baba-dhoop",
+      name: "AromaWrap Sai Baba Dhoop Premium Dhoop Cones",
+      price: 379,
+      originalPrice: 479,
+      image: img12,
       badge: "Bestseller",
     },
     {
-      id: "sand-dhoop-2", 
-      name: "Classic Sandalwood Dhoop - Handcrafted (Pack of 15)",
-      price: 299,
-      originalPrice: 399,
-      image: img4,
-      badge: "New",
-    },
-    {
-      id: "sand-dhoop-3",
-      name: "Pure Sandalwood Dhoop - Organic (Pack of 25)",
-      price: 549,
-      originalPrice: 699,
-      image: img6,
+      id: "tornado-dhoop",
+      name: "AromaWrap Tornado Dhoop Premium Dhoop Cones",
+      price: 429,
+      originalPrice: 529,
+      image: img13,
       badge: "Premium",
     },
   ],
-  "rose-dhoop": [
-    {
-      id: "rose-dhoop-1",
-      name: "Fragrant Rose Dhoop - Aromatic (Pack of 20)",
-      price: 349,
-      originalPrice: 449,
-      image: img2,
-      badge: "Popular",
-    },
-    {
-      id: "rose-dhoop-2",
-      name: "Delicate Rose Dhoop - Traditional (Pack of 15)",
-      price: 279,
-      originalPrice: 349,
-      image: img3,
-    },
-  ],
-  "jasmine-dhoop": [
-    {
-      id: "jas-dhoop-1",
-      name: "Sweet Jasmine Dhoop - Natural (Pack of 20)",
-      price: 329,
-      originalPrice: 429,
-      image: img5,
-      badge: "Limited",
-    },
-    {
-      id: "jas-dhoop-2",
-      name: "Premium Jasmine Dhoop - Handcrafted (Pack of 15)",
-      price: 399,
-      originalPrice: 499,
-      image: img7,
-      badge: "New",
-    },
-  ],
-  // Add more categories as needed
 };
 
 // Related products for "You May Also Like" section
 const relatedProducts = [
   {
     id: "related-1",
-    name: "Premium Sandalwood Agarbatti - Traditional (Pack of 12)",
-    price: 299,
-    originalPrice: 399,
-      image: img4,
-    badge: "Bestseller",
+    name: "AromaWrap Devi Premium Dhoop",
+    price: 399,
+    originalPrice: 499,
+    image: img14,
+    badge: "Premium",
   },
   {
     id: "related-2",
-    name: "Rose Petal Incense Cones - Aromatic (Pack of 20)",
-    price: 249,
-    originalPrice: 329,
-      image: img2,
+    name: "AromaWrap Mahadev Dhoop",
+    price: 399,
+    originalPrice: 499,
+    image: img11,
     badge: "New",
-  },
-  {
-    id: "related-3",
-    name: "Jasmine Essence Dhoop - Natural (Pack of 15)",
-    price: 199,
-    originalPrice: 279,
-      image: img3,
-    badge: "Popular",
-  },
-  {
-    id: "related-4",
-    name: "Lavender Bliss Agarbatti - Premium (Pack of 10)",
-    price: 349,
-    originalPrice: 449,
-      image: img5,
-    badge: "Limited",
-  },
-  {
-    id: "related-5",
-    name: "Mogra Magic Incense - Handcrafted (Pack of 18)",
-    price: 279,
-    originalPrice: 359,
-      image: img6,
-  },
-  {
-    id: "related-6",
-    name: "Tulsi Basil Dhoop - Organic (Pack of 25)",
-    price: 229,
-    originalPrice: 299,
-      image: img2,
-    badge: "Eco-Friendly",
   },
 ];
 
@@ -164,14 +129,8 @@ const CategoryPage = () => {
     
     // Convert URL parameter to display name
     const categoryMap: { [key: string]: string } = {
-      "sandalwood-dhoop": "Sandalwood Dhoop",
-      "rose-dhoop": "Rose Dhoop", 
-      "jasmine-dhoop": "Jasmine Dhoop",
-      "lavender-dhoop": "Lavender Dhoop",
-      "mogra-dhoop": "Mogra Dhoop",
-      "tulsi-dhoop": "Tulsi Dhoop",
-      "premium-dhoop": "Premium Dhoop",
-      "traditional-dhoop": "Traditional Dhoop",
+      "agarbatti": "Agarbatti",
+      "sandalwood-dhoop": "Dhoop",
     };
     
     return categoryMap[categoryParam] || categoryParam.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
@@ -342,119 +301,6 @@ const CategoryPage = () => {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2">
             {categoryName}
           </h1>
-        </div>
-      </section>
-
-      {/* Filters Section */}
-      <section className="py-2 sm:py-3 bg-background border-b">
-        <div className="container mx-auto px-3 sm:px-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            {/* Left Side - Filters */}
-            <div className="flex-1">
-              {/* Filter Label */}
-              <div className="mb-2 sm:mb-3 md:mb-4">
-                <span className="text-sm sm:text-base font-medium text-foreground">Filter:</span>
-              </div>
-              
-              {/* Filter Row 1 */}
-              <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
-                <Select value={filters.price} onValueChange={(value) => handleFilterChange('price', value)}>
-                  <SelectTrigger className="w-full sm:w-32 md:w-36 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
-                    <SelectValue placeholder="Price" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filterOptions.price.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-base py-2">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Select value={filters.brand} onValueChange={(value) => handleFilterChange('brand', value)}>
-                  <SelectTrigger className="w-full sm:w-32 md:w-36 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
-                    <SelectValue placeholder="Brand" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filterOptions.brand.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-base py-2">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Select value={filters.size} onValueChange={(value) => handleFilterChange('size', value)}>
-                  <SelectTrigger className="w-full sm:w-32 md:w-36 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
-                    <SelectValue placeholder="Size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filterOptions.size.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-base py-2">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Select value={filters.productType} onValueChange={(value) => handleFilterChange('productType', value)}>
-                  <SelectTrigger className="w-full sm:w-36 md:w-40 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
-                    <SelectValue placeholder="Product type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filterOptions.productType.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-base py-2">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Select value={filters.burningTime} onValueChange={(value) => handleFilterChange('burningTime', value)}>
-                  <SelectTrigger className="w-full sm:w-36 md:w-40 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
-                    <SelectValue placeholder="Burning Time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filterOptions.burningTime.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-base py-2">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Select value={filters.lengthOfStick} onValueChange={(value) => handleFilterChange('lengthOfStick', value)}>
-                  <SelectTrigger className="w-full sm:w-40 md:w-44 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
-                    <SelectValue placeholder="Length of Stick" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filterOptions.lengthOfStick.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-base py-2">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* Filter Row 2 */}
-              <div className="flex flex-wrap gap-2 sm:gap-3">
-                <Select value={filters.typeOfBathi} onValueChange={(value) => handleFilterChange('typeOfBathi', value)}>
-                  <SelectTrigger className="w-full sm:w-36 md:w-40 h-10 sm:h-11 border-2 border-[#C75D5D] text-sm sm:text-base text-[#2E1A1A] hover:border-[#DC143C] transition-colors [&>svg]:text-[#2E1A1A] [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
-                    <SelectValue placeholder="Type of bathi" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filterOptions.typeOfBathi.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-base py-2">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-          </div>
         </div>
       </section>
 

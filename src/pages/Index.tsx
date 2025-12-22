@@ -23,7 +23,15 @@ const img4 = "/products/IMG-20251017-WA0033.jpg";
 const img5 = "/products/IMG-20251017-WA0037.jpg";
 const img6 = "/products/IMG-20251017-WA0025.jpg";
 const img7 = "/products/IMG-20251017-WA0026.jpg";
-import heroBanner from "@/assets/hero-gemini.png";
+const img8 = "/products/premium-sandalwood-agarbatti.jpg";
+const img9 = "/products/oudh-premium-dhoop.jpg";
+const img10 = "/products/delux-dhoop.jpg";
+const img11 = "/products/mahadev-dhoop.jpg";
+const img12 = "/products/sai-baba-dhoop.jpg";
+const img13 = "/products/tornado-dhoop.jpg";
+const img14 = "/products/devi-dhoop.jpg";
+const img15 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Lavender%20Main.jpg?alt=media&token=7af415cb-0550-413f-bc21-ef85d99f08e8";
+const img16 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mogra%20Main.jpg?alt=media&token=7a784f6f-6917-484a-98c1-d1a7dd7f617f";
 import circularBestsellers from "@/assets/circular-bestsellers.jpg";
 import circularAgarbatti from "@/assets/circular-agarbatti.jpg";
 import circularPuja from "@/assets/circular-puja.jpg";
@@ -60,12 +68,7 @@ const Index = () => {
   const circularCategories = [
     { title: "Best Sellers", image: circularBestsellers },
     { title: "Agarbatti", image: circularAgarbatti },
-    { title: "Puja Essentials", image: circularPuja },
     { title: "Bambooless Incense", image: circularDhoop },
-    { title: "Incense Cones", image: circularCones },
-    { title: "Karpure", image: circularKarpure },
-    { title: "Eco-Friendly Havan Cups", image: circularHavan },
-    { title: "Puja Accessories", image: circularAccessories },
   ];
 
   // Hero section product showcase data
@@ -81,39 +84,23 @@ const Index = () => {
       },
       {
         id: "hero-prod-2",
-        name: "Rose Garden Agarbatti",
-        price: 299,
-        originalPrice: 399,
-        image: img2,
-        description: "Fragrant rose agarbatti that fills your space with the essence of blooming roses. Perfect for meditation.",
-      },
-      {
-        id: "hero-prod-3",
-        name: "Jasmine Dreams Cones",
-        price: 199,
-        originalPrice: 279,
-        image: img3,
-        description: "Aromatic jasmine incense cones for a peaceful and relaxing atmosphere. Natural and eco-friendly.",
-      },
-      {
-        id: "hero-prod-4",
-        name: "Divine Puja Gift Set",
-        price: 799,
-        originalPrice: 1099,
-        image: img4,
-        description: "Complete puja essentials kit with premium agarbatti, dhoop, and accessories. Perfect for spiritual rituals.",
+        name: "AromaWrap Devi Premium Dhoop",
+        price: 399,
+        originalPrice: 499,
+        image: img14,
+        description: "Handcrafted Devi dhoop cones infused with sacred botanicals for a luxurious, divine fragrance during puja and meditation.",
       },
     ],
     relatedProducts: [
       {
         id: "hero-related-1",
-        name: "Rose Agarbatti",
-        image: img2,
+        name: "AromaWrap Devi Premium Dhoop",
+        image: img14,
       },
       {
         id: "hero-related-2",
-        name: "Jasmine Cones",
-        image: img3,
+        name: "Sandalwood Agarbatti",
+        image: img1,
       },
     ],
   };
@@ -121,64 +108,58 @@ const Index = () => {
   const bestSellers = [
     {
       id: "prod-1",
-      name: "Lavender Bliss Agarbatti - Premium Natural Collection (Pack of 12)",
-      price: 299,
-      originalPrice: 399,
-      image: img1,
-      badge: "Bestseller",
+      name: "Lavender",
+      price: 349,
+      originalPrice: 449,
+      image: img15,
+      badge: "New",
     },
     {
       id: "prod-2",
-      name: "Sandalwood Essence Dhoop Sticks - Traditional (Pack of 20)",
-      price: 349,
-      originalPrice: 449,
+      name: "Mogra",
+      price: 399,
+      originalPrice: 499,
+      image: img16,
+      badge: "Premium",
+    },
+    {
+      id: "prod-3",
+      name: "Premium Sandalwood Agarbatti",
+      price: 150,
+      image: img1,
+      badge: "New",
+    },
+    {
+      id: "prod-4",
+      name: "Pure Sandalwood Dhoop - Organic (Pack of 25)",
+      price: 549,
+      originalPrice: 699,
+      image: img4,
+      badge: "Premium",
+    },
+    {
+      id: "prod-5",
+      name: "Classic Sandalwood Dhoop - Handcrafted (Pack of 15)",
+      price: 299,
+      originalPrice: 399,
       image: img4,
       badge: "New",
     },
     {
-      id: "prod-3",
-      name: "Jasmine Dreams Incense Cones - Aromatic Collection",
-      price: 199,
-      originalPrice: 279,
-      image: img2,
-    },
-    {
-      id: "prod-4",
-      name: "Divine Puja Gift Set - Complete Essentials Kit",
-      price: 799,
-      originalPrice: 1099,
-      image: img3,
-      badge: "Limited",
-    },
-    {
-      id: "prod-5",
-      name: "Rose Garden Agarbatti - Natural Fragrance (Pack of 10)",
-      price: 249,
-      originalPrice: 329,
-      image: img5,
-    },
-    {
       id: "prod-6",
-      name: "Tulsi Basil Dhoop Cones - Sacred Collection",
-      price: 179,
-      originalPrice: 249,
-      image: img6,
+      name: "Sandalwood Divine Agarbatti",
+      price: 450,
+      originalPrice: 599,
+      image: img1,
       badge: "Bestseller",
     },
     {
       id: "prod-7",
-      name: "Mogra Magic Incense Sticks - Evening Collection",
-      price: 279,
-      originalPrice: 349,
-      image: img2,
-    },
-    {
-      id: "prod-8",
-      name: "Camphor Pure Karpure - Natural Havan (Pack of 50)",
-      price: 399,
-      originalPrice: 499,
-      image: img7,
-      badge: "New",
+      name: "AromaWrap OUDH PREMIUM DHOOP",
+      price: 499,
+      originalPrice: 649,
+      image: img9,
+      badge: "Premium",
     },
   ];
 
@@ -210,24 +191,6 @@ const Index = () => {
       <AnnouncementBar />
       <CartDrawer />
       <Header />
-
-      {/* Hero Section */}
-      <motion.section 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden -mt-16 shadow-2xl border-b-2 border-gray-200"
-      >
-        <motion.img
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          src={heroBanner}
-          alt="Aromatic Bliss Festival 2025"
-          className="absolute inset-0 w-full h-full object-contain"
-        />
-        
-      </motion.section>
 
       {/* Mobile Product Showcase Box Section */}
       <motion.section 
@@ -292,17 +255,17 @@ const Index = () => {
       )}
 
       {/* Product Cards Section */}
-      <section className="py-6 sm:py-8 bg-background">
+      <section className="pt-2 pb-6 sm:pt-3 sm:pb-8 bg-background">
         <div className="container mx-auto px-3 sm:px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-8"
+            className="text-center mb-4"
           >
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-primary">
-              🔥 Best Sellers
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 text-primary">
+              Best Sellers
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground">
               Our most loved products
@@ -355,7 +318,7 @@ const Index = () => {
               className="text-center mb-8"
             >
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-primary">
-                👁️ Recently Viewed
+                Recently Viewed
               </h2>
               <p className="text-sm sm:text-base text-muted-foreground">
                 Products you've recently checked out

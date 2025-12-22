@@ -14,15 +14,17 @@ import { toast } from "@/hooks/use-toast";
 import { useWishlist } from "@/context/WishlistContext";
 import { motion } from "framer-motion";
 import { OrderSkeleton } from "@/components/OrderSkeleton";
+import { useAuth } from "@/context/AuthContext";
+import { signIn, signUp, logout, updateUserProfile, addAddress } from "@/services/authService";
+import { getUserOrders } from "@/services/orderService";
 
 const AccountPage = () => {
   const navigate = useNavigate();
   const { items: wishlistItems } = useWishlist();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
-  const [userName, setUserName] = useState("");
+  const { user, userProfile, loading } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Login/Signup form states
   const [loginEmail, setLoginEmail] = useState("");
@@ -32,34 +34,59 @@ const AccountPage = () => {
   const [signupPassword, setSignupPassword] = useState("");
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
 
-  useEffect(() => {
-    // Check if user is already logged in
-    const storedEmail = localStorage.getItem("userEmail");
-    const storedName = localStorage.getItem("userName");
-    
-    if (storedEmail) {
-      setIsLoggedIn(true);
-      setUserEmail(storedEmail);
-      setUserName(storedName || "User");
-      
-      // Load orders with a delay for better UX
-      setTimeout(() => {
-        const storedOrders = localStorage.getItem("userOrders");
-        if (storedOrders) {
-          try {
-            setOrders(JSON.parse(storedOrders));
-          } catch (error) {
-            console.error("Error parsing orders:", error);
-          }
-        }
-        setIsLoadingOrders(false);
-      }, 600);
-    } else {
-      setIsLoadingOrders(false);
-    }
-  }, []);
+  // Profile form states
+  const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Address form states
+  const [addressStreet, setAddressStreet] = useState("");
+  const [addressCity, setAddressCity] = useState("");
+  const [addressState, setAddressState] = useState("");
+  const [addressPincode, setAddressPincode] = useState("");
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+
+  useEffect(() => {
+    // Load user orders when logged in
+    const loadOrders = async () => {
+      if (user && userProfile) {
+        setIsLoadingOrders(true);
+        try {
+          const userOrders = await getUserOrders(user.uid);
+          setOrders(userOrders);
+          } catch (error) {
+          console.error("Error loading orders:", error);
+        } finally {
+          setIsLoadingOrders(false);
+        }
+      } else {
+        setIsLoadingOrders(false);
+      }
+    };
+
+    if (!loading) {
+      loadOrders();
+    }
+  }, [user, userProfile, loading]);
+
+  // Populate form fields when user profile loads
+  useEffect(() => {
+    if (userProfile) {
+      setProfileName(userProfile.displayName || "");
+      setProfilePhone(userProfile.phone || "");
+      
+      // Load default address if exists
+      if (userProfile.addresses && userProfile.addresses.length > 0) {
+        const defaultAddress = userProfile.addresses.find(addr => addr.isDefault) || userProfile.addresses[0];
+        setAddressStreet(defaultAddress.address || "");
+        setAddressCity(defaultAddress.city || "");
+        setAddressState(defaultAddress.state || "");
+        setAddressPincode(defaultAddress.pincode || "");
+      }
+    }
+  }, [userProfile]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!loginEmail || !loginPassword) {
@@ -71,38 +98,41 @@ const AccountPage = () => {
       return;
     }
 
-    // Check if admin login
-    if (loginEmail.toLowerCase() === "admin@gmail.com") {
-      localStorage.setItem("userEmail", loginEmail);
-      localStorage.setItem("userName", "Admin");
+    setIsLoggingIn(true);
+
+    try {
+      // Sign in with Firebase
+      await signIn(loginEmail, loginPassword);
       
+      toast({
+        title: "Login Successful! 🎉",
+        description: "Welcome back to AromaWrap",
+      });
+
+      // Check if admin (after successful login)
+    if (loginEmail.toLowerCase() === "admin@gmail.com") {
       toast({
         title: "Welcome Admin! 👑",
         description: "Redirecting to admin dashboard...",
       });
       
-      // Redirect to admin dashboard
       setTimeout(() => {
         navigate("/admin");
       }, 1000);
-      return;
-    }
-
-    // Regular user login
-    localStorage.setItem("userEmail", loginEmail);
-    localStorage.setItem("userName", loginEmail.split("@")[0]);
-    
-    setIsLoggedIn(true);
-    setUserEmail(loginEmail);
-    setUserName(loginEmail.split("@")[0]);
-    
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
     toast({
-      title: "Login Successful! 🎉",
-      description: "Welcome back to Sugandhshoppee",
+        title: "Login Failed",
+        description: error.message || "Invalid email or password. Please try again.",
+        variant: "destructive",
     });
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!signupName || !signupEmail || !signupPassword || !signupConfirmPassword) {
@@ -132,35 +162,161 @@ const AccountPage = () => {
       return;
     }
 
-    // Save user data
-    localStorage.setItem("userEmail", signupEmail);
-    localStorage.setItem("userName", signupName);
-    
-    setIsLoggedIn(true);
-    setUserEmail(signupEmail);
-    setUserName(signupName);
+    setIsLoggingIn(true);
+
+    try {
+      // Create account with Firebase and save to Firestore
+      await signUp(signupEmail, signupPassword, signupName);
     
     toast({
       title: "Account Created! 🎉",
-      description: "Welcome to Sugandhshoppee",
+      description: "Welcome to AromaWrap",
     });
+
+      // Clear form
+      setSignupName("");
+      setSignupEmail("");
+      setSignupPassword("");
+      setSignupConfirmPassword("");
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      let errorMessage = "Failed to create account. Please try again.";
+      
+      if (error.code === "auth/email-already-in-use") {
+        errorMessage = "This email is already registered. Please login instead.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email address.";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "Password is too weak. Use at least 6 characters.";
+      }
+      
+      toast({
+        title: "Signup Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userName");
-    setIsLoggedIn(false);
-    setUserEmail("");
-    setUserName("");
+  const handleLogout = async () => {
+    try {
+      await logout();
     
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out",
     });
+
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to logout. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
+  const handleSaveProfile = async () => {
+    if (!user) return;
+
+    if (!profileName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingProfile(true);
+
+    try {
+      await updateUserProfile(user.uid, {
+        displayName: profileName.trim(),
+        phone: profilePhone.trim() || undefined,
+      });
+
+      toast({
+        title: "Profile Updated! ✅",
+        description: "Your personal information has been saved",
+      });
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleSaveAddress = async () => {
+    if (!user) return;
+
+    if (!addressStreet.trim() || !addressCity.trim() || !addressState.trim() || !addressPincode.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in all address fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingAddress(true);
+
+    try {
+      const newAddress = {
+        name: profileName || userProfile?.displayName || user.email?.split("@")[0] || "",
+        phone: profilePhone || "",
+        address: addressStreet.trim(),
+        city: addressCity.trim(),
+        state: addressState.trim(),
+        pincode: addressPincode.trim(),
+        isDefault: true,
+      };
+
+      await addAddress(user.uid, newAddress);
+
+      toast({
+        title: "Address Saved! ✅",
+        description: "Your shipping address has been updated",
+      });
+    } catch (error) {
+      console.error("Error saving address:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save address. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingAddress(false);
+    }
+  };
+
+  // Show loading while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   // If not logged in, show login/signup form
-  if (!isLoggedIn) {
+  if (!user) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
@@ -219,8 +375,12 @@ const AccountPage = () => {
                       </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-4">
-                      <Button type="submit" className="w-full bg-[#DC143C] hover:bg-[#801030]">
-                        Login
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-[#DC143C] hover:bg-[#801030]"
+                        disabled={isLoggingIn}
+                      >
+                        {isLoggingIn ? "Logging in..." : "Login"}
                       </Button>
                       <p className="text-sm text-center text-muted-foreground">
                         Don't have an account?{" "}
@@ -308,8 +468,12 @@ const AccountPage = () => {
                       </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-4">
-                      <Button type="submit" className="w-full bg-[#DC143C] hover:bg-[#801030]">
-                        Create Account
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-[#DC143C] hover:bg-[#801030]"
+                        disabled={isLoggingIn}
+                      >
+                        {isLoggingIn ? "Creating Account..." : "Create Account"}
                       </Button>
                       <p className="text-sm text-center text-muted-foreground">
                         Already have an account?{" "}
@@ -345,9 +509,9 @@ const AccountPage = () => {
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-[#DC143C] mb-1">
-                  Welcome, {userName}!
+                  Welcome, {userProfile?.displayName || user?.email?.split("@")[0]}!
                 </h1>
-                <p className="text-muted-foreground">{userEmail}</p>
+                <p className="text-muted-foreground">{user?.email}</p>
               </div>
             </div>
             <Button
@@ -396,19 +560,41 @@ const AccountPage = () => {
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" placeholder="Enter your name" defaultValue={userName} />
+                      <Input 
+                        id="name" 
+                        placeholder="Enter your name" 
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="Enter your email" defaultValue={userEmail} />
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="Enter your email" 
+                        value={user?.email || ""} 
+                        disabled 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone</Label>
-                      <Input id="phone" placeholder="Enter your phone number" />
+                      <Input 
+                        id="phone" 
+                        placeholder="Enter your phone number"
+                        value={profilePhone}
+                        onChange={(e) => setProfilePhone(e.target.value)}
+                      />
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button className="w-full bg-[#DC143C] hover:bg-[#801030]">Save Changes</Button>
+                    <Button 
+                      onClick={handleSaveProfile}
+                      disabled={isSavingProfile}
+                      className="w-full bg-[#DC143C] hover:bg-[#801030]"
+                    >
+                      {isSavingProfile ? "Saving..." : "Save Changes"}
+                    </Button>
                   </CardFooter>
                 </Card>
 
@@ -420,25 +606,51 @@ const AccountPage = () => {
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="address">Street Address</Label>
-                      <Input id="address" placeholder="Enter your address" />
+                      <Input 
+                        id="address" 
+                        placeholder="Enter your address"
+                        value={addressStreet}
+                        onChange={(e) => setAddressStreet(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="city">City</Label>
-                      <Input id="city" placeholder="Enter your city" />
+                      <Input 
+                        id="city" 
+                        placeholder="Enter your city"
+                        value={addressCity}
+                        onChange={(e) => setAddressCity(e.target.value)}
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="state">State</Label>
-                        <Input id="state" placeholder="Enter state" />
+                        <Input 
+                          id="state" 
+                          placeholder="Enter state"
+                          value={addressState}
+                          onChange={(e) => setAddressState(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="pincode">Pincode</Label>
-                        <Input id="pincode" placeholder="Enter pincode" />
+                        <Input 
+                          id="pincode" 
+                          placeholder="Enter pincode"
+                          value={addressPincode}
+                          onChange={(e) => setAddressPincode(e.target.value)}
+                        />
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button className="w-full bg-[#DC143C] hover:bg-[#801030]">Update Address</Button>
+                    <Button 
+                      onClick={handleSaveAddress}
+                      disabled={isSavingAddress}
+                      className="w-full bg-[#DC143C] hover:bg-[#801030]"
+                    >
+                      {isSavingAddress ? "Saving..." : "Update Address"}
+                    </Button>
                   </CardFooter>
                 </Card>
               </div>

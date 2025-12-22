@@ -88,7 +88,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
         }}
       >
         {/* Product Image Container */}
-        <div className="relative aspect-square overflow-hidden">
+        <div className="relative aspect-[3/4] overflow-hidden">
           {/* Product Image */}
           <img
             src={imageSrc}

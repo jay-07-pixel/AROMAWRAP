@@ -1,4 +1,4 @@
-import { Search, ShoppingCart, User, Heart, Menu, ChevronDown } from "lucide-react";
+import { Search, ShoppingCart, User, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -12,9 +12,9 @@ import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { WishlistDrawer } from "@/components/WishlistDrawer";
 import { useNavigate } from "react-router-dom";
+import aromaWrapLogo from "@/assets/aromawrap-logo.png";
 
 export const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchPlaceholder, setSearchPlaceholder] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const { totalItems, setIsCartOpen } = useCart();
@@ -22,28 +22,28 @@ export const Header = () => {
 
   // Auto-typing search placeholder text
   const searchSuggestions = [
-    "Search for agarbatti...",
+    "Search for sandalwood agarbatti...",
     "Find sandalwood dhoop...",
-    "Look for rose incense...",
-    "Browse puja items...",
-    "Discover premium fragrances..."
+    "Look for premium sandalwood...",
+    "Browse sandalwood collection...",
+    "Discover sandalwood fragrances..."
   ];
 
   useEffect(() => {
     let currentIndex = 0;
     let currentText = "";
     let isDeleting = false;
-    let typeSpeed = 150; // Slower typing speed
+    let typeSpeed = 250; // Much slower typing speed
 
     const typeText = () => {
       const fullText = searchSuggestions[currentIndex];
       
       if (isDeleting) {
         currentText = fullText.substring(0, currentText.length - 1);
-        typeSpeed = 80; // Slower when deleting
+        typeSpeed = 120; // Slower when deleting
       } else {
         currentText = fullText.substring(0, currentText.length + 1);
-        typeSpeed = 150; // Slower normal speed when typing
+        typeSpeed = 250; // Much slower normal speed when typing
       }
 
       setSearchPlaceholder(currentText);
@@ -53,19 +53,19 @@ export const Header = () => {
         setTimeout(() => {
           isDeleting = true;
           typeText();
-        }, 3000); // Increased wait time
+        }, 4500); // Longer wait time
       } else if (isDeleting && currentText === "") {
         // Move to next suggestion with longer pause
         isDeleting = false;
         currentIndex = (currentIndex + 1) % searchSuggestions.length;
-        setTimeout(typeText, 1000); // Longer pause between suggestions
+        setTimeout(typeText, 1500); // Longer pause between suggestions
       } else {
         setTimeout(typeText, typeSpeed);
       }
     };
 
     // Start typing after a longer delay
-    const timer = setTimeout(typeText, 2000);
+    const timer = setTimeout(typeText, 2500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -95,79 +95,13 @@ export const Header = () => {
     {
       name: "Agarbatti",
       items: [
-        "Sandalwood Agarbatti",
-        "Rose Agarbatti",
-        "Jasmine Agarbatti",
-        "Lavender Agarbatti",
-        "Mogra Agarbatti",
-        "Tulsi Agarbatti",
-        "Premium Collection",
-        "Traditional Collection"
+        "Sandalwood Agarbatti"
       ]
     },
     {
       name: "Dhoop Sticks",
       items: [
-        "Sandalwood Dhoop",
-        "Rose Dhoop",
-        "Jasmine Dhoop",
-        "Lavender Dhoop",
-        "Mogra Dhoop",
-        "Tulsi Dhoop",
-        "Premium Dhoop",
-        "Traditional Dhoop"
-      ]
-    },
-    {
-      name: "Incense Cones",
-      items: [
-        "Sandalwood Cones",
-        "Rose Cones",
-        "Jasmine Cones",
-        "Lavender Cones",
-        "Mogra Cones",
-        "Tulsi Cones",
-        "Premium Cones",
-        "Traditional Cones"
-      ]
-    },
-    {
-      name: "Puja Essentials",
-      items: [
-        "Puja Kits",
-        "Havan Samagri",
-        "Camphor (Karpure)",
-        "Ghee Lamps",
-        "Puja Thali",
-        "Rudraksha",
-        "Tulsi Mala",
-        "Sacred Threads"
-      ]
-    },
-    {
-      name: "Gift Sets",
-      items: [
-        "Festival Gift Sets",
-        "Wedding Gift Sets",
-        "Corporate Gifts",
-        "Puja Gift Hampers",
-        "Aromatherapy Sets",
-        "Meditation Kits",
-        "Spiritual Gift Boxes",
-        "Custom Gift Sets"
-      ]
-    },
-    {
-      name: "Accessories",
-      items: [
-        "Incense Holders",
-        "Dhoop Stands",
-        "Puja Accessories",
-        "Meditation Mats",
-        "Prayer Beads",
-        "Sacred Symbols",
-        "Spiritual Books",
-        "Yoga Accessories"
+        "Sandalwood Dhoop"
       ]
     }
   ];
@@ -178,16 +112,20 @@ export const Header = () => {
       <header className="sticky top-0 z-50 bg-background border-b">
         <div className="container mx-auto px-4">
           {/* Top Section */}
-          <div className="flex items-center justify-between py-4">
+          <div className="flex items-center justify-between py-2">
             {/* Logo */}
             <div className="flex items-center">
               <button
                 type="button"
                 onClick={() => navigate("/")}
-                className="text-3xl font-bold text-primary hover:text-secondary transition-colors"
+                className="hover:opacity-80 transition-opacity"
                 aria-label="Go to home"
               >
-                Sugandhshoppee
+                <img 
+                  src={aromaWrapLogo} 
+                  alt="AromaWrap" 
+                  className="h-20 md:h-28 w-auto"
+                />
               </button>
             </div>
 
@@ -252,20 +190,11 @@ export const Header = () => {
                   </Badge>
                 )}
               </Button>
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden h-12 w-12 hover:bg-gray-100 transition-all duration-300"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                <Menu className="h-6 w-6" />
-              </Button>
             </div>
           </div>
 
           {/* Enhanced Search Bar - Mobile */}
-          <div className="md:hidden pb-4">
+          <div className="md:hidden pb-2">
             <form onSubmit={handleSearch} className="relative w-full group">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors duration-300">
                 <Search className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
@@ -288,36 +217,54 @@ export const Header = () => {
           </div>
 
           {/* Navigation */}
-          <nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block border-t border-b border-gray-200 py-3 bg-gradient-to-r from-blue-50/40 to-indigo-50/40 md:bg-gradient-to-r md:from-blue-50/30 md:to-indigo-50/30 shadow-sm`}>
+          <nav className="hidden md:block border-t border-b border-gray-200 py-1.5 bg-gradient-to-r from-blue-50/40 to-indigo-50/40 md:bg-gradient-to-r md:from-blue-50/30 md:to-indigo-50/30 shadow-sm">
             <div className="container mx-auto px-4">
               <ul className="flex flex-col md:flex-row md:items-center md:justify-center gap-2 md:gap-8">
                 {categories.map((category) => (
                   <li key={category.name}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          className="w-full md:w-auto justify-start md:justify-center font-semibold text-base text-primary hover:text-secondary hover:bg-accent/20 transition-all duration-300 px-3 py-1.5 rounded-md"
-                        >
-                          {category.name}
-                          <ChevronDown className="ml-1 h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent 
-                        align="center" 
-                        className="w-56 bg-background border shadow-xl rounded-lg"
+                    {category.name === "Agarbatti" || category.name === "Dhoop Sticks" ? (
+                      // Direct link for Agarbatti and Dhoop Sticks - no dropdown
+                      <Button 
+                        variant="ghost" 
+                        className="w-full md:w-auto justify-start md:justify-center font-semibold text-base text-primary hover:text-secondary hover:bg-accent/20 transition-all duration-300 px-3 py-1.5 rounded-md"
+                        onClick={() => {
+                          if (category.name === "Agarbatti") {
+                            navigate("/category/agarbatti");
+                          } else if (category.name === "Dhoop Sticks") {
+                            navigate("/category/sandalwood-dhoop");
+                          }
+                        }}
                       >
-                      {category.items.map((item, index) => (
-                        <DropdownMenuItem 
-                          key={index}
-                          className="cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
-                          onClick={() => navigate(getCategoryUrl(category.name, item))}
+                        {category.name}
+                      </Button>
+                    ) : (
+                      // Dropdown for other categories
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            className="w-full md:w-auto justify-start md:justify-center font-semibold text-base text-primary hover:text-secondary hover:bg-accent/20 transition-all duration-300 px-3 py-1.5 rounded-md"
+                          >
+                            {category.name}
+                            <ChevronDown className="ml-1 h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent 
+                          align="center" 
+                          className="w-56 bg-background border shadow-xl rounded-lg"
                         >
-                          {item}
-                        </DropdownMenuItem>
-                      ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        {category.items.map((item, index) => (
+                          <DropdownMenuItem 
+                            key={index}
+                            className="cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+                            onClick={() => navigate(getCategoryUrl(category.name, item))}
+                          >
+                            {item}
+                          </DropdownMenuItem>
+                        ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </li>
                 ))}
               </ul>

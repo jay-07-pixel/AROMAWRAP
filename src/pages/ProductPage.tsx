@@ -29,74 +29,579 @@ const img4 = "/products/IMG-20251017-WA0033.jpg";
 const img5 = "/products/IMG-20251017-WA0037.jpg";
 const img6 = "/products/IMG-20251017-WA0025.jpg";
 const img7 = "/products/IMG-20251017-WA0026.jpg";
+const img8 = "/products/premium-sandalwood-agarbatti.jpg";
+const img9 = "/products/oudh-premium-dhoop.jpg";
+const img10 = "/products/delux-dhoop.jpg";
+const img11 = "/products/mahadev-dhoop.jpg";
+const img12 = "/products/sai-baba-dhoop.jpg";
+const img13 = "/products/tornado-dhoop.jpg";
+const img14 = "/products/devi-dhoop.jpg";
+const img15 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Lavender%20Main.jpg?alt=media&token=7af415cb-0550-413f-bc21-ef85d99f08e8";
+const img16 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mogra%20Main.jpg?alt=media&token=7a784f6f-6917-484a-98c1-d1a7dd7f617f";
 
 // Sample product data - in real app this would come from API
 const productData = {
+  "premium-sandalwood-agarbatti-new": {
+    id: "premium-sandalwood-agarbatti-new",
+    name: "Premium Sandalwood Agarbatti",
+    price: 150,
+    image: img8,
+    badge: "New",
+    rating: 4.7,
+    reviews: 89,
+    description: "Premium sandalwood agarbatti made with traditional methods. Perfect for spiritual rituals and meditation.",
+    features: [
+      "100% Natural Ingredients",
+      "Traditional Handcrafted",
+      "Eco-Friendly Packaging",
+      "Long Burning Time",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "12 Sticks",
+      "Burning Time": "45-60 minutes",
+      "Length": "8 inches",
+      "Weight": "100g",
+      "Ingredients": "Sandalwood, Natural Herbs",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img8, img1, img4, img6]
+  },
   "sandalwood-dhoop-1": {
     id: "sandalwood-dhoop-1",
-    name: "Premium Sandalwood Dhoop - Traditional (Pack of 20)",
+    name: "AromaWrap Devi Premium Dhoop",
     price: 399,
     originalPrice: 499,
     discount: 20,
+    image: img14,
+    badge: "Premium",
+    rating: 4.9,
+    reviews: 168,
+    description: "Invoke divine feminine energy with AromaWrap Devi Premium Dhoop. Crafted with sacred botanicals and pure resins, it delivers a luxurious fragrance that elevates meditation, puja, and relaxation rituals.",
+    features: [
+      "Handcrafted with sacred botanicals",
+      "Long Burning Time (60+ minutes)",
+      "Luxurious premium-grade fragrance",
+      "Eco-friendly and smokeless burn",
+      "FSSAI Certified ingredients"
+    ],
+    specifications: {
+      "Pack Size": "20 Cones",
+      "Burning Time": "60-75 minutes",
+      "Type": "Premium Dhoop Cones",
+      "Weight": "120g",
+      "Ingredients": "Sacred Herbs, Resins, Natural Oils",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img14, img10, img11, img12]
+  },
+  "sand-dhoop-2": {
+    id: "sand-dhoop-2",
+    name: "Classic Sandalwood Dhoop - Handcrafted (Pack of 15)",
+    price: 299,
+    originalPrice: 399,
+    discount: 25,
+    image: img4,
+    badge: "New",
+    rating: 4.6,
+    reviews: 95,
+    description: "Classic sandalwood dhoop handcrafted with traditional techniques for a divine fragrance experience.",
+    features: [
+      "100% Natural Ingredients",
+      "Handcrafted Quality",
+      "Traditional Methods",
+      "Eco-Friendly Packaging",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "15 Sticks",
+      "Burning Time": "50-65 minutes",
+      "Length": "7 inches",
+      "Weight": "90g",
+      "Ingredients": "Sandalwood, Natural Herbs",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img4, img1, img6, img7]
+  },
+  "sand-dhoop-3": {
+    id: "sand-dhoop-3",
+    name: "Pure Sandalwood Dhoop - Organic (Pack of 25)",
+    price: 549,
+    originalPrice: 699,
+    discount: 21,
+    image: img6,
+    badge: "Premium",
+    rating: 4.9,
+    reviews: 156,
+    description: "Pure organic sandalwood dhoop made with the finest natural ingredients. Premium quality for the most discerning customers.",
+    features: [
+      "100% Organic Ingredients",
+      "Premium Quality",
+      "Long Burning Time (75+ minutes)",
+      "Eco-Friendly Packaging",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "25 Sticks",
+      "Burning Time": "75-90 minutes",
+      "Length": "9 inches",
+      "Weight": "150g",
+      "Ingredients": "Pure Sandalwood, Organic Herbs",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img6, img1, img4, img7]
+  },
+  "hero-prod-1": {
+    id: "hero-prod-1",
+    name: "Sandalwood Divine Agarbatti",
+    price: 450,
+    originalPrice: 599,
+    discount: 25,
     image: img1,
     badge: "Bestseller",
     rating: 4.8,
-    reviews: 124,
-    description: "Handcrafted with pure sandalwood and traditional herbs, this premium dhoop offers a long-lasting, aromatic experience. Made using ancient techniques passed down through generations.",
+    reviews: 142,
+    description: "Pure sandalwood agarbatti with divine fragrance. Handcrafted with natural herbs for spiritual wellness.",
     features: [
       "100% Natural Ingredients",
+      "Divine Fragrance",
+      "Traditional Handcrafted",
+      "Long Burning Time",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "15 Sticks",
+      "Burning Time": "60-75 minutes",
+      "Length": "9 inches",
+      "Weight": "110g",
+      "Ingredients": "Sandalwood, Natural Herbs",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img1, img4, img6, img7]
+  },
+  "hero-prod-2": {
+    id: "hero-prod-2",
+    name: "AromaWrap Devi Premium Dhoop",
+    price: 399,
+    originalPrice: 499,
+    discount: 20,
+    image: img14,
+    badge: "Premium",
+    rating: 4.9,
+    reviews: 168,
+    description: "Experience the opulence of AromaWrap Devi Premium Dhoop — a handcrafted blend that radiates serenity and devotion during rituals.",
+    features: [
+      "Handcrafted with sacred botanicals",
+      "Long Burning Time (60+ minutes)",
+      "Luxurious premium-grade fragrance",
+      "Eco-friendly and smokeless burn",
+      "FSSAI Certified ingredients"
+    ],
+    specifications: {
+      "Pack Size": "20 Cones",
+      "Burning Time": "60-75 minutes",
+      "Type": "Premium Dhoop Cones",
+      "Weight": "120g",
+      "Ingredients": "Sacred Herbs, Resins, Natural Oils",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img14, img10, img11, img12]
+  },
+  "prod-1": {
+    id: "prod-1",
+    name: "Lavender",
+    price: 349,
+    originalPrice: 449,
+    discount: 22,
+    image: img15,
+    badge: "New",
+    rating: 4.7,
+    reviews: 108,
+    description: "Lavender dhoop sticks crafted with traditional methods. Perfect for daily puja and meditation.",
+    features: [
+      "100% Natural Ingredients",
+      "Traditional Essence",
+      "Long Burning Time",
+      "Eco-Friendly Packaging",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "20 Sticks",
+      "Burning Time": "55-70 minutes",
+      "Length": "8 inches",
+      "Weight": "115g",
+      "Ingredients": "Lavender Essence, Natural Herbs",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img15, img1, img6, img7]
+  },
+  "prod-2": {
+    id: "prod-2",
+    name: "Mogra",
+    price: 399,
+    originalPrice: 499,
+    discount: 20,
+    image: img16,
+    badge: "Premium",
+    rating: 4.9,
+    reviews: 168,
+    description: "Mogra dhoop brings the enchanting fragrance of jasmine flowers to your home. Handcrafted with premium mogra essence for meditation, puja, and peaceful evenings.",
+    features: [
+      "Handcrafted with mogra essence",
+      "Long Burning Time (60+ minutes)",
+      "Luxurious premium-grade fragrance",
+      "Eco-friendly and smokeless burn",
+      "FSSAI Certified ingredients"
+    ],
+    specifications: {
+      "Pack Size": "20 Cones",
+      "Burning Time": "60-75 minutes",
+      "Type": "Premium Dhoop Cones",
+      "Weight": "120g",
+      "Ingredients": "Mogra Essence, Natural Herbs, Resins",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img16, img10, img11, img12]
+  },
+  "prod-3": {
+    id: "prod-3",
+    name: "Premium Sandalwood Agarbatti",
+    price: 150,
+    image: img1,
+    badge: "New",
+    rating: 4.6,
+    reviews: 76,
+    description: "Premium sandalwood agarbatti made with traditional methods. Perfect for spiritual rituals and meditation.",
+    features: [
+      "100% Natural Ingredients",
+      "Traditional Handcrafted",
+      "Eco-Friendly Packaging",
+      "Long Burning Time",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "12 Sticks",
+      "Burning Time": "45-60 minutes",
+      "Length": "8 inches",
+      "Weight": "100g",
+      "Ingredients": "Sandalwood, Natural Herbs",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img1, img4, img6, img7]
+  },
+  "prod-4": {
+    id: "prod-4",
+    name: "Pure Sandalwood Dhoop - Organic (Pack of 25)",
+    price: 549,
+    originalPrice: 699,
+    discount: 21,
+    image: img4,
+    badge: "Premium",
+    rating: 4.9,
+    reviews: 156,
+    description: "Pure organic sandalwood dhoop made with the finest natural ingredients. Premium quality for the most discerning customers.",
+    features: [
+      "100% Organic Ingredients",
+      "Premium Quality",
+      "Long Burning Time (75+ minutes)",
+      "Eco-Friendly Packaging",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "25 Sticks",
+      "Burning Time": "75-90 minutes",
+      "Length": "9 inches",
+      "Weight": "150g",
+      "Ingredients": "Pure Sandalwood, Organic Herbs",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img4, img1, img6, img7]
+  },
+  "prod-5": {
+    id: "prod-5",
+    name: "Classic Sandalwood Dhoop - Handcrafted (Pack of 15)",
+    price: 299,
+    originalPrice: 399,
+    discount: 25,
+    image: img4,
+    badge: "New",
+    rating: 4.6,
+    reviews: 95,
+    description: "Classic sandalwood dhoop handcrafted with traditional techniques for a divine fragrance experience.",
+    features: [
+      "100% Natural Ingredients",
+      "Handcrafted Quality",
+      "Traditional Methods",
+      "Eco-Friendly Packaging",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "15 Sticks",
+      "Burning Time": "50-65 minutes",
+      "Length": "7 inches",
+      "Weight": "90g",
+      "Ingredients": "Sandalwood, Natural Herbs",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img4, img1, img6, img7]
+  },
+  "prod-6": {
+    id: "prod-6",
+    name: "Sandalwood Divine Agarbatti",
+    price: 450,
+    originalPrice: 599,
+    discount: 25,
+    image: img1,
+    badge: "Bestseller",
+    rating: 4.8,
+    reviews: 142,
+    description: "Pure sandalwood agarbatti with divine fragrance. Handcrafted with natural herbs for spiritual wellness.",
+    features: [
+      "100% Natural Ingredients",
+      "Divine Fragrance",
+      "Traditional Handcrafted",
+      "Long Burning Time",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "15 Sticks",
+      "Burning Time": "60-75 minutes",
+      "Length": "9 inches",
+      "Weight": "110g",
+      "Ingredients": "Sandalwood, Natural Herbs",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img1, img4, img6, img7]
+  },
+  "related-1": {
+    id: "related-1",
+    name: "AromaWrap Devi Premium Dhoop",
+    price: 399,
+    originalPrice: 499,
+    discount: 20,
+    image: img14,
+    badge: "Premium",
+    rating: 4.9,
+    reviews: 168,
+    description: "Sacred Devi dhoop cones with rich floral-resin notes that instantly sanctify your space. Perfect companion for meditation or festive rituals.",
+    features: [
+      "Handcrafted with sacred botanicals",
+      "Long Burning Time (60+ minutes)",
+      "Luxurious premium-grade fragrance",
+      "Eco-friendly and smokeless burn",
+      "FSSAI Certified ingredients"
+    ],
+    specifications: {
+      "Pack Size": "20 Cones",
+      "Burning Time": "60-75 minutes",
+      "Type": "Premium Dhoop Cones",
+      "Weight": "120g",
+      "Ingredients": "Sacred Herbs, Resins, Natural Oils",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img14, img10, img11, img12]
+  },
+  "related-2": {
+    id: "related-2",
+    name: "Classic Sandalwood Dhoop - Handcrafted (Pack of 15)",
+    price: 299,
+    originalPrice: 399,
+    discount: 25,
+    image: img4,
+    badge: "New",
+    rating: 4.6,
+    reviews: 95,
+    description: "Classic sandalwood dhoop handcrafted with traditional techniques for a divine fragrance experience.",
+    features: [
+      "100% Natural Ingredients",
+      "Handcrafted Quality",
+      "Traditional Methods",
+      "Eco-Friendly Packaging",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "15 Sticks",
+      "Burning Time": "50-65 minutes",
+      "Length": "7 inches",
+      "Weight": "90g",
+      "Ingredients": "Sandalwood, Natural Herbs",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img4, img1, img6, img7]
+  },
+  "oudh-premium-dhoop": {
+    id: "oudh-premium-dhoop",
+    name: "AromaWrap OUDH PREMIUM DHOOP",
+    price: 499,
+    originalPrice: 649,
+    discount: 23,
+    image: img9,
+    badge: "Premium",
+    rating: 4.9,
+    reviews: 187,
+    description: "Premium oudh dhoop from AromaWrap. Luxurious fragrance with exotic oudh essence. Handcrafted with traditional methods for an authentic and long-lasting aromatic experience.",
+    features: [
+      "100% Natural Ingredients",
+      "Premium Oudh Essence",
+      "Long Burning Time (70+ minutes)",
+      "Luxurious Fragrance",
+      "Eco-Friendly Packaging",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "20 Sticks",
+      "Burning Time": "70-85 minutes",
+      "Length": "9 inches",
+      "Weight": "130g",
+      "Ingredients": "Oudh Essence, Sandalwood, Natural Herbs",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img9, img1, img4, img6]
+  },
+  "delux-dhoop": {
+    id: "delux-dhoop",
+    name: "AromaWrap Mannat Delux Dhoop",
+    price: 449,
+    originalPrice: 549,
+    discount: 18,
+    image: img10,
+    badge: "Premium",
+    rating: 4.8,
+    reviews: 142,
+    description: "Premium delux dhoop from AromaWrap's Mannat collection. Handcrafted with traditional herbs and natural ingredients for a divine and long-lasting aromatic experience. Perfect for spiritual practices and meditation.",
+    features: [
+      "100% Natural Ingredients",
+      "Premium Quality",
+      "Long Burning Time (65+ minutes)",
+      "Traditional Handcrafted",
+      "Eco-Friendly Packaging",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "20 Cones",
+      "Burning Time": "65-80 minutes",
+      "Type": "Dhoop Cones",
+      "Weight": "125g",
+      "Ingredients": "Natural Herbs, Traditional Spices",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img10, img1, img4, img6]
+  },
+  "mahadev-dhoop": {
+    id: "mahadev-dhoop",
+    name: "AromaWrap Mahadev Dhoop",
+    price: 399,
+    originalPrice: 499,
+    discount: 20,
+    image: img11,
+    badge: "New",
+    rating: 4.7,
+    reviews: 118,
+    description: "Sacred Mahadev dhoop from AromaWrap, dedicated to Lord Shiva. Crafted with traditional herbs and natural ingredients, this premium dhoop creates a divine atmosphere perfect for puja and spiritual practices.",
+    features: [
+      "100% Natural Ingredients",
+      "Sacred Fragrance",
       "Long Burning Time (60+ minutes)",
       "Traditional Handcrafted",
       "Eco-Friendly Packaging",
       "FSSAI Certified"
     ],
     specifications: {
-      "Pack Size": "20 Sticks",
+      "Pack Size": "20 Cones",
       "Burning Time": "60-75 minutes",
-      "Length": "8 inches",
+      "Type": "Dhoop Cones",
       "Weight": "120g",
-      "Ingredients": "Sandalwood, Natural Herbs",
+      "Ingredients": "Natural Herbs, Sacred Spices",
       "Certification": "FSSAI Approved"
     },
-    images: [
-      img1,
-      img4,
-      img6,
-      img7
-    ]
+    images: [img11, img1, img4, img6]
   },
-  "rose-dhoop-1": {
-    id: "rose-dhoop-1",
-    name: "Fragrant Rose Dhoop - Aromatic (Pack of 20)",
-    price: 349,
-    originalPrice: 449,
-    discount: 22,
-    image: img2,
-    badge: "Popular",
-    rating: 4.6,
-    reviews: 89,
-    description: "Experience the delicate fragrance of fresh roses with this aromatic dhoop. Perfect for meditation, relaxation, and creating a peaceful atmosphere.",
+  "sai-baba-dhoop": {
+    id: "sai-baba-dhoop",
+    name: "AromaWrap Sai Baba Dhoop Premium Dhoop Cones",
+    price: 379,
+    originalPrice: 479,
+    discount: 21,
+    image: img12,
+    badge: "Bestseller",
+    rating: 4.9,
+    reviews: 203,
+    description: "Premium Sai Baba dhoop cones from AromaWrap. Blessed with divine fragrance, these handcrafted dhoop cones are perfect for daily prayers, meditation, and creating a peaceful spiritual atmosphere.",
     features: [
-      "Pure Rose Essence",
-      "Aromatic Fragrance",
-      "45+ Minutes Burning",
-      "Natural Dyes Only",
-      "Handcrafted Quality"
+      "100% Natural Ingredients",
+      "Divine Fragrance",
+      "Long Burning Time (55+ minutes)",
+      "Premium Quality Cones",
+      "Eco-Friendly Packaging",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "20 Cones",
+      "Burning Time": "55-70 minutes",
+      "Type": "Premium Dhoop Cones",
+      "Weight": "115g",
+      "Ingredients": "Natural Herbs, Traditional Spices",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img12, img1, img4, img6]
+  },
+  "tornado-dhoop": {
+    id: "tornado-dhoop",
+    name: "AromaWrap Tornado Dhoop Premium Dhoop Cones",
+    price: 429,
+    originalPrice: 529,
+    discount: 19,
+    image: img13,
+    badge: "Premium",
+    rating: 4.8,
+    reviews: 165,
+    description: "Premium Tornado dhoop cones from AromaWrap. With a unique swirling fragrance that fills your space, these premium dhoop cones offer an intense and long-lasting aromatic experience for your spiritual practices.",
+    features: [
+      "100% Natural Ingredients",
+      "Intense Fragrance",
+      "Long Burning Time (70+ minutes)",
+      "Premium Quality Cones",
+      "Eco-Friendly Packaging",
+      "FSSAI Certified"
+    ],
+    specifications: {
+      "Pack Size": "20 Cones",
+      "Burning Time": "70-85 minutes",
+      "Type": "Premium Dhoop Cones",
+      "Weight": "135g",
+      "Ingredients": "Natural Herbs, Premium Spices",
+      "Certification": "FSSAI Approved"
+    },
+    images: [img13, img1, img4, img6]
+  },
+  "prod-7": {
+    id: "prod-7",
+    name: "AromaWrap OUDH PREMIUM DHOOP",
+    price: 499,
+    originalPrice: 649,
+    discount: 23,
+    image: img9,
+    badge: "Premium",
+    rating: 4.9,
+    reviews: 187,
+    description: "Premium oudh dhoop from AromaWrap. Luxurious fragrance with exotic oudh essence. Handcrafted with traditional methods for an authentic and long-lasting aromatic experience.",
+    features: [
+      "100% Natural Ingredients",
+      "Premium Oudh Essence",
+      "Long Burning Time (70+ minutes)",
+      "Luxurious Fragrance",
+      "Eco-Friendly Packaging",
+      "FSSAI Certified"
     ],
     specifications: {
       "Pack Size": "20 Sticks",
-      "Burning Time": "45-60 minutes",
-      "Length": "7 inches",
-      "Weight": "100g",
-      "Ingredients": "Rose Petals, Natural Herbs",
+      "Burning Time": "70-85 minutes",
+      "Length": "9 inches",
+      "Weight": "130g",
+      "Ingredients": "Oudh Essence, Sandalwood, Natural Herbs",
       "Certification": "FSSAI Approved"
     },
-    images: [
-      img2,
-      img3,
-      img5,
-      img1
-    ]
+    images: [img9, img1, img4, img6]
   }
 };
 
@@ -195,9 +700,9 @@ const ProductPage = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Product Images */}
-            <div className="space-y-3 max-w-lg mx-auto lg:max-w-none">
+            <div className="space-y-3 max-w-md mx-auto lg:max-w-sm">
               {/* Main Image */}
-              <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden shadow-2xl group max-w-md mx-auto">
+              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl group max-h-96">
                 <img
                   src={product.images[selectedImage]}
                   alt={product.name}

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
+import { AuthProvider } from "@/context/AuthContext";
 import Index from "./pages/Index";
 import CategoryPage from "./pages/CategoryPage";
 import ProductPage from "./pages/ProductPage";
@@ -22,6 +23,7 @@ const App = () => (
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <AuthProvider>
         <RecentlyViewedProvider>
           <WishlistProvider>
             <CartProvider>
@@ -42,6 +44,7 @@ const App = () => (
             </CartProvider>
           </WishlistProvider>
         </RecentlyViewedProvider>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </BrowserRouter>

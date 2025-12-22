@@ -270,7 +270,7 @@ const AddProductPage = () => {
                       <Input
                         id="name"
                         name="name"
-                        placeholder="e.g., Premium Sandalwood Dhoop - Traditional (Pack of 20)"
+                        placeholder="e.g., AromaWrap Devi Premium Dhoop"
                         value={formData.name}
                         onChange={handleInputChange}
                         required

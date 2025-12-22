@@ -15,11 +15,11 @@ export const AnnouncementBar = () => {
     {
       icon: Truck,
       text: "🚚 FREE Shipping on All Orders Above ₹499 | Pan India Delivery",
-      bgColor: "bg-gradient-to-r from-[#2E7D32] to-[#4CAF50]",
+      bgColor: "bg-gradient-to-r from-[#00BFFF] to-[#40E0D0]",
     },
     {
       icon: ShoppingBag,
-      text: "✨ New Arrivals: Explore Our Latest Sandalwood & Rose Collection",
+      text: "✨ New Arrivals: Explore Our Latest Sandalwood Collection",
       bgColor: "bg-gradient-to-r from-[#7B1FA2] to-[#9C27B0]",
     },
     {

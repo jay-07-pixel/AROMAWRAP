@@ -68,7 +68,30 @@ A modern, responsive e-commerce website for natural fragrances and puja essentia
 
 ## 🛠️ Available Scripts
 
-- `npm run dev` - Start development server
+- `
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+` - Start development server
 - `npm run build` - Build for production
 - `npm run build:dev` - Build in development mode
 - `npm run preview` - Preview production build

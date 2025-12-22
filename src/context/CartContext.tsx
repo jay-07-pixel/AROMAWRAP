@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { getUserCart, saveCart, clearUserCart } from "@/services/cartService";
 
 interface CartItem {
   id: string;
@@ -26,9 +28,68 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoadingCart, setIsLoadingCart] = useState(false);
   const { toast } = useToast();
+  const { user, loading } = useAuth();
+
+  // Load cart from Firestore (only for logged-in users)
+  useEffect(() => {
+    const loadCart = async () => {
+      if (!loading) {
+        setIsLoadingCart(true);
+        if (user) {
+          // Logged-in user: Load from Firestore
+          try {
+            const cartItems = await getUserCart(user.uid);
+            setItems(cartItems);
+          } catch (error) {
+            console.error('Error loading cart from Firestore:', error);
+            setItems([]);
+          }
+        } else {
+          // No user logged in: Clear cart
+          setItems([]);
+        }
+        setIsInitialized(true);
+        setIsLoadingCart(false);
+      }
+    };
+
+    loadCart();
+  }, [user, loading]);
+
+  // Save cart to Firestore whenever items change
+  useEffect(() => {
+    const syncCart = async () => {
+      // Don't save during initial load or when user is not logged in
+      if (isInitialized && user && !isLoadingCart) {
+        try {
+          await saveCart(user.uid, items);
+        } catch (error) {
+          console.error('Error syncing cart to Firestore:', error);
+        }
+      }
+    };
+
+    syncCart();
+  }, [items, user, isInitialized, isLoadingCart]);
 
   const addItem = (item: Omit<CartItem, "quantity">) => {
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to add items to your cart",
+        variant: "destructive",
+      });
+      // Redirect to login page
+      setTimeout(() => {
+        window.location.href = '/account';
+      }, 1500);
+      return;
+    }
+
     setItems((prevItems) => {
       const existingItem = prevItems.find((i) => i.id === item.id);
       
@@ -74,8 +135,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const clearCart = () => {
+  const clearCart = async () => {
     setItems([]);
+    if (user) {
+      try {
+        await clearUserCart(user.uid);
+      } catch (error) {
+        console.error('Error clearing cart:', error);
+      }
+    }
     toast({
       title: "Cart cleared",
       description: "All items have been removed from your cart",

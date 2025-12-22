@@ -8,105 +8,113 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Fresh Luxe Botanical Theme */
-    --background: 34 48% 96%;
-    --foreground: 0 0% 17%;
+    /* Bright Luxurious Crimson-Purple Theme */
+    /* Background: Soft Blush White #FFF8FB */
+    --background: 334 100% 99%;
+    --foreground: 335 57% 27%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 17%;
+    /* Card: Lavender Glow #F5E6FF */
+    --card: 276 100% 95%;
+    --card-foreground: 335 57% 27%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 17%;
+    --popover: 276 100% 95%;
+    --popover-foreground: 335 57% 27%;
 
-    /* Primary: Emerald Green #2E8B57 */
-    --primary: 152 50% 36%;
+    /* Primary: Crimson Ruby #D7265E (CTA Buttons) */
+    --primary: 341 70% 50%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Cocoa Brown #7B4B28 */
-    --secondary: 25 51% 32%;
+    /* Secondary: Royal Purple #7A1CAC (Headers, Footers) */
+    --secondary: 283 72% 39%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Muted: Champagne Beige variations */
-    --muted: 34 48% 91%;
-    --muted-foreground: 25 30% 35%;
+    /* Muted: Lavender Glow #F5E6FF (Section Backgrounds) */
+    --muted: 276 100% 95%;
+    --muted-foreground: 294 59% 20%;
 
-    /* Accent: Champagne Beige #F3E9DC */
-    --accent: 34 48% 91%;
-    --accent-foreground: 0 0% 17%;
+    /* Accent: Magenta Bloom #E84E89 (Hover, Borders) */
+    --accent: 337 76% 61%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Highlight: Golden Sand #D4AF37 (used for special accents) */
-    --highlight: 46 65% 52%;
-    --highlight-foreground: 0 0% 17%;
+    /* Highlight: Luxe Gold #D9B45C (Lines, Icons) */
+    --highlight: 42 63% 61%;
+    --highlight-foreground: 294 59% 20%;
+
+    /* Acid Blue Accent: #00BFFF */
+    --acid-blue: 195 100% 50%;
+    --acid-blue-foreground: 0 0% 100%;
 
     --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 34 30% 85%;
-    --input: 34 30% 85%;
-    --ring: 152 50% 36%;
+    /* Border: Luxe Gold #D9B45C */
+    --border: 42 63% 61%;
+    --input: 42 63% 61%;
+    --ring: 341 70% 50%;
 
     --radius: 0.75rem;
 
-    --banner: 152 50% 36%;
+    /* Banner: Royal Purple #7A1CAC */
+    --banner: 283 72% 39%;
     --banner-foreground: 0 0% 100%;
 
-    --sidebar-background: 34 48% 96%;
-    --sidebar-foreground: 0 0% 17%;
-    --sidebar-primary: 152 50% 36%;
+    --sidebar-background: 334 100% 99%;
+    --sidebar-foreground: 335 57% 27%;
+    --sidebar-primary: 341 70% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 34 48% 91%;
-    --sidebar-accent-foreground: 0 0% 17%;
-    --sidebar-border: 34 30% 85%;
-    --sidebar-ring: 152 50% 36%;
+    --sidebar-accent: 276 100% 95%;
+    --sidebar-accent-foreground: 283 72% 39%;
+    --sidebar-border: 42 63% 61%;
+    --sidebar-ring: 341 70% 50%;
   }
 
   .dark {
-    /* Fresh Luxe Botanical Dark Theme */
-    --background: 25 30% 12%;
-    --foreground: 34 40% 90%;
+    /* Bright Luxurious Crimson-Purple Dark Theme */
+    --background: 283 40% 15%;
+    --foreground: 276 60% 90%;
 
-    --card: 25 25% 16%;
-    --card-foreground: 34 40% 90%;
+    --card: 283 35% 20%;
+    --card-foreground: 276 60% 90%;
 
-    --popover: 25 25% 16%;
-    --popover-foreground: 34 40% 90%;
+    --popover: 283 35% 20%;
+    --popover-foreground: 276 60% 90%;
 
-    /* In dark mode, Emerald Green stays vibrant */
-    --primary: 152 50% 42%;
+    /* Primary: Crimson Ruby (brighter in dark mode) */
+    --primary: 341 70% 55%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Lighter Cocoa Brown for dark mode */
-    --secondary: 25 45% 40%;
+    /* Secondary: Royal Purple (lighter for dark mode) */
+    --secondary: 283 72% 50%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 25 20% 22%;
-    --muted-foreground: 34 20% 70%;
+    --muted: 283 30% 25%;
+    --muted-foreground: 276 40% 75%;
 
-    /* Accent: Golden Sand pops in dark mode */
-    --accent: 46 65% 52%;
-    --accent-foreground: 0 0% 10%;
+    /* Accent: Magenta Bloom for dark mode */
+    --accent: 337 76% 65%;
+    --accent-foreground: 0 0% 100%;
 
-    --highlight: 46 65% 52%;
-    --highlight-foreground: 0 0% 10%;
+    --highlight: 42 63% 65%;
+    --highlight-foreground: 283 40% 15%;
 
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 25 20% 28%;
-    --input: 25 20% 28%;
-    --ring: 152 50% 42%;
+    --border: 42 63% 61%;
+    --input: 42 63% 61%;
+    --ring: 341 70% 55%;
 
-    --banner: 152 50% 36%;
+    --banner: 283 72% 45%;
     --banner-foreground: 0 0% 100%;
 
-    --sidebar-background: 25 30% 14%;
-    --sidebar-foreground: 34 40% 90%;
-    --sidebar-primary: 152 50% 42%;
+    --sidebar-background: 283 40% 17%;
+    --sidebar-foreground: 276 60% 90%;
+    --sidebar-primary: 341 70% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 25 20% 22%;
-    --sidebar-accent-foreground: 34 40% 90%;
-    --sidebar-border: 25 20% 28%;
-    --sidebar-ring: 152 50% 42%;
+    --sidebar-accent: 283 30% 25%;
+    --sidebar-accent-foreground: 276 60% 90%;
+    --sidebar-border: 42 63% 61%;
+    --sidebar-ring: 341 70% 55%;
   }
 }
 

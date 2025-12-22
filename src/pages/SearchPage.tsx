@@ -17,6 +17,13 @@ const img4 = "/products/IMG-20251017-WA0033.jpg";
 const img5 = "/products/IMG-20251017-WA0037.jpg";
 const img6 = "/products/IMG-20251017-WA0025.jpg";
 const img7 = "/products/IMG-20251017-WA0026.jpg";
+const img8 = "/products/premium-sandalwood-agarbatti.jpg";
+const img9 = "/products/oudh-premium-dhoop.jpg";
+const img10 = "/products/delux-dhoop.jpg";
+const img11 = "/products/mahadev-dhoop.jpg";
+const img12 = "/products/sai-baba-dhoop.jpg";
+const img13 = "/products/tornado-dhoop.jpg";
+const img14 = "/products/devi-dhoop.jpg";
 
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
@@ -28,73 +35,57 @@ const SearchPage = () => {
   // Default products for search
   const defaultProducts = [
     {
-      id: "prod-1",
-      name: "Lavender Bliss Agarbatti - Premium Natural Collection (Pack of 12)",
-      price: 299,
-      originalPrice: 399,
-      image: img1,
-      badge: "Bestseller",
-      category: "Agarbatti",
-    },
-    {
-      id: "prod-2",
-      name: "Sandalwood Essence Dhoop Sticks - Traditional (Pack of 20)",
-      price: 349,
-      originalPrice: 449,
-      image: img4,
-      badge: "New",
-      category: "Dhoop",
-    },
-    {
-      id: "prod-3",
-      name: "Jasmine Dreams Incense Cones - Aromatic Collection",
-      price: 199,
-      originalPrice: 279,
-      image: img2,
-      category: "Cones",
-    },
-    {
-      id: "prod-4",
-      name: "Divine Puja Gift Set - Complete Essentials Kit",
-      price: 799,
-      originalPrice: 1099,
-      image: img3,
-      badge: "Limited",
-      category: "Gift Set",
-    },
-    {
-      id: "prod-5",
-      name: "Rose Garden Agarbatti - Natural Fragrance (Pack of 10)",
-      price: 249,
-      originalPrice: 329,
-      image: img5,
-      category: "Agarbatti",
-    },
-    {
-      id: "prod-6",
-      name: "Tulsi Basil Dhoop Cones - Sacred Collection",
-      price: 179,
-      originalPrice: 249,
-      image: img6,
-      badge: "Bestseller",
-      category: "Dhoop",
-    },
-    {
-      id: "prod-7",
-      name: "Mogra Magic Incense Sticks - Evening Collection",
-      price: 279,
-      originalPrice: 349,
-      image: img2,
-      category: "Agarbatti",
-    },
-    {
-      id: "prod-8",
-      name: "Camphor Pure Karpure - Natural Havan (Pack of 50)",
+      id: "sandalwood-dhoop-1",
+      name: "AromaWrap Devi Premium Dhoop",
       price: 399,
       originalPrice: 499,
-      image: img7,
+      image: img14,
+      badge: "Premium",
+      category: "Dhoop",
+    },
+    {
+      id: "delux-dhoop",
+      name: "AromaWrap Mannat Delux Dhoop",
+      price: 449,
+      originalPrice: 549,
+      image: img10,
+      badge: "Premium",
+      category: "Dhoop",
+    },
+    {
+      id: "mahadev-dhoop",
+      name: "AromaWrap Mahadev Dhoop",
+      price: 399,
+      originalPrice: 499,
+      image: img11,
       badge: "New",
-      category: "Karpure",
+      category: "Dhoop",
+    },
+    {
+      id: "sai-baba-dhoop",
+      name: "AromaWrap Sai Baba Dhoop Premium Dhoop Cones",
+      price: 379,
+      originalPrice: 479,
+      image: img12,
+      badge: "Bestseller",
+      category: "Dhoop",
+    },
+    {
+      id: "tornado-dhoop",
+      name: "AromaWrap Tornado Dhoop Premium Dhoop Cones",
+      price: 429,
+      originalPrice: 529,
+      image: img13,
+      badge: "Premium",
+      category: "Dhoop",
+    },
+    {
+      id: "premium-sandalwood-agarbatti-new",
+      name: "Premium Sandalwood Agarbatti",
+      price: 150,
+      image: img8,
+      badge: "New",
+      category: "Agarbatti",
     },
   ];
 
@@ -163,10 +154,10 @@ const SearchPage = () => {
 
   const trendingSearches = [
     "Sandalwood Agarbatti",
-    "Rose Dhoop",
-    "Jasmine Cones",
-    "Puja Gift Set",
-    "Premium Collection",
+    "Sandalwood Dhoop",
+    "Premium Sandalwood",
+    "Classic Sandalwood",
+    "Sandalwood Collection",
   ];
 
   return (
