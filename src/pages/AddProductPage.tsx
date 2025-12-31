@@ -96,18 +96,6 @@ const AddProductPage = () => {
     });
   };
 
-  // Calculate discount percentage
-  const calculateDiscount = () => {
-    if (formData.price && formData.originalPrice) {
-      const price = parseFloat(formData.price);
-      const originalPrice = parseFloat(formData.originalPrice);
-      if (originalPrice > price) {
-        const discount = Math.round(((originalPrice - price) / originalPrice) * 100);
-        return discount;
-      }
-    }
-    return 0;
-  };
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
@@ -146,7 +134,6 @@ const AddProductPage = () => {
     }
 
     const productId = `PROD-${Date.now()}`;
-    const discount = calculateDiscount();
 
     const product = {
       id: productId,
@@ -160,7 +147,6 @@ const AddProductPage = () => {
       description: formData.description,
       image: imagePreview,
       badge: formData.badge || undefined,
-      discount: discount,
       details: {
         features: formData.features.split("\n").filter(f => f.trim()),
         packSize: formData.packSize,
@@ -203,8 +189,6 @@ const AddProductPage = () => {
       navigate("/admin");
     }, 1500);
   };
-
-  const discount = calculateDiscount();
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -410,19 +394,6 @@ const AddProductPage = () => {
                       </div>
                     </div>
 
-                    {/* Discount Display */}
-                    {discount > 0 && (
-                      <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
-                        <p className="text-sm font-semibold text-green-800 flex items-center gap-2">
-                          <Sparkles className="h-4 w-4" />
-                          Discount: {discount}% OFF
-                        </p>
-                        <p className="text-xs text-green-700 mt-1">
-                          Customers save ₹
-                          {(parseFloat(formData.originalPrice) - parseFloat(formData.price)).toFixed(2)}
-                        </p>
-                      </div>
-                    )}
 
                     {/* Stock */}
                     <div className="space-y-2">
@@ -637,11 +608,6 @@ const AddProductPage = () => {
                               <Badge className="absolute top-2 right-2 bg-[#DC143C]">
                                 {formData.badge}
                               </Badge>
-                            )}
-                            {discount > 0 && (
-                              <div className="absolute top-2 left-2 bg-[#E53935] text-white px-2 py-1 rounded text-xs font-bold">
-                                {discount}% OFF
-                              </div>
                             )}
                           </div>
                           <div className="p-3">

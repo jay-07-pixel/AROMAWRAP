@@ -37,6 +37,7 @@ const img12 = "/products/sai-baba-dhoop.jpg";
 const img13 = "/products/tornado-dhoop.jpg";
 const img14 = "/products/devi-dhoop.jpg";
 const img15 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Lavender%20Main.jpg?alt=media&token=7af415cb-0550-413f-bc21-ef85d99f08e8";
+const img15Back = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/lavender%20back%20.jpeg?alt=media&token=0b58e941-ab75-4be9-ad2d-2bddb3aca095";
 const img16 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mogra%20Main.jpg?alt=media&token=7a784f6f-6917-484a-98c1-d1a7dd7f617f";
 
 // Sample product data - in real app this would come from API
@@ -72,7 +73,6 @@ const productData = {
     name: "AromaWrap Devi Premium Dhoop",
     price: 399,
     originalPrice: 499,
-    discount: 20,
     image: img14,
     badge: "Premium",
     rating: 4.9,
@@ -100,7 +100,6 @@ const productData = {
     name: "Classic Sandalwood Dhoop - Handcrafted (Pack of 15)",
     price: 299,
     originalPrice: 399,
-    discount: 25,
     image: img4,
     badge: "New",
     rating: 4.6,
@@ -128,7 +127,6 @@ const productData = {
     name: "Pure Sandalwood Dhoop - Organic (Pack of 25)",
     price: 549,
     originalPrice: 699,
-    discount: 21,
     image: img6,
     badge: "Premium",
     rating: 4.9,
@@ -156,7 +154,6 @@ const productData = {
     name: "Sandalwood Divine Agarbatti",
     price: 450,
     originalPrice: 599,
-    discount: 25,
     image: img1,
     badge: "Bestseller",
     rating: 4.8,
@@ -184,7 +181,6 @@ const productData = {
     name: "AromaWrap Devi Premium Dhoop",
     price: 399,
     originalPrice: 499,
-    discount: 20,
     image: img14,
     badge: "Premium",
     rating: 4.9,
@@ -212,7 +208,6 @@ const productData = {
     name: "Lavender",
     price: 349,
     originalPrice: 449,
-    discount: 22,
     image: img15,
     badge: "New",
     rating: 4.7,
@@ -233,14 +228,13 @@ const productData = {
       "Ingredients": "Lavender Essence, Natural Herbs",
       "Certification": "FSSAI Approved"
     },
-    images: [img15, img1, img6, img7]
+    images: [img15, img15Back, img1, img6]
   },
   "prod-2": {
     id: "prod-2",
     name: "Mogra",
     price: 399,
     originalPrice: 499,
-    discount: 20,
     image: img16,
     badge: "Premium",
     rating: 4.9,
@@ -294,7 +288,6 @@ const productData = {
     name: "Pure Sandalwood Dhoop - Organic (Pack of 25)",
     price: 549,
     originalPrice: 699,
-    discount: 21,
     image: img4,
     badge: "Premium",
     rating: 4.9,
@@ -322,7 +315,6 @@ const productData = {
     name: "Classic Sandalwood Dhoop - Handcrafted (Pack of 15)",
     price: 299,
     originalPrice: 399,
-    discount: 25,
     image: img4,
     badge: "New",
     rating: 4.6,
@@ -350,7 +342,6 @@ const productData = {
     name: "Sandalwood Divine Agarbatti",
     price: 450,
     originalPrice: 599,
-    discount: 25,
     image: img1,
     badge: "Bestseller",
     rating: 4.8,
@@ -378,7 +369,6 @@ const productData = {
     name: "AromaWrap Devi Premium Dhoop",
     price: 399,
     originalPrice: 499,
-    discount: 20,
     image: img14,
     badge: "Premium",
     rating: 4.9,
@@ -406,7 +396,6 @@ const productData = {
     name: "Classic Sandalwood Dhoop - Handcrafted (Pack of 15)",
     price: 299,
     originalPrice: 399,
-    discount: 25,
     image: img4,
     badge: "New",
     rating: 4.6,
@@ -434,7 +423,6 @@ const productData = {
     name: "AromaWrap OUDH PREMIUM DHOOP",
     price: 499,
     originalPrice: 649,
-    discount: 23,
     image: img9,
     badge: "Premium",
     rating: 4.9,
@@ -463,7 +451,6 @@ const productData = {
     name: "AromaWrap Mannat Delux Dhoop",
     price: 449,
     originalPrice: 549,
-    discount: 18,
     image: img10,
     badge: "Premium",
     rating: 4.8,
@@ -492,7 +479,6 @@ const productData = {
     name: "AromaWrap Mahadev Dhoop",
     price: 399,
     originalPrice: 499,
-    discount: 20,
     image: img11,
     badge: "New",
     rating: 4.7,
@@ -521,7 +507,6 @@ const productData = {
     name: "AromaWrap Sai Baba Dhoop Premium Dhoop Cones",
     price: 379,
     originalPrice: 479,
-    discount: 21,
     image: img12,
     badge: "Bestseller",
     rating: 4.9,
@@ -550,7 +535,6 @@ const productData = {
     name: "AromaWrap Tornado Dhoop Premium Dhoop Cones",
     price: 429,
     originalPrice: 529,
-    discount: 19,
     image: img13,
     badge: "Premium",
     rating: 4.8,
@@ -579,7 +563,6 @@ const productData = {
     name: "AromaWrap OUDH PREMIUM DHOOP",
     price: 499,
     originalPrice: 649,
-    discount: 23,
     image: img9,
     badge: "Premium",
     rating: 4.9,
@@ -709,12 +692,6 @@ const ProductPage = () => {
                   className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                 />
                 
-                {/* Discount Badge */}
-                {product.discount > 0 && (
-                  <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-lg">
-                    {product.discount}% OFF
-                  </div>
-                )}
               </div>
               
               {/* Thumbnail Images */}
@@ -799,11 +776,6 @@ const ProductPage = () => {
                       )}
                     </div>
                     
-                    {product.originalPrice && (
-                      <div className="text-green-600 font-semibold text-sm">
-                        You save ₹{product.originalPrice - product.price} ({product.discount}% OFF)
-                      </div>
-                    )}
                   </div>
 
                   {/* Quantity Section */}

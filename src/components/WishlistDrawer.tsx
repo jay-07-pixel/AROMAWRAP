@@ -141,14 +141,9 @@ export const WishlistDrawer = () => {
                                 ₹{item.price}
                               </span>
                               {item.originalPrice && (
-                                <>
-                                  <span className="text-sm text-gray-500 line-through">
-                                    ₹{item.originalPrice}
-                                  </span>
-                                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                                    {Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}% OFF
-                                  </Badge>
-                                </>
+                                <span className="text-sm text-gray-500 line-through">
+                                  ₹{item.originalPrice}
+                                </span>
                               )}
                             </div>
 

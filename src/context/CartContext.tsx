@@ -16,7 +16,7 @@ interface CartContextType {
   addItem: (item: Omit<CartItem, "quantity">) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
-  clearCart: () => void;
+  clearCart: (silent?: boolean) => void;
   totalItems: number;
   totalPrice: number;
   isCartOpen: boolean;
@@ -135,7 +135,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const clearCart = async () => {
+  const clearCart = async (silent: boolean = false) => {
     setItems([]);
     if (user) {
       try {
@@ -144,10 +144,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error clearing cart:', error);
       }
     }
-    toast({
-      title: "Cart cleared",
-      description: "All items have been removed from your cart",
-    });
+    if (!silent) {
+      toast({
+        title: "Cart cleared",
+        description: "All items have been removed from your cart",
+      });
+    }
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);

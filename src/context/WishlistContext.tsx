@@ -41,8 +41,13 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
           try {
             const wishlistItems = await getUserWishlist(user.uid);
             setItems(wishlistItems);
-          } catch (error) {
+          } catch (error: any) {
             console.error('Error loading wishlist:', error);
+            toast({
+              title: "Error Loading Wishlist",
+              description: error.message || "Failed to load wishlist. Please try again.",
+              variant: "destructive",
+            });
             setItems([]);
           }
         } else {

@@ -35,10 +35,6 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
 
   if (!product) return null;
 
-  const discount = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-    : 0;
-
   const inWishlist = isInWishlist(product.id);
 
   const handleAddToCart = () => {
@@ -90,11 +86,6 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
                 {product.badge}
               </Badge>
             )}
-            {discount > 0 && (
-              <div className="absolute top-4 left-4 bg-destructive text-white px-3 py-1.5 rounded-lg font-bold">
-                {discount}% OFF
-              </div>
-            )}
           </div>
 
           {/* Right: Details */}
@@ -131,11 +122,6 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
                   <span className="text-xl text-gray-500 line-through">
                     ₹{product.originalPrice}
                   </span>
-                )}
-                {discount > 0 && (
-                  <Badge className="bg-green-100 text-green-800 border-0">
-                    Save {discount}%
-                  </Badge>
                 )}
               </div>
 

@@ -8,8 +8,8 @@ export const AnnouncementBar = () => {
 
   const announcements = [
     {
-      icon: Percent,
-      text: "🎉 FESTIVE SALE: Get Up to 50% OFF on Premium Incense Collection!",
+      icon: ShoppingBag,
+      text: "🎉 FESTIVE SALE: Explore Our Premium Incense Collection!",
       bgColor: "bg-gradient-to-r from-[#DC143C] to-[#FF6B6B]",
     },
     {

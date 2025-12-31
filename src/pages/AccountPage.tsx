@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 import { OrderSkeleton } from "@/components/OrderSkeleton";
 import { useAuth } from "@/context/AuthContext";
 import { signIn, signUp, logout, updateUserProfile, addAddress } from "@/services/authService";
-import { getUserOrders } from "@/services/orderService";
+import { getUserOrders, subscribeToUserOrders } from "@/services/orderService";
 
 const AccountPage = () => {
   const navigate = useNavigate();
@@ -47,27 +47,25 @@ const AccountPage = () => {
   const [isSavingAddress, setIsSavingAddress] = useState(false);
 
   useEffect(() => {
-    // Load user orders when logged in
-    const loadOrders = async () => {
-      if (user && userProfile) {
-        setIsLoadingOrders(true);
-        try {
-          const userOrders = await getUserOrders(user.uid);
-          setOrders(userOrders);
-          } catch (error) {
-          console.error("Error loading orders:", error);
-        } finally {
-          setIsLoadingOrders(false);
-        }
-      } else {
+    // Load user orders when logged in and subscribe to real-time updates
+    if (user && !loading) {
+      setIsLoadingOrders(true);
+      
+      // Subscribe to real-time updates
+      const unsubscribe = subscribeToUserOrders(user.uid, (orders) => {
+        setOrders(orders);
         setIsLoadingOrders(false);
-      }
-    };
+      });
 
-    if (!loading) {
-      loadOrders();
+      // Cleanup subscription on unmount
+      return () => {
+        unsubscribe();
+      };
+    } else {
+      setOrders([]);
+      setIsLoadingOrders(false);
     }
-  }, [user, userProfile, loading]);
+  }, [user, loading]);
 
   // Populate form fields when user profile loads
   useEffect(() => {
@@ -101,32 +99,33 @@ const AccountPage = () => {
     setIsLoggingIn(true);
 
     try {
-      // Sign in with Firebase
+      // Sign in with Firebase (this will handle admin storage in Firestore)
       await signIn(loginEmail, loginPassword);
       
-      toast({
-        title: "Login Successful! 🎉",
-        description: "Welcome back to AromaWrap",
-      });
-
       // Check if admin (after successful login)
-    if (loginEmail.toLowerCase() === "admin@gmail.com") {
-      toast({
-        title: "Welcome Admin! 👑",
-        description: "Redirecting to admin dashboard...",
-      });
+      const isAdmin = loginEmail.toLowerCase() === "admin@gmail.com" && loginPassword === "123456";
       
-      setTimeout(() => {
+      if (isAdmin) {
+        toast({
+          title: "Welcome Admin! 👑",
+          description: "Redirecting to admin dashboard...",
+        });
+        
+        // Redirect immediately to admin dashboard
         navigate("/admin");
-      }, 1000);
+      } else {
+        toast({
+          title: "Login Successful! 🎉",
+          description: "Welcome back to AromaWrap",
+        });
       }
     } catch (error: any) {
       console.error("Login error:", error);
-    toast({
+      toast({
         title: "Login Failed",
         description: error.message || "Invalid email or password. Please try again.",
         variant: "destructive",
-    });
+      });
     } finally {
       setIsLoggingIn(false);
     }
@@ -658,7 +657,27 @@ const AccountPage = () => {
 
             {/* Orders Tab */}
             <TabsContent value="orders">
-              {isLoadingOrders ? (
+              {!user ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Your Orders</CardTitle>
+                    <CardDescription>View and track your orders</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <h3 className="text-lg font-semibold mb-2">Please Login</h3>
+                      <p>You need to be logged in to view your orders.</p>
+                      <Button
+                        onClick={() => navigate("/account")}
+                        className="mt-6 bg-[#DC143C] hover:bg-[#801030]"
+                      >
+                        Go to Login
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : isLoadingOrders ? (
                 <div className="space-y-6">
                   <OrderSkeleton />
                   <OrderSkeleton />
@@ -684,7 +703,7 @@ const AccountPage = () => {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {orders.map((order, index) => (
                     <motion.div
                       key={order.id}
@@ -692,145 +711,106 @@ const AccountPage = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <Card className="overflow-hidden border-2 hover:border-[#DC143C] transition-colors">
-                        <CardHeader className="bg-gradient-to-r from-gray-50 to-white">
-                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div>
-                              <CardTitle className="flex items-center gap-2">
-                                <Package className="h-5 w-5 text-[#DC143C]" />
-                                Order {order.id}
-                              </CardTitle>
-                              <CardDescription className="flex items-center gap-2 mt-2">
-                                <Calendar className="h-4 w-4" />
-                                {new Date(order.date).toLocaleDateString("en-IN", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                })}
-                              </CardDescription>
+                      <Card className="border hover:shadow-md transition-shadow">
+                        {/* Compact Header */}
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-4 mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm font-medium text-muted-foreground">Order placed</span>
+                                <span className="text-sm text-muted-foreground">
+                                  {order.createdAt 
+                                    ? (order.createdAt.toDate 
+                                      ? new Date(order.createdAt.toDate()).toLocaleDateString("en-IN", {
+                                          day: "numeric",
+                                          month: "long",
+                                          year: "numeric",
+                                        })
+                                      : new Date(order.createdAt).toLocaleDateString("en-IN", {
+                                          day: "numeric",
+                                          month: "long",
+                                          year: "numeric",
+                                        }))
+                                    : "Date not available"}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground">Order #{order.id?.substring(0, 8)}...</p>
                             </div>
                             <Badge
-                              className={`px-4 py-2 ${
-                                order.status === "Delivered"
+                              className={`px-3 py-1 text-xs ${
+                                order.status === "delivered"
                                   ? "bg-green-100 text-green-800 border-green-200"
-                                  : order.status === "Processing"
+                                  : order.status === "processing"
                                   ? "bg-blue-100 text-blue-800 border-blue-200"
+                                  : order.status === "shipped"
+                                  ? "bg-purple-100 text-purple-800 border-purple-200"
+                                  : order.status === "cancelled"
+                                  ? "bg-red-100 text-red-800 border-red-200"
                                   : "bg-yellow-100 text-yellow-800 border-yellow-200"
                               }`}
                             >
-                              {order.status}
+                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                             </Badge>
                           </div>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                          {/* Order Items */}
-                          <div className="space-y-4 mb-6">
-                            <h4 className="font-semibold text-sm text-muted-foreground uppercase">
-                              Order Items ({order.items.length})
-                            </h4>
-                            <div className="grid gap-4">
-                              {order.items.map((item: any, idx: number) => (
-                                <div
-                                  key={idx}
-                                  className="flex items-center gap-4 p-3 bg-muted/30 rounded-lg"
-                                >
-                                  <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="h-16 w-16 object-cover rounded"
-                                  />
-                                  <div className="flex-1">
-                                    <h5 className="font-medium text-sm line-clamp-2">
-                                      {item.name}
-                                    </h5>
-                                    <p className="text-sm text-muted-foreground">
-                                      Qty: {item.quantity}
-                                    </p>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="font-bold text-[#DC143C]">
-                                      ₹{item.price * item.quantity}
-                                    </p>
-                                  </div>
+
+                          {/* Order Items - Compact Horizontal Layout */}
+                          <div className="flex items-start gap-4 pb-3 border-b">
+                            {order.items.map((item: any, idx: number) => (
+                              <div key={idx} className="flex items-center gap-3 flex-1">
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded border"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <h5 className="font-medium text-sm sm:text-base line-clamp-2 mb-1">
+                                    {item.name}
+                                  </h5>
+                                  <p className="text-xs text-muted-foreground mb-2">
+                                    Quantity: {item.quantity}
+                                  </p>
+                                  <p className="text-sm font-semibold text-[#DC143C]">
+                                    ₹{(item.price * item.quantity).toFixed(2)}
+                                  </p>
                                 </div>
-                              ))}
-                            </div>
+                              </div>
+                            ))}
                           </div>
 
-                          <Separator className="my-6" />
-
-                          {/* Order Summary */}
-                          <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                              <h4 className="font-semibold text-sm text-muted-foreground uppercase mb-3">
-                                Shipping Address
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <p className="font-medium">{order.shippingAddress.fullName}</p>
-                                <p className="flex items-start gap-2">
-                                  <MapPin className="h-4 w-4 mt-0.5 text-[#DC143C]" />
-                                  <span>
-                                    {order.shippingAddress.address}, {order.shippingAddress.city},{" "}
-                                    {order.shippingAddress.state} - {order.shippingAddress.pincode}
-                                  </span>
-                                </p>
-                                <p className="flex items-center gap-2">
-                                  <Phone className="h-4 w-4 text-[#DC143C]" />
-                                  {order.shippingAddress.phone}
-                                </p>
-                                <p className="flex items-center gap-2">
-                                  <Mail className="h-4 w-4 text-[#DC143C]" />
-                                  {order.shippingAddress.email}
-                                </p>
+                          {/* Compact Summary Row */}
+                          <div className="flex items-center justify-between pt-3">
+                            <div className="flex items-center gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Total: </span>
+                                <span className="font-bold text-[#DC143C]">₹{order.total.toFixed(2)}</span>
+                              </div>
+                              <Separator orientation="vertical" className="h-4" />
+                              <div className="text-muted-foreground">
+                                {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
                               </div>
                             </div>
-
-                            <div>
-                              <h4 className="font-semibold text-sm text-muted-foreground uppercase mb-3">
-                                Order Summary
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                  <span>Subtotal:</span>
-                                  <span className="font-medium">₹{order.totalPrice}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>Shipping:</span>
-                                  <span className="font-medium">
-                                    {order.shippingCost === 0 ? (
-                                      <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                        FREE
-                                      </Badge>
-                                    ) : (
-                                      `₹${order.shippingCost}`
-                                    )}
-                                  </span>
-                                </div>
-                                <Separator className="my-2" />
-                                <div className="flex justify-between text-lg font-bold">
-                                  <span>Total:</span>
-                                  <span className="text-[#DC143C]">₹{order.finalTotal}</span>
-                                </div>
-                                <div className="flex items-center gap-2 mt-4 p-2 bg-muted/50 rounded">
-                                  <CreditCard className="h-4 w-4 text-[#DC143C]" />
-                                  <span className="text-xs font-medium">{order.paymentMethod}</span>
-                                </div>
-                              </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" className="h-8 text-xs">
+                                <Truck className="h-3 w-3 mr-1" />
+                                Track
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-xs border-[#DC143C] text-[#DC143C] hover:bg-[#DC143C] hover:text-white"
+                                onClick={() => {
+                                  // Add reorder functionality
+                                  toast({
+                                    title: "Reorder",
+                                    description: "Adding items to cart...",
+                                  });
+                                }}
+                              >
+                                Reorder
+                              </Button>
                             </div>
                           </div>
                         </CardContent>
-                        <CardFooter className="bg-gray-50 flex gap-3">
-                          <Button variant="outline" className="flex-1">
-                            <Truck className="h-4 w-4 mr-2" />
-                            Track Order
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="flex-1 border-[#DC143C] text-[#DC143C] hover:bg-[#DC143C] hover:text-white"
-                          >
-                            Reorder
-                          </Button>
-                        </CardFooter>
                       </Card>
                     </motion.div>
                   ))}
@@ -840,7 +820,27 @@ const AccountPage = () => {
 
             {/* Wishlist Tab */}
             <TabsContent value="wishlist">
-              {wishlistItems.length === 0 ? (
+              {!user ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Your Wishlist</CardTitle>
+                    <CardDescription>Products you've saved for later</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Heart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <h3 className="text-lg font-semibold mb-2">Please Login</h3>
+                      <p>You need to be logged in to view your wishlist.</p>
+                      <Button
+                        onClick={() => navigate("/account")}
+                        className="mt-6 bg-[#DC143C] hover:bg-[#801030]"
+                      >
+                        Go to Login
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : wishlistItems.length === 0 ? (
                 <Card>
                   <CardHeader>
                     <CardTitle>Your Wishlist</CardTitle>
@@ -923,19 +923,147 @@ const AccountPage = () => {
 
             {/* History Tab */}
             <TabsContent value="history">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Purchase History</CardTitle>
-                  <CardDescription>View your past purchases</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <h3 className="text-lg font-semibold mb-2">No purchase history</h3>
-                    <p>Your purchase history will appear here once you complete an order.</p>
-                  </div>
-                </CardContent>
-              </Card>
+              {isLoadingOrders ? (
+                <div className="space-y-6">
+                  <OrderSkeleton />
+                  <OrderSkeleton />
+                </div>
+              ) : orders.length === 0 ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Purchase History</CardTitle>
+                    <CardDescription>View your past purchases</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <h3 className="text-lg font-semibold mb-2">No purchase history</h3>
+                      <p>Your purchase history will appear here once you complete an order.</p>
+                      <Button
+                        onClick={() => navigate("/")}
+                        className="mt-6 bg-[#DC143C] hover:bg-[#801030]"
+                      >
+                        Start Shopping
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <span>Purchase History</span>
+                        <Badge variant="secondary">{orders.length} orders</Badge>
+                      </CardTitle>
+                      <CardDescription>All your past orders</CardDescription>
+                    </CardHeader>
+                  </Card>
+                  {orders.map((order, index) => (
+                    <motion.div
+                      key={order.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card className="overflow-hidden border-2 hover:border-[#DC143C] transition-colors">
+                        <CardHeader className="bg-gradient-to-r from-gray-50 to-white">
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                              <CardTitle className="flex items-center gap-2">
+                                <Package className="h-5 w-5 text-[#DC143C]" />
+                                Order {order.id}
+                              </CardTitle>
+                              <CardDescription className="flex items-center gap-2 mt-2">
+                                <Calendar className="h-4 w-4" />
+                                {order.createdAt 
+                                  ? (order.createdAt.toDate 
+                                    ? new Date(order.createdAt.toDate()).toLocaleDateString("en-IN", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                      })
+                                    : new Date(order.createdAt).toLocaleDateString("en-IN", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                      }))
+                                  : "Date not available"}
+                              </CardDescription>
+                            </div>
+                            <Badge
+                              className={`px-4 py-2 ${
+                                order.status === "delivered"
+                                  ? "bg-green-100 text-green-800 border-green-200"
+                                  : order.status === "processing"
+                                  ? "bg-blue-100 text-blue-800 border-blue-200"
+                                  : order.status === "shipped"
+                                  ? "bg-purple-100 text-purple-800 border-purple-200"
+                                  : order.status === "cancelled"
+                                  ? "bg-red-100 text-red-800 border-red-200"
+                                  : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                              }`}
+                            >
+                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                          <div className="grid gap-4 mb-4">
+                            {order.items.slice(0, 3).map((item: any, idx: number) => (
+                              <div
+                                key={idx}
+                                className="flex items-center gap-4 p-3 bg-muted/30 rounded-lg"
+                              >
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="h-12 w-12 object-cover rounded"
+                                />
+                                <div className="flex-1">
+                                  <h5 className="font-medium text-sm line-clamp-1">
+                                    {item.name}
+                                  </h5>
+                                  <p className="text-xs text-muted-foreground">
+                                    Qty: {item.quantity} × ₹{item.price}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-bold text-[#DC143C]">
+                                    ₹{(item.price * item.quantity).toFixed(2)}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                            {order.items.length > 3 && (
+                              <p className="text-sm text-muted-foreground text-center">
+                                + {order.items.length - 3} more item(s)
+                              </p>
+                            )}
+                          </div>
+                          <Separator className="my-4" />
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="text-sm text-muted-foreground">Total Amount</p>
+                              <p className="text-2xl font-bold text-[#DC143C]">₹{order.total.toFixed(2)}</p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                // Scroll to orders tab to see full details
+                                const ordersTab = document.querySelector('[value="orders"]') as HTMLElement;
+                                if (ordersTab) ordersTab.click();
+                              }}
+                            >
+                              View Details
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>

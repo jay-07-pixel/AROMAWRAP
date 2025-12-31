@@ -7,6 +7,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { createOrder } from "@/services/orderService";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ShoppingBag, CreditCard, Truck, MapPin, Phone, Mail, User, Lock, ShieldCheck, Package } from "lucide-react";
@@ -15,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const CheckoutPage = () => {
   const { items, totalPrice, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -103,8 +106,19 @@ const CheckoutPage = () => {
     }
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to place an order",
+        variant: "destructive",
+      });
+      navigate("/account");
+      return;
+    }
     
     // Basic validation
     if (!formData.fullName || !formData.email || !formData.phone || !formData.address || !formData.city || !formData.state || !formData.pincode) {
@@ -118,44 +132,61 @@ const CheckoutPage = () => {
 
     setIsProcessing(true);
 
-    // Create order object
-    const order = {
-      id: `ORD-${Date.now()}`,
-      date: new Date().toISOString(),
-      items: items,
-      totalPrice: totalPrice,
-      shippingCost: totalPrice >= 499 ? 0 : 49,
-      finalTotal: totalPrice + (totalPrice >= 499 ? 0 : 49),
-      status: "Processing",
-      paymentMethod: paymentMethod === "cod" ? "Cash on Delivery" : paymentMethod === "card" ? "Card" : "UPI",
-      shippingAddress: {
-        fullName: formData.fullName,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        pincode: formData.pincode,
-      }
-    };
+    try {
+      // Calculate shipping cost
+      const shippingCost = totalPrice >= 499 ? 0 : 49;
+      const finalTotal = totalPrice + shippingCost;
 
-    // Save order to localStorage
-    const existingOrders = localStorage.getItem("userOrders");
-    const orders = existingOrders ? JSON.parse(existingOrders) : [];
-    orders.unshift(order); // Add new order to the beginning
-    localStorage.setItem("userOrders", JSON.stringify(orders));
+      // Map cart items to order items format
+      const orderItems = items.map(item => ({
+        productId: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+      }));
 
-    // Simulate order processing
-    setTimeout(() => {
+      // Create order object for Firestore
+      const orderData = {
+        userId: user.uid,
+        items: orderItems,
+        total: finalTotal,
+        status: 'pending' as const,
+        shippingAddress: {
+          name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode,
+        },
+        paymentMethod: paymentMethod === "cod" ? 'cod' as const : 'online' as const,
+        paymentStatus: paymentMethod === "cod" ? 'pending' as const : 'pending' as const,
+      };
+
+      // Save order to Firestore
+      const orderId = await createOrder(orderData);
+
+      // Clear cart silently after successful order (don't show "Cart cleared" toast)
+      await clearCart(true);
+      
       toast({
         title: "Order Placed Successfully! 🎉",
-        description: `Your order #${order.id} of ₹${totalPrice.toFixed(2)} has been confirmed. We'll send you a confirmation email shortly.`,
+        description: `Your order #${orderId} of ₹${finalTotal.toFixed(2)} has been confirmed. We'll send you a confirmation email shortly.`,
       });
       
-      clearCart();
       setIsProcessing(false);
       navigate("/account");
-    }, 2000);
+    } catch (error: any) {
+      console.error("Error placing order:", error);
+      toast({
+        title: "Order Failed",
+        description: error.message || "Failed to place order. Please try again.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
+    }
   };
 
   // If cart is empty, redirect to home
@@ -169,6 +200,24 @@ const CheckoutPage = () => {
           <p className="text-muted-foreground mb-6">Add some products to continue with checkout</p>
           <Button onClick={() => navigate("/")} size="lg">
             Continue Shopping
+          </Button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // If user is not logged in, show message
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex flex-col items-center justify-center py-16 px-4">
+          <Lock className="h-24 w-24 text-muted-foreground mb-6 opacity-50" />
+          <h2 className="text-2xl font-bold mb-2">Login Required</h2>
+          <p className="text-muted-foreground mb-6">Please login to proceed with checkout</p>
+          <Button onClick={() => navigate("/account")} size="lg">
+            Go to Login
           </Button>
         </div>
         <Footer />

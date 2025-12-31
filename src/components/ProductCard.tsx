@@ -20,7 +20,6 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ id, name, price, originalPrice, image, badge, description }: ProductCardProps) => {
-  const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
@@ -79,7 +78,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
   return (
     <>
       <div 
-        className="group bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer animate-in fade-in zoom-in-95 hover:scale-[1.02]"
+        className="group bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer animate-in fade-in zoom-in-95 hover:scale-[1.02] flex flex-col h-full"
         onClick={handleProductClick}
         style={{
           animationDelay: `${Math.random() * 200}ms`,
@@ -88,7 +87,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
         }}
       >
         {/* Product Image Container */}
-        <div className="relative aspect-[3/4] overflow-hidden">
+        <div className="relative aspect-[3/4] overflow-hidden flex-shrink-0">
           {/* Product Image */}
           <img
             src={imageSrc}
@@ -121,24 +120,17 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
           >
             <Heart className={`h-3 w-3 sm:h-4 sm:w-4 ${inWishlist ? 'fill-current' : ''}`} />
           </motion.button>
-          
-          {/* Discount Badge - Top Right */}
-          {discount > 0 && (
-            <div className="absolute top-1 right-1 sm:top-2 sm:right-2 md:top-3 md:right-3 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs md:text-sm font-bold shadow-md" style={{ backgroundColor: '#E53935' }}>
-              {discount}% OFF
-            </div>
-          )}
         </div>
       
-      {/* Product Info */}
-      <div className="p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3">
-        {/* Product Name */}
-        <h3 className="font-medium text-xs sm:text-sm md:text-base text-gray-900 line-clamp-2 text-center">
+      {/* Product Info - Flex to push to bottom */}
+      <div className="p-2 sm:p-3 md:p-4 flex flex-col flex-grow">
+        {/* Product Name - Fixed height */}
+        <h3 className="font-medium text-xs sm:text-sm md:text-base text-gray-900 line-clamp-2 text-center min-h-[2.5rem] sm:min-h-[3rem] flex items-center justify-center">
           {name}
         </h3>
         
-        {/* Combined Button and Pricing Box */}
-        <div className="rounded-md sm:rounded-lg p-2 sm:p-3 md:p-4 transition-all duration-300 hover:scale-105 shadow-md bg-primary hover:bg-secondary">
+        {/* Combined Button and Pricing Box - Fixed at bottom */}
+        <div className="mt-auto rounded-md sm:rounded-lg p-2 sm:p-3 md:p-4 transition-all duration-300 hover:scale-105 shadow-md bg-primary hover:bg-secondary">
           {/* Add to Cart Button */}
           <button 
             className="w-full text-white font-semibold sm:font-bold text-[10px] sm:text-xs md:text-sm lg:text-base flex items-center justify-center gap-1 sm:gap-2 mb-2 sm:mb-3" 

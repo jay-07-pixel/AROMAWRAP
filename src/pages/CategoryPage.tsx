@@ -29,6 +29,8 @@ const img11 = "/products/mahadev-dhoop.jpg";
 const img12 = "/products/sai-baba-dhoop.jpg";
 const img13 = "/products/tornado-dhoop.jpg";
 const img14 = "/products/devi-dhoop.jpg";
+const img15 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Lavender%20Main.jpg?alt=media&token=7af415cb-0550-413f-bc21-ef85d99f08e8";
+const img16 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mogra%20Main.jpg?alt=media&token=7a784f6f-6917-484a-98c1-d1a7dd7f617f";
 
 // Sample products for different categories
 const categoryProducts = {
@@ -39,6 +41,22 @@ const categoryProducts = {
       price: 150,
       image: img8,
       badge: "New",
+    },
+    {
+      id: "prod-1",
+      name: "Lavender",
+      price: 349,
+      originalPrice: 449,
+      image: img15,
+      badge: "New",
+    },
+    {
+      id: "prod-2",
+      name: "Mogra",
+      price: 399,
+      originalPrice: 499,
+      image: img16,
+      badge: "Premium",
     },
   ],
   "sandalwood-dhoop": [
@@ -276,10 +294,10 @@ const CategoryPage = () => {
       <Header />
 
       {/* Category Header */}
-      <section className="bg-background py-3 sm:py-4">
+      <section className="bg-background pt-2 pb-1 sm:pt-3 sm:pb-2">
         <div className="container mx-auto px-3 sm:px-4">
           {/* Breadcrumbs */}
-          <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm mb-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm mb-1">
             <button 
               onClick={() => navigate("/")}
               className="text-[#C75D5D] hover:text-[#801030] transition-colors"
@@ -298,14 +316,14 @@ const CategoryPage = () => {
           </div>
           
           {/* Page Title */}
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1">
             {categoryName}
           </h1>
         </div>
       </section>
 
       {/* Products Grid */}
-      <section className="py-4 sm:py-6 md:py-8 bg-background">
+      <section className="pt-2 pb-4 sm:pt-3 sm:pb-6 bg-background">
         <div className="container mx-auto px-3 sm:px-4">
           {products.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
