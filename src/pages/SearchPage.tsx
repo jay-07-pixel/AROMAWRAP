@@ -169,42 +169,42 @@ const SearchPage = () => {
       <main className="flex-1 container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Search Bar - Only show when no search query or show at top */}
         {!searchQuery && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
             className="mb-6"
           >
             <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="search"
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                type="search"
                   placeholder="Search for products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-12 pr-20 h-12 text-base border-2 focus:border-primary rounded-lg"
-                  autoFocus
-                />
-                {searchQuery && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-16 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
+                autoFocus
+              />
+              {searchQuery && (
                 <Button
-                  type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary hover:bg-secondary h-8"
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                    className="absolute right-16 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
                 >
-                  Search
+                  <X className="h-4 w-4" />
                 </Button>
-              </div>
-            </form>
-          </motion.div>
+              )}
+              <Button
+                type="submit"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary hover:bg-secondary h-8"
+              >
+                Search
+              </Button>
+            </div>
+          </form>
+        </motion.div>
         )}
 
         {/* Results Header */}
@@ -229,69 +229,69 @@ const SearchPage = () => {
                     className="pl-9 pr-8 h-9 text-sm border focus:border-primary rounded-md"
                   />
                   {searchQuery && (
-                    <Button
+                  <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
+                    variant="ghost"
+                    size="sm"
                       onClick={() => {
                         setSearchQuery("");
                         navigate("/search");
                       }}
                       className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                    >
+                  >
                       <X className="h-3 w-3" />
-                    </Button>
+                  </Button>
                   )}
                 </div>
               </form>
-            </div>
-          </div>
-        )}
+                </div>
+              </div>
+            )}
 
-        {/* Products Grid */}
-        {filteredProducts.length > 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
-          >
-            {filteredProducts.map((product, index) => (
+            {/* Products Grid */}
+            {filteredProducts.length > 0 ? (
               <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
               >
-                <ProductCard {...product} />
+                {filteredProducts.map((product, index) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <ProductCard {...product} />
+                  </motion.div>
+                ))}
               </motion.div>
-            ))}
-          </motion.div>
         ) : searchQuery ? (
           <div className="bg-white rounded-lg p-8 sm:p-12 text-center shadow-sm">
             <div className="h-16 w-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
               <Search className="h-8 w-8 text-gray-400" />
-            </div>
+                </div>
             <h3 className="text-xl sm:text-2xl font-bold mb-2">No products found</h3>
             <p className="text-muted-foreground mb-6 text-sm sm:text-base">
-              Try adjusting your search or browse our categories
-            </p>
-            <Button
-              onClick={() => navigate("/")}
+                  Try adjusting your search or browse our categories
+                </p>
+                <Button
+                  onClick={() => navigate("/")}
               className="bg-primary hover:bg-secondary"
-            >
-              Back to Home
-            </Button>
+                >
+                  Back to Home
+                </Button>
           </div>
         ) : (
           <div className="bg-white rounded-lg p-8 sm:p-12 text-center shadow-sm">
             <div className="h-16 w-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
               <Search className="h-8 w-8 text-gray-400" />
-            </div>
+          </div>
             <h3 className="text-xl sm:text-2xl font-bold mb-2">Search for products</h3>
             <p className="text-muted-foreground text-sm sm:text-base">
               Enter a search term above to find products
             </p>
-          </div>
+        </div>
         )}
       </main>
 

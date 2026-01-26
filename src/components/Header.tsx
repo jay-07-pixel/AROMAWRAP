@@ -217,16 +217,16 @@ export const Header = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:block border-t border-b border-gray-200 py-1.5 bg-gradient-to-r from-blue-50/40 to-indigo-50/40 md:bg-gradient-to-r md:from-blue-50/30 md:to-indigo-50/30 shadow-sm">
+          <nav className="block border-t border-b border-gray-200 py-1.5 bg-gradient-to-r from-blue-50/40 to-indigo-50/40 md:bg-gradient-to-r md:from-blue-50/30 md:to-indigo-50/30 shadow-sm">
             <div className="container mx-auto px-4">
-              <ul className="flex flex-col md:flex-row md:items-center md:justify-center gap-2 md:gap-8">
+              <ul className="flex flex-row items-center justify-center gap-2 md:gap-8">
                 {categories.map((category) => (
                   <li key={category.name}>
                     {category.name === "Agarbatti" || category.name === "Dhoop Sticks" ? (
                       // Direct link for Agarbatti and Dhoop Sticks - no dropdown
                       <Button 
                         variant="ghost" 
-                        className="w-full md:w-auto justify-start md:justify-center font-semibold text-base text-primary hover:text-secondary hover:bg-accent/20 transition-all duration-300 px-3 py-1.5 rounded-md"
+                        className="w-auto justify-center font-semibold text-sm md:text-base text-primary hover:text-secondary hover:bg-accent/20 transition-all duration-300 px-2 md:px-3 py-1.5 rounded-md"
                         onClick={() => {
                           if (category.name === "Agarbatti") {
                             navigate("/category/agarbatti");
@@ -243,7 +243,7 @@ export const Header = () => {
                         <DropdownMenuTrigger asChild>
                           <Button 
                             variant="ghost" 
-                            className="w-full md:w-auto justify-start md:justify-center font-semibold text-base text-primary hover:text-secondary hover:bg-accent/20 transition-all duration-300 px-3 py-1.5 rounded-md"
+                            className="w-auto justify-center font-semibold text-sm md:text-base text-primary hover:text-secondary hover:bg-accent/20 transition-all duration-300 px-2 md:px-3 py-1.5 rounded-md"
                           >
                             {category.name}
                             <ChevronDown className="ml-1 h-4 w-4" />
