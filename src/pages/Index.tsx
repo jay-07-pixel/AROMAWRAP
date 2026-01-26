@@ -4,7 +4,6 @@ import { CartDrawer } from "@/components/CartDrawer";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { CircularCategoryCard } from "@/components/CircularCategoryCard";
 import { ProductCard } from "@/components/ProductCard";
-import { ProductShowcaseBox } from "@/components/ProductShowcaseBox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Leaf, Recycle, Heart, Truck } from "lucide-react";
@@ -12,7 +11,6 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useState, useEffect } from "react";
 import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
-import { BackToTop } from "@/components/BackToTop";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 
 // Product images served from public/products. Please place files there.
@@ -66,40 +64,6 @@ const Index = () => {
     { title: "Agarbatti", image: circularBestsellers }, // Using bestsellers as placeholder
     { title: "Bambooless Incense", image: circularDhoop },
   ];
-
-  // Hero section product showcase data
-  const heroShowcaseData = {
-    products: [
-      {
-        id: "hero-prod-1",
-        name: "Sandalwood Divine Agarbatti",
-        price: 450,
-        originalPrice: 599,
-        image: img1,
-        description: "Pure sandalwood agarbatti with divine fragrance. Handcrafted with natural herbs for spiritual wellness.",
-      },
-      {
-        id: "hero-prod-2",
-        name: "AromaWrap Devi Premium Dhoop",
-        price: 399,
-        originalPrice: 499,
-        image: img14,
-        description: "Handcrafted Devi dhoop cones infused with sacred botanicals for a luxurious, divine fragrance during puja and meditation.",
-      },
-    ],
-    relatedProducts: [
-      {
-        id: "hero-related-1",
-        name: "AromaWrap Devi Premium Dhoop",
-        image: img14,
-      },
-      {
-        id: "hero-related-2",
-        name: "Sandalwood Agarbatti",
-        image: img1,
-      },
-    ],
-  };
 
   const bestSellers = [
     {
@@ -164,19 +128,6 @@ const Index = () => {
       <AnnouncementBar />
       <CartDrawer />
       <Header />
-
-      {/* Mobile Product Showcase Box Section */}
-      <motion.section 
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
-        className="lg:hidden py-16 bg-gradient-to-b from-gray-50 to-white relative"
-      >
-        <div className="container mx-auto px-4">
-          <ProductShowcaseBox {...heroShowcaseData} />
-        </div>
-      </motion.section>
 
       {/* Admin Products Section */}
       {adminProducts.length > 0 && (
@@ -440,7 +391,6 @@ const Index = () => {
       </motion.section>
 
       <Footer />
-      <BackToTop />
     </div>
   );
 };
