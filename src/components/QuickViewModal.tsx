@@ -79,6 +79,8 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
             <img
               src={product.image}
               alt={product.name}
+              loading="eager"
+              decoding="async"
               className="w-full h-full object-cover min-h-[300px] md:min-h-[500px]"
             />
             {product.badge && (

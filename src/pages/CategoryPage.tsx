@@ -22,15 +22,18 @@ const img4 = "/products/IMG-20251017-WA0033.jpg";
 const img5 = "/products/IMG-20251017-WA0037.jpg";
 const img6 = "/products/IMG-20251017-WA0025.jpg";
 const img7 = "/products/IMG-20251017-WA0026.jpg";
-const img8 = "/products/premium-sandalwood-agarbatti.jpg";
+const img8 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Sandalwood%20Front.png?alt=media&token=a7ee7aaa-993f-41ac-b35a-392635fedce5";
 const img9 = "/products/oudh-premium-dhoop.jpg";
-const img10 = "/products/delux-dhoop.jpg";
+const img10 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/mannat%20front.png?alt=media&token=0e407864-da64-4bc4-9133-12b64810ab89";
 const img11 = "/products/mahadev-dhoop.jpg";
 const img12 = "/products/sai-baba-dhoop.jpg";
 const img13 = "/products/tornado-dhoop.jpg";
-const img14 = "/products/devi-dhoop.jpg";
+const img14 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/devi%20dhoop%20front.png?alt=media&token=a944733d-d1eb-4f1e-91d4-3e724d45946a";
 const img15 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Lavender%20Main.jpg?alt=media&token=7af415cb-0550-413f-bc21-ef85d99f08e8";
 const img16 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mogra%20Main.jpg?alt=media&token=7a784f6f-6917-484a-98c1-d1a7dd7f617f";
+const img17 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mahadev%20dhoop%20front.jpeg?alt=media&token=669c8f3a-2d99-4253-b38e-2f9a968f0998";
+const img18 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Saibaba%20Dhoop%20Front.jpeg?alt=media&token=430ed46d-f7d3-4a17-ac41-a0482804e870";
+const img19 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Tornado%20Dhoop%20Front.jpeg?alt=media&token=3297f953-b5fa-41af-b62b-e9198d3a4e36";
 
 // Sample products for different categories
 const categoryProducts = {
@@ -81,7 +84,7 @@ const categoryProducts = {
       name: "AromaWrap Mahadev Dhoop",
       price: 399,
       originalPrice: 499,
-      image: img11,
+      image: img17,
       badge: "New",
     },
     {
@@ -89,7 +92,7 @@ const categoryProducts = {
       name: "AromaWrap Sai Baba Dhoop Premium Dhoop Cones",
       price: 379,
       originalPrice: 479,
-      image: img12,
+      image: img18,
       badge: "Bestseller",
     },
     {
@@ -97,7 +100,7 @@ const categoryProducts = {
       name: "AromaWrap Tornado Dhoop Premium Dhoop Cones",
       price: 429,
       originalPrice: 529,
-      image: img13,
+      image: img19,
       badge: "Premium",
     },
   ],
@@ -110,7 +113,7 @@ const relatedProducts = [
     name: "AromaWrap Devi Premium Dhoop",
     price: 399,
     originalPrice: 499,
-    image: img14,
+    image: "/placeholder.svg",
     badge: "Premium",
   },
   {
@@ -118,7 +121,7 @@ const relatedProducts = [
     name: "AromaWrap Mahadev Dhoop",
     price: 399,
     originalPrice: 499,
-    image: img11,
+    image: img17,
     badge: "New",
   },
 ];
@@ -354,48 +357,6 @@ const CategoryPage = () => {
               </Button>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* You May Also Like Section */}
-      <section className="py-8 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-              You May Also Like
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Discover more amazing products that complement your selection
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {relatedProducts.map((product, index) => (
-              <div
-                key={product.id}
-                className="animate-in fade-in slide-in-from-bottom"
-                style={{
-                  animationDelay: `${index * 50}ms`,
-                  animationFillMode: "backwards",
-                }}
-              >
-                <ProductCard {...product} />
-              </div>
-            ))}
-          </div>
-          
-          {/* View All Button */}
-          <div className="text-center mt-8">
-            <Button 
-              size="sm" 
-              variant="outline"
-              className="group"
-              onClick={() => navigate("/")}
-            >
-              View All Products
-              <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
-            </Button>
-          </div>
         </div>
       </section>
 

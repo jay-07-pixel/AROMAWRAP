@@ -80,17 +80,17 @@ export const getOrderById = async (id: string): Promise<Order | null> => {
 export const getUserOrders = async (userId: string): Promise<Order[]> => {
   try {
     // Try with orderBy first
-    try {
-      const q = query(
-        collection(db, ORDERS_COLLECTION),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
-      );
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Order));
+  try {
+    const q = query(
+      collection(db, ORDERS_COLLECTION),
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Order));
     } catch (orderByError: any) {
       // If orderBy fails (likely missing index), try without it
       if (orderByError.code === 'failed-precondition') {

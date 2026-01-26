@@ -12,7 +12,7 @@ import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { WishlistDrawer } from "@/components/WishlistDrawer";
 import { useNavigate } from "react-router-dom";
-import aromaWrapLogo from "@/assets/aromawrap-logo.png";
+import aromaWrapLogo from "@/assets/logowebsite.jpeg";
 
 export const Header = () => {
   const [searchPlaceholder, setSearchPlaceholder] = useState("");

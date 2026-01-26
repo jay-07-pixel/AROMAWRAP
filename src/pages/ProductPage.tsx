@@ -29,16 +29,22 @@ const img4 = "/products/IMG-20251017-WA0033.jpg";
 const img5 = "/products/IMG-20251017-WA0037.jpg";
 const img6 = "/products/IMG-20251017-WA0025.jpg";
 const img7 = "/products/IMG-20251017-WA0026.jpg";
-const img8 = "/products/premium-sandalwood-agarbatti.jpg";
+const img8 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Sandalwood%20Front.png?alt=media&token=a7ee7aaa-993f-41ac-b35a-392635fedce5";
 const img9 = "/products/oudh-premium-dhoop.jpg";
-const img10 = "/products/delux-dhoop.jpg";
+const img10 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/mannat%20front.png?alt=media&token=0e407864-da64-4bc4-9133-12b64810ab89";
 const img11 = "/products/mahadev-dhoop.jpg";
 const img12 = "/products/sai-baba-dhoop.jpg";
 const img13 = "/products/tornado-dhoop.jpg";
-const img14 = "/products/devi-dhoop.jpg";
+const img14 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/devi%20dhoop%20front.png?alt=media&token=a944733d-d1eb-4f1e-91d4-3e724d45946a";
 const img15 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Lavender%20Main.jpg?alt=media&token=7af415cb-0550-413f-bc21-ef85d99f08e8";
 const img15Back = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/lavender%20back%20.jpeg?alt=media&token=0b58e941-ab75-4be9-ad2d-2bddb3aca095";
 const img16 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mogra%20Main.jpg?alt=media&token=7a784f6f-6917-484a-98c1-d1a7dd7f617f";
+const img17 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mahadev%20dhoop%20front.jpeg?alt=media&token=669c8f3a-2d99-4253-b38e-2f9a968f0998";
+const img17Back = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mahadev%20dhoop%20Back.jpeg?alt=media&token=e1d7f366-4fd9-492d-84e8-e442b25a80bd";
+const img18 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Saibaba%20Dhoop%20Front.jpeg?alt=media&token=430ed46d-f7d3-4a17-ac41-a0482804e870";
+const img18Back = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Saibaba%20Dhoop%20Back.jpeg?alt=media&token=c7523107-163f-467d-a777-eb547fbb3f79";
+const img19 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Tornado%20Dhoop%20Front.jpeg?alt=media&token=3297f953-b5fa-41af-b62b-e9198d3a4e36";
+const img19Back = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Tornado%20Dhoop%20Back%20.jpeg?alt=media&token=49e5df44-d3cf-443a-8454-5c761f232a1d";
 
 // Sample product data - in real app this would come from API
 const productData = {
@@ -479,7 +485,7 @@ const productData = {
     name: "AromaWrap Mahadev Dhoop",
     price: 399,
     originalPrice: 499,
-    image: img11,
+    image: img17,
     badge: "New",
     rating: 4.7,
     reviews: 118,
@@ -500,14 +506,14 @@ const productData = {
       "Ingredients": "Natural Herbs, Sacred Spices",
       "Certification": "FSSAI Approved"
     },
-    images: [img11, img1, img4, img6]
+    images: [img17, img17Back, img1, img6]
   },
   "sai-baba-dhoop": {
     id: "sai-baba-dhoop",
     name: "AromaWrap Sai Baba Dhoop Premium Dhoop Cones",
     price: 379,
     originalPrice: 479,
-    image: img12,
+    image: img18,
     badge: "Bestseller",
     rating: 4.9,
     reviews: 203,
@@ -528,14 +534,14 @@ const productData = {
       "Ingredients": "Natural Herbs, Traditional Spices",
       "Certification": "FSSAI Approved"
     },
-    images: [img12, img1, img4, img6]
+    images: [img18, img18Back, img1, img6]
   },
   "tornado-dhoop": {
     id: "tornado-dhoop",
     name: "AromaWrap Tornado Dhoop Premium Dhoop Cones",
     price: 429,
     originalPrice: 529,
-    image: img13,
+    image: img19,
     badge: "Premium",
     rating: 4.8,
     reviews: 165,
@@ -556,7 +562,7 @@ const productData = {
       "Ingredients": "Natural Herbs, Premium Spices",
       "Certification": "FSSAI Approved"
     },
-    images: [img13, img1, img4, img6]
+    images: [img19, img19Back, img1, img6]
   },
   "prod-7": {
     id: "prod-7",
@@ -685,10 +691,13 @@ const ProductPage = () => {
             {/* Product Images */}
             <div className="space-y-3 max-w-md mx-auto lg:max-w-sm">
               {/* Main Image */}
-              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl group max-h-96">
+              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl group max-h-96 bg-gray-100">
                 <img
                   src={product.images[selectedImage]}
                   alt={product.name}
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                   className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                 />
                 
@@ -700,7 +709,7 @@ const ProductPage = () => {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-300 bg-gray-100 ${
                       selectedImage === index 
                         ? 'border-primary shadow-md' 
                         : 'border-gray-200 hover:border-primary/50'
@@ -709,6 +718,8 @@ const ProductPage = () => {
                     <img
                       src={image}
                       alt={`${product.name} ${index + 1}`}
+                      loading={index < 2 ? "eager" : "lazy"}
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   </button>

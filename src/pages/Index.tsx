@@ -23,7 +23,7 @@ const img4 = "/products/IMG-20251017-WA0033.jpg";
 const img5 = "/products/IMG-20251017-WA0037.jpg";
 const img6 = "/products/IMG-20251017-WA0025.jpg";
 const img7 = "/products/IMG-20251017-WA0026.jpg";
-const img8 = "/products/premium-sandalwood-agarbatti.jpg";
+const img8 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Sandalwood%20Front.png?alt=media&token=a7ee7aaa-993f-41ac-b35a-392635fedce5";
 const img9 = "/products/oudh-premium-dhoop.jpg";
 const img10 = "/products/delux-dhoop.jpg";
 const img11 = "/products/mahadev-dhoop.jpg";
@@ -32,14 +32,10 @@ const img13 = "/products/tornado-dhoop.jpg";
 const img14 = "/products/devi-dhoop.jpg";
 const img15 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Lavender%20Main.jpg?alt=media&token=7af415cb-0550-413f-bc21-ef85d99f08e8";
 const img16 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mogra%20Main.jpg?alt=media&token=7a784f6f-6917-484a-98c1-d1a7dd7f617f";
+const img17 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mahadev%20dhoop%20front.jpeg?alt=media&token=669c8f3a-2d99-4253-b38e-2f9a968f0998";
+const img19 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Tornado%20Dhoop%20Front.jpeg?alt=media&token=3297f953-b5fa-41af-b62b-e9198d3a4e36";
 import circularBestsellers from "@/assets/circular-bestsellers.jpg";
-import circularAgarbatti from "@/assets/circular-agarbatti.jpg";
-import circularPuja from "@/assets/circular-puja.jpg";
 import circularDhoop from "@/assets/circular-dhoop.jpg";
-import circularCones from "@/assets/circular-cones.jpg";
-import circularKarpure from "@/assets/circular-karpure.jpg";
-import circularHavan from "@/assets/circular-havan.jpg";
-import circularAccessories from "@/assets/circular-accessories.jpg";
 
 const Index = () => {
   const [adminProducts, setAdminProducts] = useState<any[]>([]);
@@ -67,7 +63,7 @@ const Index = () => {
 
   const circularCategories = [
     { title: "Best Sellers", image: circularBestsellers },
-    { title: "Agarbatti", image: circularAgarbatti },
+    { title: "Agarbatti", image: circularBestsellers }, // Using bestsellers as placeholder
     { title: "Bambooless Incense", image: circularDhoop },
   ];
 
@@ -123,42 +119,19 @@ const Index = () => {
       badge: "Premium",
     },
     {
-      id: "prod-3",
-      name: "Premium Sandalwood Agarbatti",
-      price: 150,
-      image: img1,
+      id: "mahadev-dhoop",
+      name: "AromaWrap Mahadev Dhoop",
+      price: 399,
+      originalPrice: 499,
+      image: img17,
       badge: "New",
     },
     {
-      id: "prod-4",
-      name: "Pure Sandalwood Dhoop - Organic (Pack of 25)",
-      price: 549,
-      originalPrice: 699,
-      image: img4,
-      badge: "Premium",
-    },
-    {
-      id: "prod-5",
-      name: "Classic Sandalwood Dhoop - Handcrafted (Pack of 15)",
-      price: 299,
-      originalPrice: 399,
-      image: img4,
-      badge: "New",
-    },
-    {
-      id: "prod-6",
-      name: "Sandalwood Divine Agarbatti",
-      price: 450,
-      originalPrice: 599,
-      image: img1,
-      badge: "Bestseller",
-    },
-    {
-      id: "prod-7",
-      name: "AromaWrap OUDH PREMIUM DHOOP",
-      price: 499,
-      originalPrice: 649,
-      image: img9,
+      id: "tornado-dhoop",
+      name: "AromaWrap Tornado Dhoop Premium Dhoop Cones",
+      price: 429,
+      originalPrice: 529,
+      image: img19,
       badge: "Premium",
     },
   ];

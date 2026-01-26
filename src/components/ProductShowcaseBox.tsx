@@ -56,6 +56,9 @@ export const ProductShowcaseBox = ({ products, relatedProducts, compact = false 
                   <img
                     src={currentProduct.image}
                     alt={currentProduct.name}
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -70,6 +73,8 @@ export const ProductShowcaseBox = ({ products, relatedProducts, compact = false 
                   <img
                     src={products[(currentProductIndex + 1) % products.length].image}
                     alt={products[(currentProductIndex + 1) % products.length].name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -147,6 +152,9 @@ export const ProductShowcaseBox = ({ products, relatedProducts, compact = false 
                 <img
                   src={currentProduct.image}
                   alt={currentProduct.name}
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -161,6 +169,8 @@ export const ProductShowcaseBox = ({ products, relatedProducts, compact = false 
                 <img
                   src={products[(currentProductIndex + 1) % products.length].image}
                   alt={products[(currentProductIndex + 1) % products.length].name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               </div>

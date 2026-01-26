@@ -104,7 +104,7 @@ const AdminDashboard = () => {
                      userProfile?.role === "admin";
       
       if (!user || !isAdmin) {
-        navigate("/account");
+    navigate("/account");
       }
     }
   }, [user, userProfile, loading, navigate]);
@@ -171,38 +171,38 @@ const AdminDashboard = () => {
           const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
           
           setStats([
-            {
-              title: "Total Revenue",
+    {
+      title: "Total Revenue",
               value: `₹${totalRevenue.toLocaleString('en-IN')}`,
               change: "+0%",
-              icon: IndianRupee,
-              color: "text-green-600",
-              bgColor: "bg-green-50",
-            },
-            {
-              title: "Total Orders",
+      icon: IndianRupee,
+      color: "text-green-600",
+      bgColor: "bg-green-50",
+    },
+    {
+      title: "Total Orders",
               value: totalOrders.toString(),
               change: "+0%",
-              icon: ShoppingCart,
-              color: "text-blue-600",
-              bgColor: "bg-blue-50",
-            },
-            {
-              title: "Total Products",
+      icon: ShoppingCart,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+    },
+    {
+      title: "Total Products",
               value: products.length.toString(),
               change: "0",
-              icon: Package,
-              color: "text-purple-600",
-              bgColor: "bg-purple-50",
-            },
-            {
+      icon: Package,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
+    },
+    {
               title: "Delivered Orders",
               value: deliveredOrders.toString(),
               change: "+0%",
-              icon: Users,
-              color: "text-orange-600",
-              bgColor: "bg-orange-50",
-            },
+      icon: Users,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
+    },
           ]);
         } catch (error) {
           console.error("Error loading orders:", error);
@@ -482,16 +482,16 @@ const AdminDashboard = () => {
                         </div>
                       ) : recentOrders.length > 0 ? (
                         recentOrders.slice(0, 5).map((order) => (
-                          <div key={order.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                            <div className="flex-1">
-                              <p className="font-semibold text-sm">{order.customer}</p>
-                              <p className="text-xs text-muted-foreground">{order.product}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold text-[#DC143C]">₹{order.amount.toFixed(2)}</p>
-                              {getStatusBadge(order.status)}
-                            </div>
+                        <div key={order.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm">{order.customer}</p>
+                            <p className="text-xs text-muted-foreground">{order.product}</p>
                           </div>
+                          <div className="text-right">
+                              <p className="font-bold text-[#DC143C]">₹{order.amount.toFixed(2)}</p>
+                            {getStatusBadge(order.status)}
+                          </div>
+                        </div>
                         ))
                       ) : (
                         <div className="text-center py-8 text-muted-foreground">
@@ -519,16 +519,16 @@ const AdminDashboard = () => {
                     <div className="space-y-4">
                       {products.length > 0 ? (
                         products.map((product) => (
-                          <div key={product.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                            <div className="flex-1">
-                              <p className="font-semibold text-sm">{product.name}</p>
-                              <p className="text-xs text-muted-foreground">{product.category}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold">₹{product.price}</p>
-                              <p className="text-xs text-muted-foreground">{product.sold} sold</p>
-                            </div>
+                        <div key={product.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm">{product.name}</p>
+                            <p className="text-xs text-muted-foreground">{product.category}</p>
                           </div>
+                          <div className="text-right">
+                            <p className="font-bold">₹{product.price}</p>
+                            <p className="text-xs text-muted-foreground">{product.sold} sold</p>
+                          </div>
+                        </div>
                         ))
                       ) : (
                         <div className="text-center py-8 text-muted-foreground">
@@ -593,20 +593,20 @@ const AdminDashboard = () => {
                           </TableRow>
                         ) : recentOrders.length > 0 ? (
                           recentOrders.map((order) => (
-                            <TableRow key={order.id}>
-                              <TableCell className="font-medium">{order.id}</TableCell>
-                              <TableCell>
-                                <div>
-                                  <p className="font-medium">{order.customer}</p>
-                                  <p className="text-xs text-muted-foreground">{order.email}</p>
-                                </div>
-                              </TableCell>
-                              <TableCell>{order.product}</TableCell>
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">{order.id}</TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{order.customer}</p>
+                                <p className="text-xs text-muted-foreground">{order.email}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>{order.product}</TableCell>
                               <TableCell className="font-semibold text-[#DC143C]">₹{order.amount.toFixed(2)}</TableCell>
-                              <TableCell>{getStatusBadge(order.status)}</TableCell>
-                              <TableCell className="text-muted-foreground">{order.date}</TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex justify-end gap-2">
+                            <TableCell>{getStatusBadge(order.status)}</TableCell>
+                            <TableCell className="text-muted-foreground">{order.date}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
                                   <Button 
                                     variant="ghost" 
                                     size="sm" 
@@ -616,8 +616,8 @@ const AdminDashboard = () => {
                                       setIsViewOrderOpen(true);
                                     }}
                                   >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
+                                  <Eye className="h-4 w-4" />
+                                </Button>
                                   <Button 
                                     variant="ghost" 
                                     size="sm" 
@@ -628,11 +628,11 @@ const AdminDashboard = () => {
                                       setIsEditOrderOpen(true);
                                     }}
                                   >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
                           ))
                         ) : (
                           <TableRow>
@@ -688,35 +688,35 @@ const AdminDashboard = () => {
                       <TableBody>
                         {products.length > 0 ? (
                           products.map((product) => (
-                            <TableRow key={product.id}>
-                              <TableCell className="font-medium">{product.id}</TableCell>
-                              <TableCell>{product.name}</TableCell>
-                              <TableCell>
-                                <Badge variant="outline">{product.category}</Badge>
-                              </TableCell>
-                              <TableCell className="font-semibold text-[#DC143C]">₹{product.price}</TableCell>
-                              <TableCell>{product.stock}</TableCell>
-                              <TableCell className="text-muted-foreground">{product.sold}</TableCell>
-                              <TableCell>{getStatusBadge(product.status)}</TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex justify-end gap-2">
-                                  <Button variant="ghost" size="sm">
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="sm">
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="text-red-600 hover:text-red-700"
-                                    onClick={() => handleDeleteProduct(product.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
+                          <TableRow key={product.id}>
+                            <TableCell className="font-medium">{product.id}</TableCell>
+                            <TableCell>{product.name}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{product.category}</Badge>
+                            </TableCell>
+                            <TableCell className="font-semibold text-[#DC143C]">₹{product.price}</TableCell>
+                            <TableCell>{product.stock}</TableCell>
+                            <TableCell className="text-muted-foreground">{product.sold}</TableCell>
+                            <TableCell>{getStatusBadge(product.status)}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button variant="ghost" size="sm">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-red-600 hover:text-red-700"
+                                  onClick={() => handleDeleteProduct(product.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
                           ))
                         ) : (
                           <TableRow>

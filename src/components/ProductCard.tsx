@@ -26,6 +26,8 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
   const inWishlist = isInWishlist(id);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState<string>(image);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -87,13 +89,30 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
         }}
       >
         {/* Product Image Container */}
-        <div className="relative aspect-[3/4] overflow-hidden flex-shrink-0">
+        <div className="relative aspect-[3/4] overflow-hidden flex-shrink-0 bg-gray-100">
+          {/* Loading Placeholder */}
+          {imageLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 animate-pulse">
+              <div className="w-12 h-12 border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+            </div>
+          )}
+          
           {/* Product Image */}
           <img
             src={imageSrc}
             alt={name}
-            className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
-            onError={() => setImageSrc('/placeholder.svg')}
+            loading="lazy"
+            decoding="async"
+            className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+              imageLoading ? 'opacity-0' : 'opacity-100'
+            }`}
+            onLoad={() => setImageLoading(false)}
+            onError={(e) => {
+              console.error('Image failed to load:', imageSrc, e);
+              setImageError(true);
+              setImageSrc('/placeholder.svg');
+              setImageLoading(false);
+            }}
           />
           
           {/* Quick View Button - Center (appears on hover) */}
@@ -122,15 +141,15 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
           </motion.button>
         </div>
       
-      {/* Product Info - Flex to push to bottom */}
-      <div className="p-2 sm:p-3 md:p-4 flex flex-col flex-grow">
-        {/* Product Name - Fixed height */}
+      {/* Product Info */}
+      <div className="p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3 flex flex-col flex-grow">
+        {/* Product Name */}
         <h3 className="font-medium text-xs sm:text-sm md:text-base text-gray-900 line-clamp-2 text-center min-h-[2.5rem] sm:min-h-[3rem] flex items-center justify-center">
           {name}
         </h3>
         
-        {/* Combined Button and Pricing Box - Fixed at bottom */}
-        <div className="mt-auto rounded-md sm:rounded-lg p-2 sm:p-3 md:p-4 transition-all duration-300 hover:scale-105 shadow-md bg-primary hover:bg-secondary">
+        {/* Combined Button and Pricing Box */}
+        <div className="rounded-md sm:rounded-lg p-2 sm:p-3 md:p-4 transition-all duration-300 hover:scale-105 shadow-md bg-primary hover:bg-secondary mt-auto">
           {/* Add to Cart Button */}
           <button 
             className="w-full text-white font-semibold sm:font-bold text-[10px] sm:text-xs md:text-sm lg:text-base flex items-center justify-center gap-1 sm:gap-2 mb-2 sm:mb-3" 
