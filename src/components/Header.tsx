@@ -13,6 +13,7 @@ import { useCart } from "@/context/CartContext";
 import { WishlistDrawer } from "@/components/WishlistDrawer";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { isAdminUser } from "@/services/authService";
 import aromaWrapLogo from "@/assets/aromawrap_logo.png";
 
 export const Header = () => {
@@ -24,10 +25,7 @@ export const Header = () => {
   const { user, userProfile, loading: authLoading } = useAuth();
 
   const isAdmin =
-    !authLoading &&
-    !!user &&
-    (user.email?.toLowerCase() === "admin@gmail.com" ||
-      userProfile?.role === "admin");
+    !authLoading && !!user && isAdminUser(user.email, userProfile);
   const showDashboardButton = isAdmin && !location.pathname.startsWith("/admin");
 
   const isLoggedIn = !!user;

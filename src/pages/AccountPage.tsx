@@ -15,7 +15,8 @@ import { useWishlist } from "@/context/WishlistContext";
 import { motion } from "framer-motion";
 import { OrderSkeleton } from "@/components/OrderSkeleton";
 import { useAuth } from "@/context/AuthContext";
-import { signIn, signUp, logout, updateUserProfile, addAddress } from "@/services/authService";
+import { signIn, signUp, logout, updateUserProfile, addAddress, getUserProfile, isAdminUser } from "@/services/authService";
+import { auth } from "@/lib/firebase";
 import { getUserOrders, subscribeToUserOrders } from "@/services/orderService";
 
 /** UPI online flow: messages while admin has not decided yet, or after approve / reject */
@@ -129,19 +130,17 @@ const AccountPage = () => {
     setIsLoggingIn(true);
 
     try {
-      // Sign in with Firebase (this will handle admin storage in Firestore)
       await signIn(loginEmail, loginPassword);
-      
-      // Check if admin (after successful login)
-      const isAdmin = loginEmail.toLowerCase() === "admin@gmail.com" && loginPassword === "123456";
-      
-      if (isAdmin) {
+
+      const profile = auth.currentUser
+        ? await getUserProfile(auth.currentUser.uid)
+        : null;
+
+      if (isAdminUser(auth.currentUser?.email, profile)) {
         toast({
           title: "Welcome Admin! 👑",
           description: "Redirecting to admin dashboard...",
         });
-        
-        // Redirect immediately to admin dashboard
         navigate("/admin");
       } else {
         toast({
@@ -383,9 +382,6 @@ const AccountPage = () => {
                           required
                           className="border-2 focus:border-[#DC143C]"
                         />
-                        <p className="text-xs text-muted-foreground">
-                          Use <span className="font-semibold text-[#DC143C]">admin@gmail.com</span> for admin access
-                        </p>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="login-password" className="flex items-center gap-2">

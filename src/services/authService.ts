@@ -32,6 +32,51 @@ export interface UserProfile {
 const USERS_COLLECTION = 'users';
 const ADMIN_COLLECTION = 'admin';
 
+const configuredAdminEmail = () =>
+  import.meta.env.VITE_ADMIN_EMAIL?.toLowerCase().trim() || '';
+
+export const isAdminUser = (
+  email: string | null | undefined,
+  profile: UserProfile | null | undefined
+): boolean => {
+  if (profile?.role === 'admin') return true;
+  const adminEmail = configuredAdminEmail();
+  return !!adminEmail && email?.toLowerCase() === adminEmail;
+};
+
+const syncAdminRecord = async (email: string, uid: string): Promise<void> => {
+  const adminDoc = {
+    email,
+    uid,
+    updatedAt: Timestamp.now(),
+  };
+
+  await setDoc(doc(db, ADMIN_COLLECTION, email.toLowerCase()), adminDoc, { merge: true });
+  await setDoc(doc(db, ADMIN_COLLECTION, uid), adminDoc, { merge: true });
+};
+
+const ensureAdminProfile = async (user: User): Promise<void> => {
+  const userProfile = await getUserProfile(user.uid);
+
+  if (userProfile) {
+    if (userProfile.role !== 'admin') {
+      await updateUserProfile(user.uid, { role: 'admin' });
+    }
+  } else {
+    const adminProfile: UserProfile = {
+      uid: user.uid,
+      email: user.email!,
+      displayName: user.displayName || 'Admin',
+      role: 'admin',
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    };
+    await setDoc(doc(db, USERS_COLLECTION, user.uid), adminProfile);
+  }
+
+  await syncAdminRecord(user.email!, user.uid);
+};
+
 // Sign up new user
 export const signUp = async (
   email: string,
@@ -42,10 +87,8 @@ export const signUp = async (
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Update profile
     await updateProfile(user, { displayName });
 
-    // Create user document in Firestore
     const userProfile: UserProfile = {
       uid: user.uid,
       email: user.email!,
@@ -64,152 +107,16 @@ export const signUp = async (
   }
 };
 
-// Create or update admin in Firestore
-export const createOrUpdateAdmin = async (
-  email: string,
-  password: string,
-  uid: string
-): Promise<void> => {
-  try {
-    const adminDoc = {
-      email,
-      password, // Note: In production, you should hash this or use Firebase Admin SDK
-      uid,
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
-    };
-
-    // Store in admin collection with email as document ID
-    await setDoc(doc(db, ADMIN_COLLECTION, email.toLowerCase()), adminDoc, { merge: true });
-    
-    // Also store in admin collection with uid as document ID for easy lookup
-    await setDoc(doc(db, ADMIN_COLLECTION, uid), adminDoc, { merge: true });
-  } catch (error) {
-    console.error('Error creating/updating admin:', error);
-    throw error;
-  }
-};
-
-// Initialize admin account (creates admin in Firebase Auth if doesn't exist)
-export const initializeAdmin = async (): Promise<void> => {
-  try {
-    const adminEmail = 'admin@gmail.com';
-    const adminPassword = '123456';
-    
-    // Try to sign in first to check if admin exists
-    try {
-      await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
-      console.log('Admin account already exists');
-    } catch (error: any) {
-      // If user doesn't exist, create it
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        try {
-          const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
-          const user = userCredential.user;
-          
-          // Update profile
-          await updateProfile(user, { displayName: 'Admin' });
-          
-          // Create admin profile
-          const adminProfile: UserProfile = {
-            uid: user.uid,
-            email: user.email!,
-            displayName: 'Admin',
-            role: 'admin',
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now()
-          };
-          
-          await setDoc(doc(db, USERS_COLLECTION, user.uid), adminProfile);
-          
-          // Store in admin collection
-          await createOrUpdateAdmin(adminEmail, adminPassword, user.uid);
-          
-          console.log('Admin account created successfully');
-        } catch (createError) {
-          console.error('Error creating admin account:', createError);
-          // If creation fails, admin might already exist or there's another issue
-        }
-      } else {
-        console.error('Error checking admin account:', error);
-      }
-    }
-  } catch (error) {
-    console.error('Error initializing admin:', error);
-  }
-};
-
 // Sign in user
 export const signIn = async (email: string, password: string): Promise<User> => {
   try {
-    // Check if this is admin login attempt
-    const isAdmin = email.toLowerCase() === 'admin@gmail.com' && password === '123456';
-    
-    let userCredential;
-    try {
-      userCredential = await signInWithEmailAndPassword(auth, email, password);
-    } catch (error: any) {
-      // If admin account doesn't exist, create it
-      if (isAdmin && (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential')) {
-        try {
-          // Create admin account
-          userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          const newUser = userCredential.user;
-          
-          // Update profile
-          await updateProfile(newUser, { displayName: 'Admin' });
-          
-          // Create admin profile
-          const adminProfile: UserProfile = {
-            uid: newUser.uid,
-            email: newUser.email!,
-            displayName: 'Admin',
-            role: 'admin',
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now()
-          };
-          
-          await setDoc(doc(db, USERS_COLLECTION, newUser.uid), adminProfile);
-          
-          // Store in admin collection
-          await createOrUpdateAdmin(email, password, newUser.uid);
-          
-          return newUser;
-        } catch (createError: any) {
-          console.error('Error creating admin account:', createError);
-          throw createError;
-        }
-      } else {
-        throw error;
-      }
-    }
-    
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    
-    // If admin login, store credentials and update role
-    if (isAdmin) {
-      // Store admin credentials in Firestore admin collection
-      await createOrUpdateAdmin(email, password, user.uid);
-      
-      // Update user profile to have admin role
-      const userProfile = await getUserProfile(user.uid);
-      if (userProfile) {
-        // Update existing profile
-        await updateUserProfile(user.uid, { role: 'admin' });
-      } else {
-        // Create new admin profile
-        const adminProfile: UserProfile = {
-          uid: user.uid,
-          email: user.email!,
-          displayName: 'Admin',
-          role: 'admin',
-          createdAt: Timestamp.now(),
-          updatedAt: Timestamp.now()
-        };
-        await setDoc(doc(db, USERS_COLLECTION, user.uid), adminProfile);
-      }
+
+    if (isAdminUser(user.email, null)) {
+      await ensureAdminProfile(user);
     }
-    
+
     return user;
   } catch (error) {
     console.error('Error signing in:', error);
@@ -279,7 +186,6 @@ export const addAddress = async (
     const userProfile = await getUserProfile(uid);
     const addresses = userProfile?.addresses || [];
     
-    // If this is the first address, make it default
     if (addresses.length === 0) {
       address.isDefault = true;
     }
@@ -328,4 +234,3 @@ export const deleteAddress = async (uid: string, index: number): Promise<void> =
     throw error;
   }
 };
-

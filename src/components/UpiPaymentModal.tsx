@@ -8,10 +8,14 @@ import { CheckCircle2, Copy, Smartphone, AlertCircle, Loader2 } from "lucide-rea
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-// ── Configure your UPI ID and merchant name here ──────────────────────────────
-const MERCHANT_UPI_ID = "jayjobanputra007@okaxis";
-const MERCHANT_NAME   = "Jay Jobanputra";
-// ─────────────────────────────────────────────────────────────────────────────
+const MERCHANT_UPI_ID = import.meta.env.VITE_MERCHANT_UPI_ID;
+const MERCHANT_NAME = import.meta.env.VITE_MERCHANT_NAME || "AromaWrap";
+
+if (!MERCHANT_UPI_ID) {
+  throw new Error(
+    "Missing VITE_MERCHANT_UPI_ID. Copy .env.example to .env.local and set your UPI ID."
+  );
+}
 
 interface UpiPaymentModalProps {
   open: boolean;

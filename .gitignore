@@ -7,28 +7,43 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies & build output
 node_modules
 dist
 dist-ssr
+build
+.vite
+
+# Local env files — never commit real secrets
+.env
+.env.*
+!.env.example
 *.local
 
-# Editor directories and files
+# Keys, certs, and service accounts
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+**/serviceAccount*.json
+**/firebase-adminsdk*.json
+credentials.json
+secrets/
+*.secret
+
+# OS & editor
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Environment & secrets (never commit)
-.env
-.env.*
-!.env.example
-*.pem
-*.key
-**/serviceAccount*.json
-**/firebase-adminsdk*.json
-credentials.json
+# npm auth (if present)
+.npmrc

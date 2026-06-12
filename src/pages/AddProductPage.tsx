@@ -30,9 +30,12 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { isAdminUser } from "@/services/authService";
 
 const AddProductPage = () => {
   const navigate = useNavigate();
+  const { user, userProfile, loading } = useAuth();
   const [imagePreview, setImagePreview] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
@@ -49,10 +52,12 @@ const AddProductPage = () => {
     ingredients: "",
   });
 
-  // Check if user is admin
-  const userEmail = localStorage.getItem("userEmail");
-  if (userEmail !== "admin@gmail.com") {
+  if (!loading && !isAdminUser(user?.email, userProfile)) {
     navigate("/account");
+    return null;
+  }
+
+  if (loading) {
     return null;
   }
 

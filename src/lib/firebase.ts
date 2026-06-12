@@ -1,31 +1,40 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyB7Ob8BX47j2W5mzxO-d5NlnMlyA-6JDRc",
-  authDomain: "aromawarap.firebaseapp.com",
-  projectId: "aromawarap",
-  storageBucket: "aromawarap.firebasestorage.app",
-  messagingSenderId: "784780067396",
-  appId: "1:784780067396:web:2be7b30e2c0257a80e7211",
-  measurementId: "G-9D24PK2TRW"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
+const requiredEnvKeys = [
+  "VITE_FIREBASE_API_KEY",
+  "VITE_FIREBASE_AUTH_DOMAIN",
+  "VITE_FIREBASE_PROJECT_ID",
+  "VITE_FIREBASE_STORAGE_BUCKET",
+  "VITE_FIREBASE_MESSAGING_SENDER_ID",
+  "VITE_FIREBASE_APP_ID",
+] as const;
+
+const missing = requiredEnvKeys.filter((key) => !import.meta.env[key]);
+if (missing.length > 0) {
+  throw new Error(
+    `Missing Firebase env vars: ${missing.join(", ")}. Copy .env.example to .env.local and fill in values.`
+  );
+}
+
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase services
-const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
 export { app, analytics, auth, db, storage };
-
-

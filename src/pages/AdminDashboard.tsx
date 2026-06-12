@@ -62,6 +62,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
+import { isAdminUser } from "@/services/authService";
 import { getAllOrders, getOrderById, updateOrderStatus, updateOnlinePaymentReview, Order } from "@/services/orderService";
 
 interface Product {
@@ -143,10 +144,7 @@ const AdminDashboard = () => {
   const [upiRejectReason, setUpiRejectReason] = useState("");
   const [upiReviewLoading, setUpiReviewLoading] = useState(false);
 
-  const isAdmin =
-    !!user &&
-    (user.email?.toLowerCase() === "admin@gmail.com" ||
-      userProfile?.role === "admin");
+  const isAdmin = !!user && isAdminUser(user.email, userProfile);
 
   useEffect(() => {
     setUpiRejectMode(false);
@@ -155,9 +153,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (!loading) {
-      const allowed =
-        user?.email?.toLowerCase() === "admin@gmail.com" ||
-        userProfile?.role === "admin";
+      const allowed = isAdminUser(user?.email, userProfile);
       if (!user || !allowed) {
         navigate("/account");
       }
