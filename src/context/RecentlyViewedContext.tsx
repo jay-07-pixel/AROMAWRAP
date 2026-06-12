@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
 interface RecentlyViewedProduct {
   id: string;
@@ -37,19 +37,17 @@ export const RecentlyViewedProvider = ({ children }: { children: ReactNode }) =>
     localStorage.setItem("recentlyViewed", JSON.stringify(products));
   }, [products]);
 
-  const addProduct = (product: RecentlyViewedProduct) => {
+  const addProduct = useCallback((product: RecentlyViewedProduct) => {
     setProducts((prev) => {
-      // Remove if already exists to avoid duplicates
       const filtered = prev.filter((p) => p.id !== product.id);
-      // Add to beginning and limit to 10 products
       return [product, ...filtered].slice(0, 10);
     });
-  };
+  }, []);
 
-  const clearAll = () => {
+  const clearAll = useCallback(() => {
     setProducts([]);
     localStorage.removeItem("recentlyViewed");
-  };
+  }, []);
 
   return (
     <RecentlyViewedContext.Provider value={{ products, addProduct, clearAll }}>

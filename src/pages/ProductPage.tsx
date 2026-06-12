@@ -212,7 +212,7 @@ const productData = {
   "prod-1": {
     id: "prod-1",
     name: "Lavender",
-    price: 349,
+    price: 2,
     originalPrice: 449,
     image: img15,
     badge: "New",
@@ -607,7 +607,7 @@ const ProductPage = () => {
 
   const product = productData[productId as keyof typeof productData];
 
-  // Track recently viewed products
+  // Track recently viewed products — depend only on product.id to avoid infinite loop
   useEffect(() => {
     if (product) {
       addProduct({
@@ -619,7 +619,8 @@ const ProductPage = () => {
         badge: product.badge,
       });
     }
-  }, [product, addProduct]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.id]);
 
   if (!product) {
     return (
@@ -697,7 +698,6 @@ const ProductPage = () => {
                   alt={product.name}
                   loading="eager"
                   decoding="async"
-                  fetchPriority="high"
                   className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                 />
                 

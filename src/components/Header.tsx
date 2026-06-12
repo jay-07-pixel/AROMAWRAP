@@ -1,4 +1,4 @@
-import { Search, ShoppingCart, User, ChevronDown } from "lucide-react";
+import { Search, ShoppingCart, User, ChevronDown, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -11,14 +11,35 @@ import {
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { WishlistDrawer } from "@/components/WishlistDrawer";
-import { useNavigate } from "react-router-dom";
-import aromaWrapLogo from "@/assets/logowebsite.jpeg";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import aromaWrapLogo from "@/assets/aromawrap_logo.png";
 
 export const Header = () => {
   const [searchPlaceholder, setSearchPlaceholder] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const { totalItems, setIsCartOpen } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, userProfile, loading: authLoading } = useAuth();
+
+  const isAdmin =
+    !authLoading &&
+    !!user &&
+    (user.email?.toLowerCase() === "admin@gmail.com" ||
+      userProfile?.role === "admin");
+  const showDashboardButton = isAdmin && !location.pathname.startsWith("/admin");
+
+  const isLoggedIn = !!user;
+  const resolvedName =
+    userProfile?.displayName?.trim() ||
+    user?.displayName?.trim() ||
+    "";
+  const emailLocal = user?.email?.split("@")[0]?.trim() || "";
+  const accountTitle = isLoggedIn
+    ? resolvedName || emailLocal || "Account"
+    : "Account";
+  const accountSubtitle = isLoggedIn ? "My account" : "Sign In";
 
   // Auto-typing search placeholder text
   const searchSuggestions = [
@@ -112,19 +133,19 @@ export const Header = () => {
       <header className="sticky top-0 z-50 bg-background border-b">
         <div className="container mx-auto px-4">
           {/* Top Section */}
-          <div className="flex items-center justify-between py-2">
-            {/* Logo */}
-            <div className="flex items-center">
+          <div className="flex items-center justify-between gap-2 py-2 min-w-0">
+            {/* Logo — smaller on narrow screens so wishlist / account / cart stay visible */}
+            <div className="flex min-w-0 shrink items-center max-w-[min(52vw,220px)] sm:max-w-none">
               <button
                 type="button"
                 onClick={() => navigate("/")}
-                className="hover:opacity-80 transition-opacity"
+                className="hover:opacity-80 transition-opacity min-w-0"
                 aria-label="Go to home"
               >
                 <img 
                   src={aromaWrapLogo} 
                   alt="AromaWrap" 
-                  className="h-20 md:h-28 w-auto"
+                  className="h-14 w-auto max-h-14 sm:h-24 sm:max-h-none md:h-32 lg:h-36 max-w-full sm:max-w-[280px] md:max-w-[380px] lg:max-w-[420px] object-contain object-left"
                 />
               </button>
             </div>
@@ -152,27 +173,42 @@ export const Header = () => {
               </form>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:inline-flex">
+            {/* Actions — always show wishlist on mobile (was hidden below sm) */}
+            <div className="flex items-center shrink-0 gap-0.5 sm:gap-2 md:gap-3">
+              <div className="inline-flex shrink-0">
                 <WishlistDrawer />
               </div>
+
+              {showDashboardButton && (
+                <Button
+                  variant="outline"
+                  className="h-9 w-9 p-0 sm:h-11 sm:w-auto sm:px-3 rounded-xl border-amber-500/90 text-foreground hover:bg-amber-50/60 shrink-0"
+                  onClick={() => navigate("/admin")}
+                  aria-label="Go to admin dashboard"
+                >
+                  <LayoutDashboard className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </Button>
+              )}
               
               {/* Enhanced User Account Button */}
               <Button 
                 variant="ghost" 
-                className="h-14 px-4 flex items-center gap-3 hover:bg-accent/20 hover:text-primary transition-all duration-300 group relative overflow-hidden"
+                className="h-9 max-h-9 px-1.5 sm:max-h-none sm:h-10 sm:px-2 md:h-12 md:px-3 lg:h-14 lg:px-4 flex items-center gap-1 sm:gap-2 md:gap-3 rounded-lg sm:rounded-xl border-2 border-primary/25 bg-background/80 hover:bg-accent/20 hover:text-primary hover:border-primary/45 transition-all duration-300 group relative overflow-hidden shrink-0 min-w-0"
                 onClick={() => navigate("/account")}
+                aria-label={isLoggedIn ? `Account: ${accountTitle}` : "Sign in to account"}
               >
-                <div className="relative">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/50 transition-all duration-300">
-                    <User className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
+                <div className="relative shrink-0">
+                  <div className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/50 transition-all duration-300">
+                    <User className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 group-hover:scale-110 transition-transform duration-300" />
                   </div>
-                  <div className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-background animate-pulse"></div>
+                  {isLoggedIn && (
+                    <div className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 bg-green-500 rounded-full border-2 border-background animate-pulse" aria-hidden />
+                  )}
                 </div>
-                <div className="hidden lg:flex flex-col items-start">
-                  <span className="text-sm font-medium">Account</span>
-                  <span className="text-xs text-muted-foreground">Sign In</span>
+                <div className="hidden min-[400px]:flex flex-col items-start min-w-0 max-w-[72px] min-[480px]:max-w-[120px] md:max-w-[160px] lg:max-w-[200px]">
+                  <span className="text-[11px] font-medium truncate w-full sm:text-xs md:text-sm leading-tight">{accountTitle}</span>
+                  <span className="text-[9px] text-muted-foreground truncate w-full sm:text-[10px] md:text-xs leading-tight">{accountSubtitle}</span>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
               </Button>
@@ -180,12 +216,12 @@ export const Header = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="relative h-14 w-14 hover:bg-primary/10 hover:text-primary transition-all duration-300 group" 
+                className="relative h-9 w-9 rounded-md bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary transition-all duration-300 group sm:h-10 sm:w-10 sm:rounded-lg md:h-11 md:w-11 [&_svg]:h-5 [&_svg]:w-5 md:[&_svg]:h-6 md:[&_svg]:w-6" 
                 onClick={() => setIsCartOpen(true)}
               >
-                <ShoppingCart className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
+                <ShoppingCart className="h-5 w-5 md:h-6 md:w-6 group-hover:scale-110 transition-transform duration-300" />
                 {totalItems > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-6 min-w-6 flex items-center justify-center p-0 text-sm font-bold bg-primary text-primary-foreground animate-bounce">
+                  <Badge className="absolute -top-0.5 -right-0.5 h-4 min-w-4 flex items-center justify-center px-0.5 text-[10px] font-bold bg-primary text-primary-foreground animate-bounce md:h-5 md:min-w-5 md:text-xs">
                     {totalItems}
                   </Badge>
                 )}

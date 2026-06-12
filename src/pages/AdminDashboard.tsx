@@ -44,6 +44,8 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  Check,
+  X,
   Plus,
   Download,
   Filter,
@@ -60,7 +62,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { getAllOrders, updateOrderStatus, Order } from "@/services/orderService";
+import { getAllOrders, getOrderById, updateOrderStatus, updateOnlinePaymentReview, Order } from "@/services/orderService";
 
 interface Product {
   id: string;
@@ -78,12 +80,13 @@ interface Product {
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { user, userProfile, loading } = useAuth();
+
   const [activeTab, setActiveTab] = useState("overview");
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [imagePreview, setImagePreview] = useState<string>("");
 
-  // Form states
   const [newProduct, setNewProduct] = useState({
     name: "",
     category: "",
@@ -94,133 +97,6 @@ const AdminDashboard = () => {
     badge: "",
   });
 
-  // Check if user is admin using AuthContext
-  const { user, userProfile, loading } = useAuth();
-  
-  // Redirect if not admin
-  useEffect(() => {
-    if (!loading) {
-      const isAdmin = user?.email?.toLowerCase() === "admin@gmail.com" || 
-                     userProfile?.role === "admin";
-      
-      if (!user || !isAdmin) {
-    navigate("/account");
-      }
-    }
-  }, [user, userProfile, loading, navigate]);
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  const isAdmin = user?.email?.toLowerCase() === "admin@gmail.com" || 
-                 userProfile?.role === "admin";
-  
-  if (!user || !isAdmin) {
-    return null; // Will redirect via useEffect
-  }
-
-  // Load products from localStorage
-  useEffect(() => {
-    const storedProducts = localStorage.getItem("adminProducts");
-    if (storedProducts) {
-      setProducts(JSON.parse(storedProducts));
-    }
-  }, []);
-
-  // Load orders from Firestore
-  useEffect(() => {
-    const loadOrders = async () => {
-      if (isAdmin) {
-        setIsLoadingOrders(true);
-        try {
-          const orders = await getAllOrders();
-          
-          // Transform orders to match the display format
-          const formattedOrders = orders.map((order: Order) => {
-            // Get first item for display (or combine all items)
-            const firstItem = order.items[0];
-            const productName = order.items.length > 1 
-              ? `${firstItem.name} + ${order.items.length - 1} more`
-              : firstItem.name;
-            
-            return {
-              id: order.id || `ORD-${Date.now()}`,
-              customer: order.shippingAddress.name,
-              email: order.shippingAddress.email || order.shippingAddress.phone,
-              product: productName,
-              amount: order.total,
-              status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
-              date: order.createdAt?.toDate().toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-              orderData: order, // Keep full order data for actions
-            };
-          });
-          
-          setRecentOrders(formattedOrders);
-          
-          // Update stats based on real data
-          const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-          const totalOrders = orders.length;
-          const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
-          
-          setStats([
-    {
-      title: "Total Revenue",
-              value: `₹${totalRevenue.toLocaleString('en-IN')}`,
-              change: "+0%",
-      icon: IndianRupee,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-    },
-    {
-      title: "Total Orders",
-              value: totalOrders.toString(),
-              change: "+0%",
-      icon: ShoppingCart,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-    },
-    {
-      title: "Total Products",
-              value: products.length.toString(),
-              change: "0",
-      icon: Package,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-    },
-    {
-              title: "Delivered Orders",
-              value: deliveredOrders.toString(),
-              change: "+0%",
-      icon: Users,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-    },
-          ]);
-        } catch (error) {
-          console.error("Error loading orders:", error);
-          toast({
-            title: "Error",
-            description: "Failed to load orders",
-            variant: "destructive",
-          });
-        } finally {
-          setIsLoadingOrders(false);
-        }
-      }
-    };
-
-    loadOrders();
-  }, [isAdmin, products.length]);
-
-  // Stats data - will be populated from Firestore
   const [stats, setStats] = useState([
     {
       title: "Total Revenue",
@@ -256,7 +132,6 @@ const AdminDashboard = () => {
     },
   ]);
 
-  // Orders data - will be populated from Firestore
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -264,6 +139,219 @@ const AdminDashboard = () => {
   const [isEditOrderOpen, setIsEditOrderOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [newOrderStatus, setNewOrderStatus] = useState<string>("");
+  const [upiRejectMode, setUpiRejectMode] = useState(false);
+  const [upiRejectReason, setUpiRejectReason] = useState("");
+  const [upiReviewLoading, setUpiReviewLoading] = useState(false);
+
+  const isAdmin =
+    !!user &&
+    (user.email?.toLowerCase() === "admin@gmail.com" ||
+      userProfile?.role === "admin");
+
+  useEffect(() => {
+    setUpiRejectMode(false);
+    setUpiRejectReason("");
+  }, [selectedOrder?.id]);
+
+  useEffect(() => {
+    if (!loading) {
+      const allowed =
+        user?.email?.toLowerCase() === "admin@gmail.com" ||
+        userProfile?.role === "admin";
+      if (!user || !allowed) {
+        navigate("/account");
+      }
+    }
+  }, [user, userProfile, loading, navigate]);
+
+  useEffect(() => {
+    if (loading || !isAdmin) return;
+    const storedProducts = localStorage.getItem("adminProducts");
+    if (storedProducts) {
+      setProducts(JSON.parse(storedProducts));
+    }
+  }, [loading, isAdmin]);
+
+  useEffect(() => {
+    if (loading || !isAdmin) {
+      if (!loading && !isAdmin) {
+        setIsLoadingOrders(false);
+      }
+      return;
+    }
+
+    const loadOrders = async () => {
+      setIsLoadingOrders(true);
+      try {
+        const orders = await getAllOrders();
+
+        const formattedOrders = orders.map((order: Order) => {
+          const firstItem = order.items[0];
+          const productName =
+            order.items.length > 1
+              ? `${firstItem.name} + ${order.items.length - 1} more`
+              : firstItem.name;
+
+          return {
+            id: order.id || `ORD-${Date.now()}`,
+            customer: order.shippingAddress.name,
+            email: order.shippingAddress.email || order.shippingAddress.phone,
+            product: productName,
+            amount: order.total,
+            status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+            date:
+              order.createdAt?.toDate().toISOString().split("T")[0] ||
+              new Date().toISOString().split("T")[0],
+            orderData: order,
+          };
+        });
+
+        setRecentOrders(formattedOrders);
+
+        const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+        const totalOrders = orders.length;
+        const deliveredOrders = orders.filter((o) => o.status === "delivered").length;
+
+        setStats([
+          {
+            title: "Total Revenue",
+            value: `₹${totalRevenue.toLocaleString("en-IN")}`,
+            change: "+0%",
+            icon: IndianRupee,
+            color: "text-green-600",
+            bgColor: "bg-green-50",
+          },
+          {
+            title: "Total Orders",
+            value: totalOrders.toString(),
+            change: "+0%",
+            icon: ShoppingCart,
+            color: "text-blue-600",
+            bgColor: "bg-blue-50",
+          },
+          {
+            title: "Total Products",
+            value: products.length.toString(),
+            change: "0",
+            icon: Package,
+            color: "text-purple-600",
+            bgColor: "bg-purple-50",
+          },
+          {
+            title: "Delivered Orders",
+            value: deliveredOrders.toString(),
+            change: "+0%",
+            icon: Users,
+            color: "text-orange-600",
+            bgColor: "bg-orange-50",
+          },
+        ]);
+      } catch (error) {
+        console.error("Error loading orders:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load orders",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingOrders(false);
+      }
+    };
+
+    loadOrders();
+  }, [loading, isAdmin, products.length]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
+    return null;
+  }
+
+  const syncOrderInList = (fresh: Order) => {
+    setRecentOrders((prev) =>
+      prev.map((row) => {
+        const rid = row.orderData?.id ?? row.id;
+        if (rid === fresh.id) {
+          return {
+            ...row,
+            id: fresh.id,
+            orderData: fresh,
+          };
+        }
+        return row;
+      })
+    );
+  };
+
+  const handleApproveUpi = async () => {
+    if (!selectedOrder?.id) return;
+    setUpiReviewLoading(true);
+    try {
+      await updateOnlinePaymentReview(selectedOrder.id, "approve");
+      const fresh = await getOrderById(selectedOrder.id);
+      if (fresh) {
+        setSelectedOrder(fresh);
+        syncOrderInList(fresh);
+      }
+      toast({
+        title: "Payment approved",
+        description: "The customer will see that their order is confirmed.",
+      });
+      setUpiRejectMode(false);
+    } catch (e: any) {
+      toast({
+        title: "Could not update",
+        description: e?.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpiReviewLoading(false);
+    }
+  };
+
+  const handleSubmitUpiReject = async () => {
+    if (!selectedOrder?.id) return;
+    if (!upiRejectReason.trim()) {
+      toast({
+        title: "Reason required",
+        description: "Please enter a message for the customer.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setUpiReviewLoading(true);
+    try {
+      await updateOnlinePaymentReview(selectedOrder.id, "reject", upiRejectReason);
+      const fresh = await getOrderById(selectedOrder.id);
+      if (fresh) {
+        setSelectedOrder(fresh);
+        syncOrderInList(fresh);
+      }
+      toast({
+        title: "Rejection saved",
+        description: "The customer can read your message in their orders list.",
+      });
+      setUpiRejectMode(false);
+      setUpiRejectReason("");
+    } catch (e: any) {
+      toast({
+        title: "Could not update",
+        description: e?.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpiReviewLoading(false);
+    }
+  };
 
   // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1024,11 +1112,87 @@ const AdminDashboard = () => {
                       <div className="p-3 bg-muted/30 rounded-lg">
                         <p className="text-sm text-muted-foreground">Payment Status</p>
                         <p className="font-medium">
-                          {selectedOrder.paymentStatus.charAt(0).toUpperCase() + selectedOrder.paymentStatus.slice(1)}
+                          {selectedOrder.onlinePaymentReview === "pending"
+                            ? "Awaiting UPI verification"
+                            : selectedOrder.paymentStatus.charAt(0).toUpperCase() +
+                              selectedOrder.paymentStatus.slice(1)}
                         </p>
                       </div>
                     </div>
                   </div>
+
+                  {selectedOrder.paymentMethod === "online" &&
+                    selectedOrder.onlinePaymentReview === "pending" && (
+                      <div className="rounded-lg border-2 border-amber-400 bg-amber-50 p-4 space-y-3">
+                        <p className="font-semibold text-amber-950">
+                          Customer tapped &quot;I have paid&quot; — confirm or reject their UPI payment
+                        </p>
+                        {!upiRejectMode ? (
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              className="bg-green-600 hover:bg-green-700"
+                              disabled={upiReviewLoading}
+                              onClick={handleApproveUpi}
+                            >
+                              <Check className="h-4 w-4 mr-2" />
+                              Confirm (order placed)
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              disabled={upiReviewLoading}
+                              onClick={() => setUpiRejectMode(true)}
+                            >
+                              <X className="h-4 w-4 mr-2" />
+                              Reject
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <Label htmlFor="upi-reject-reason">Reason (customer will see this)</Label>
+                            <Textarea
+                              id="upi-reject-reason"
+                              rows={3}
+                              placeholder="e.g. Amount or UTR did not match our records"
+                              value={upiRejectReason}
+                              onChange={(e) => setUpiRejectReason(e.target.value)}
+                              className="border-2"
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                disabled={upiReviewLoading}
+                                onClick={() => {
+                                  setUpiRejectMode(false);
+                                  setUpiRejectReason("");
+                                }}
+                              >
+                                Back
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                disabled={upiReviewLoading || !upiRejectReason.trim()}
+                                onClick={handleSubmitUpiReject}
+                              >
+                                Submit rejection
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                  {selectedOrder.paymentMethod === "online" &&
+                    selectedOrder.onlinePaymentReview === "rejected" &&
+                    selectedOrder.paymentRejectionReason && (
+                      <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-900">
+                        <strong>Rejection note (customer-facing):</strong>{" "}
+                        {selectedOrder.paymentRejectionReason}
+                      </div>
+                    )}
 
                   {/* Order Dates */}
                   {selectedOrder.createdAt && (

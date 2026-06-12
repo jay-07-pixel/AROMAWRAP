@@ -9,11 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { createOrder } from "@/services/orderService";
+import { Timestamp } from "firebase/firestore";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ShoppingBag, CreditCard, Truck, MapPin, Phone, Mail, User, Lock, ShieldCheck, Package } from "lucide-react";
+import { ShoppingBag, CreditCard, Truck, MapPin, Phone, Mail, User, Lock, ShieldCheck, Package, QrCode } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import UpiPaymentModal from "@/components/UpiPaymentModal";
 
 const CheckoutPage = () => {
   const { items, totalPrice, clearCart } = useCart();
@@ -23,6 +25,8 @@ const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPincodeFetching, setIsPincodeFetching] = useState(false);
+  const [showUpiModal, setShowUpiModal] = useState(false);
+  const [pendingOrderData, setPendingOrderData] = useState<Parameters<typeof createOrder>[0] | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -130,11 +134,45 @@ const CheckoutPage = () => {
       return;
     }
 
+    // For online payment, build the order data and show UPI modal
+    if (paymentMethod === "online") {
+      const shippingCost = 0;
+      const finalTotal = totalPrice + shippingCost;
+
+      const orderData = {
+        userId: user.uid,
+        items: items.map(item => ({
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+        })),
+        total: finalTotal,
+        status: 'pending' as const,
+        shippingAddress: {
+          name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode,
+        },
+        paymentMethod: 'online' as const,
+        paymentStatus: 'pending' as const,
+      };
+
+      setPendingOrderData(orderData);
+      setShowUpiModal(true);
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
       // Calculate shipping cost
-      const shippingCost = totalPrice >= 499 ? 0 : 49;
+      const shippingCost = 0;
       const finalTotal = totalPrice + shippingCost;
 
       // Map cart items to order items format
@@ -161,8 +199,8 @@ const CheckoutPage = () => {
           state: formData.state,
           pincode: formData.pincode,
         },
-        paymentMethod: paymentMethod === "cod" ? 'cod' as const : 'online' as const,
-        paymentStatus: paymentMethod === "cod" ? 'pending' as const : 'pending' as const,
+        paymentMethod: 'cod' as const,
+        paymentStatus: 'pending' as const,
       };
 
       // Save order to Firestore
@@ -187,6 +225,30 @@ const CheckoutPage = () => {
       });
       setIsProcessing(false);
     }
+  };
+
+  // Called after user confirms UPI payment inside the modal
+  const handleUpiPaymentConfirmed = async () => {
+    if (!pendingOrderData) return;
+
+    const orderData = {
+      ...pendingOrderData,
+      paymentStatus: 'pending' as const,
+      onlinePaymentReview: 'pending' as const,
+      userClaimedPaidAt: Timestamp.now(),
+    };
+
+    const orderId = await createOrder(orderData);
+    await clearCart(true);
+
+    toast({
+      title: "Order submitted",
+      description: `Order #${orderId} is placed. We will verify your UPI payment shortly. You will see updates on this page.`,
+    });
+
+    setShowUpiModal(false);
+    setPendingOrderData(null);
+    navigate("/account");
   };
 
   // If cart is empty, redirect to home
@@ -225,7 +287,7 @@ const CheckoutPage = () => {
     );
   }
 
-  const shippingCost = totalPrice >= 499 ? 0 : 49;
+  const shippingCost = 0;
   const finalTotal = totalPrice + shippingCost;
 
   return (
@@ -409,13 +471,13 @@ const CheckoutPage = () => {
                           </div>
                         </Label>
                       </div>
-                      <div className="flex items-center space-x-3 border-2 rounded-lg p-4 hover:border-[#C75D5D] transition-all cursor-pointer">
+                      <div className={`flex items-center space-x-3 border-2 rounded-lg p-4 hover:border-[#C75D5D] transition-all cursor-pointer ${paymentMethod === "online" ? "border-[#DC143C] bg-[#FFF1F1]" : ""}`}>
                         <RadioGroupItem value="online" id="online" />
                         <Label htmlFor="online" className="flex items-center gap-3 cursor-pointer flex-1">
-                          <Lock className="h-5 w-5 text-[#DC143C]" />
+                          <QrCode className="h-5 w-5 text-[#DC143C]" />
                           <div>
-                            <p className="font-semibold">Online Payment</p>
-                            <p className="text-sm text-muted-foreground">Credit/Debit Card, UPI, Net Banking</p>
+                            <p className="font-semibold">Online Payment (UPI)</p>
+                            <p className="text-sm text-muted-foreground">Pay via GPay, PhonePe, Paytm & all UPI apps</p>
                           </div>
                         </Label>
                       </div>
@@ -484,11 +546,9 @@ const CheckoutPage = () => {
                           <span className="font-medium">₹{shippingCost.toFixed(2)}</span>
                         )}
                       </div>
-                      {totalPrice < 499 && (
-                        <p className="text-xs text-[#DC143C] bg-[#FFF1F1] p-2 rounded">
-                          Add ₹{(499 - totalPrice).toFixed(2)} more for FREE shipping!
-                        </p>
-                      )}
+                      <p className="text-xs text-green-600 bg-green-50 p-2 rounded font-medium">
+                        🎉 Free shipping on all orders!
+                      </p>
                     </div>
 
                     <Separator />
@@ -568,6 +628,17 @@ const CheckoutPage = () => {
       </main>
 
       <Footer />
+
+      {/* UPI Payment Modal — shown only for online payment */}
+      <UpiPaymentModal
+        open={showUpiModal}
+        amount={pendingOrderData?.total ?? finalTotal}
+        onConfirmPayment={handleUpiPaymentConfirmed}
+        onClose={() => {
+          setShowUpiModal(false);
+          setPendingOrderData(null);
+        }}
+      />
     </div>
   );
 };

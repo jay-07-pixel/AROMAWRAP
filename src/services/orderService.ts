@@ -38,6 +38,12 @@ export interface Order {
   };
   paymentMethod: 'cod' | 'online';
   paymentStatus: 'pending' | 'paid' | 'failed';
+  /** Set when user completes UPI flow ("I have paid") — admin must approve or reject */
+  onlinePaymentReview?: 'pending' | 'approved' | 'rejected';
+  /** Filled by admin if payment claim is rejected */
+  paymentRejectionReason?: string;
+  /** When the customer clicked "I have paid" in the UPI modal */
+  userClaimedPaidAt?: Timestamp;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
@@ -137,7 +143,12 @@ export const subscribeToUserOrders = (
       } as Order));
       callback(orders);
     }, (error) => {
-      // If orderBy fails, try without it
+      if (error.code === 'permission-denied') {
+        // Firestore rules don't allow this read — return empty list silently
+        callback([]);
+        return;
+      }
+      // If orderBy index is missing, fall back to unordered query
       if (error.code === 'failed-precondition') {
         const q2 = query(
           collection(db, ORDERS_COLLECTION),
@@ -148,17 +159,20 @@ export const subscribeToUserOrders = (
             id: doc.id,
             ...doc.data()
           } as Order));
-          // Sort manually
           orders.sort((a, b) => {
             const aTime = a.createdAt?.toMillis() || 0;
             const bTime = b.createdAt?.toMillis() || 0;
             return bTime - aTime;
           });
           callback(orders);
+        }, (err) => {
+          console.error('Error in fallback order listener:', err);
+          callback([]);
         });
         return unsubscribe2;
       }
       console.error('Error subscribing to user orders:', error);
+      callback([]);
     });
     
     return unsubscribe;
@@ -218,6 +232,30 @@ export const updatePaymentStatus = async (
   } catch (error) {
     console.error('Error updating payment status:', error);
     throw error;
+  }
+};
+
+/** Admin approves or rejects a customer's UPI "I have paid" claim (online orders only). */
+export const updateOnlinePaymentReview = async (
+  id: string,
+  action: 'approve' | 'reject',
+  rejectionReason?: string
+): Promise<void> => {
+  const docRef = doc(db, ORDERS_COLLECTION, id);
+  if (action === 'approve') {
+    await updateDoc(docRef, {
+      paymentStatus: 'paid',
+      onlinePaymentReview: 'approved',
+      updatedAt: Timestamp.now()
+    });
+  } else {
+    const reason = (rejectionReason?.trim() || 'Payment could not be verified. Please contact support with your UTR.');
+    await updateDoc(docRef, {
+      paymentStatus: 'failed',
+      onlinePaymentReview: 'rejected',
+      paymentRejectionReason: reason,
+      updatedAt: Timestamp.now()
+    });
   }
 };
 

@@ -18,6 +18,36 @@ import { useAuth } from "@/context/AuthContext";
 import { signIn, signUp, logout, updateUserProfile, addAddress } from "@/services/authService";
 import { getUserOrders, subscribeToUserOrders } from "@/services/orderService";
 
+/** UPI online flow: messages while admin has not decided yet, or after approve / reject */
+const OrderUPIPaymentNotice = ({ order }: { order: any }) => {
+  if (order.paymentMethod !== "online" || !order.onlinePaymentReview) return null;
+  if (order.onlinePaymentReview === "pending") {
+    return (
+      <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+        You said you paid via UPI. The store is verifying your payment. You will see an update here soon.
+      </div>
+    );
+  }
+  if (order.onlinePaymentReview === "approved") {
+    return (
+      <div className="mb-3 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-900">
+        Payment confirmed. Your order is placed and will be processed.
+      </div>
+    );
+  }
+  if (order.onlinePaymentReview === "rejected") {
+    return (
+      <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+        <p className="font-medium">Payment could not be verified</p>
+        {order.paymentRejectionReason ? (
+          <p className="mt-1">{order.paymentRejectionReason}</p>
+        ) : null}
+      </div>
+    );
+  }
+  return null;
+};
+
 const AccountPage = () => {
   const navigate = useNavigate();
   const { items: wishlistItems } = useWishlist();
@@ -753,6 +783,8 @@ const AccountPage = () => {
                             </Badge>
                           </div>
 
+                          <OrderUPIPaymentNotice order={order} />
+
                           {/* Order Items - Compact Horizontal Layout */}
                           <div className="flex items-start gap-4 pb-3 border-b">
                             {order.items.map((item: any, idx: number) => (
@@ -1009,6 +1041,7 @@ const AccountPage = () => {
                           </div>
                         </CardHeader>
                         <CardContent className="pt-6">
+                          <OrderUPIPaymentNotice order={order} />
                           <div className="grid gap-4 mb-4">
                             {order.items.slice(0, 3).map((item: any, idx: number) => (
                               <div

@@ -34,12 +34,12 @@ export const WishlistDrawer = () => {
       <Button
         variant="ghost"
         size="icon"
-        className="relative h-14 w-14 hover:bg-red-50 hover:text-red-600 transition-all duration-300 group"
+        className="relative h-9 w-9 rounded-md bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary transition-all duration-300 group sm:h-10 sm:w-10 sm:rounded-lg md:h-11 md:w-11 [&_svg]:h-5 [&_svg]:w-5 md:[&_svg]:h-6 md:[&_svg]:w-6"
         onClick={() => setIsOpen(true)}
       >
-        <Heart className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
+        <Heart className="h-5 w-5 md:h-6 md:w-6 group-hover:scale-110 transition-transform duration-300" />
         {items.length > 0 && (
-          <Badge className="absolute -top-1 -right-1 h-6 min-w-6 flex items-center justify-center p-0 text-sm font-bold bg-red-500 text-white">
+          <Badge className="absolute -top-0.5 -right-0.5 h-4 min-w-4 flex items-center justify-center px-0.5 text-[10px] font-bold bg-primary text-primary-foreground md:h-5 md:min-w-5 md:text-xs">
             {items.length}
           </Badge>
         )}

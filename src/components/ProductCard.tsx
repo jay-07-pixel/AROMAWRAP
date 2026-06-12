@@ -6,7 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { QuickViewModal } from "@/components/QuickViewModal";
 
 interface ProductCardProps {
@@ -17,9 +17,13 @@ interface ProductCardProps {
   image: string;
   badge?: string;
   description?: string;
+  /** Request earlier fetch; use for first screen of grids */
+  priority?: boolean;
+  /** First / LCP product on home: eager + high fetch priority, minimal animation */
+  lcp?: boolean;
 }
 
-export const ProductCard = ({ id, name, price, originalPrice, image, badge, description }: ProductCardProps) => {
+export const ProductCard = ({ id, name, price, originalPrice, image, badge, description, priority = false, lcp = false }: ProductCardProps) => {
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
@@ -28,6 +32,20 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
   const [imageSrc, setImageSrc] = useState<string>(image);
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  const eager = lcp || priority;
+
+  useEffect(() => {
+    if (!lcp) return;
+    const el = imgRef.current;
+    if (!el) return;
+    try {
+      (el as HTMLImageElement & { fetchPriority?: string }).fetchPriority = "high";
+    } catch {
+      /* older browsers: ignore */
+    }
+  }, [lcp, imageSrc]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -80,30 +98,40 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
   return (
     <>
       <div 
-        className="group bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer animate-in fade-in zoom-in-95 hover:scale-[1.02] flex flex-col h-full"
+        className={
+          lcp
+            ? "group bg-white rounded-lg overflow-hidden transition-shadow duration-300 cursor-pointer flex flex-col h-full"
+            : "group bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer animate-in fade-in zoom-in-95 hover:scale-[1.02] flex flex-col h-full"
+        }
         onClick={handleProductClick}
-        style={{
-          animationDelay: `${Math.random() * 200}ms`,
-          animationFillMode: 'backwards',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-        }}
+        style={
+          lcp
+            ? { boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }
+            : {
+                animationDelay: "0ms",
+                animationFillMode: "backwards" as const,
+                boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+              }
+        }
       >
         {/* Product Image Container */}
         <div className="relative aspect-[3/4] overflow-hidden flex-shrink-0 bg-gray-100">
           {/* Loading Placeholder */}
           {imageLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 animate-pulse">
-              <div className="w-12 h-12 border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-muted/80 to-muted animate-pulse" aria-hidden />
           )}
           
           {/* Product Image */}
           <img
+            ref={imgRef}
             src={imageSrc}
             alt={name}
-            loading="lazy"
+            width={eager ? 600 : undefined}
+            height={eager ? 800 : undefined}
+            sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            loading={eager ? "eager" : "lazy"}
             decoding="async"
-            className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+            className={`w-full h-full object-cover ${lcp ? "transition-transform duration-300 group-hover:scale-105" : "transition-all duration-300 group-hover:scale-105"} ${
               imageLoading ? 'opacity-0' : 'opacity-100'
             }`}
             onLoad={() => setImageLoading(false)}

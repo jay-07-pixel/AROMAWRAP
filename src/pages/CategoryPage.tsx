@@ -48,7 +48,7 @@ const categoryProducts = {
     {
       id: "prod-1",
       name: "Lavender",
-      price: 349,
+      price: 2,
       originalPrice: 449,
       image: img15,
       badge: "New",
