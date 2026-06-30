@@ -39,6 +39,7 @@ export function createApp() {
     })
   );
 
+  app.use("/uploads", express.static(env.uploadDir));
   app.use("/api", apiRouter);
 
   app.use(notFound);

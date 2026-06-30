@@ -5,6 +5,10 @@ declare global {
     interface Request {
       user: User | null;
     }
+
+    interface Locals {
+      validatedQuery?: unknown;
+    }
   }
 }
 

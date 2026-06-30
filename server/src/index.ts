@@ -1,12 +1,20 @@
 import fs from "fs";
+import path from "path";
 import { createApp } from "./app.js";
 import { env } from "./lib/env.js";
 import { connectDatabase, disconnectDatabase } from "./lib/prisma.js";
+import { UPLOAD_SUBDIRS } from "./uploads/config.js";
+
+async function ensureUploadDirectories() {
+  fs.mkdirSync(env.uploadDir, { recursive: true });
+
+  for (const subdir of Object.values(UPLOAD_SUBDIRS)) {
+    fs.mkdirSync(path.join(env.uploadDir, subdir), { recursive: true });
+  }
+}
 
 async function main() {
-  if (!fs.existsSync(env.uploadDir)) {
-    fs.mkdirSync(env.uploadDir, { recursive: true });
-  }
+  await ensureUploadDirectories();
 
   try {
     await connectDatabase();

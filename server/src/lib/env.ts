@@ -20,10 +20,7 @@ export const env = {
   port: Number(process.env.PORT ?? 3001),
   databaseUrl: required("DATABASE_URL"),
   corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:8080",
-  uploadDir: path.resolve(
-    serverRoot,
-    process.env.UPLOAD_DIR ?? "src/uploads"
-  ),
+  uploadDir: path.resolve(serverRoot, process.env.UPLOAD_DIR ?? "uploads"),
   sessionSecret: required("SESSION_SECRET"),
   sessionName: process.env.SESSION_NAME ?? "aromawrap.sid",
   isProduction: process.env.NODE_ENV === "production",

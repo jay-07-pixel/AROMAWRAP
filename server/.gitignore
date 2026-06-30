@@ -1,5 +1,8 @@
 node_modules
 dist
 .env
-src/uploads/*
-!src/uploads/.gitkeep
+uploads/*
+!uploads/.gitkeep
+!uploads/products/.gitkeep
+!uploads/users/.gitkeep
+!uploads/categories/.gitkeep

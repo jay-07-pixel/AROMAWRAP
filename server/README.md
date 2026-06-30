@@ -4,13 +4,29 @@ Standalone Express + Prisma + MySQL API for the AromaWrap migration from Firebas
 
 This backend is **not connected to the React frontend yet**. The existing Firebase-powered frontend is unchanged.
 
-## Implemented module
+## Implemented modules
 
-- Authentication only (`/api/auth/*`)
-- Session-based auth using `express-session` (MemoryStore for now)
-- Prisma `User` model + migration
-- Zod request validation
-- Consistent error format:
+- Authentication (`/api/auth/*`)
+- Products (`/api/products/*`)
+- Cart (`/api/cart/*`)
+- Wishlist (`/api/wishlist/*`)
+- Orders (`/api/orders/*`)
+- Admin orders (`/api/admin/orders/*`)
+- Uploads (`/api/uploads/*`, static `/uploads/*`)
+- Health check (`/api/health`)
+
+## Response format
+
+Success:
+
+```json
+{
+  "success": true,
+  "data": {}
+}
+```
+
+Error:
 
 ```json
 {
@@ -19,58 +35,13 @@ This backend is **not connected to the React frontend yet**. The existing Fireba
 }
 ```
 
-## Tech stack
-
-- Node.js 18+
-- Express 5
-- Prisma ORM
-- MySQL
-- bcryptjs
-- express-session
-- zod
-- dotenv, cors
-
-## Folder structure
-
-```txt
-server/
-  prisma/
-    schema.prisma
-    migrations/
-      20260630153000_add_user_auth/
-        migration.sql
-      migration_lock.toml
-  src/
-    auth/
-      schemas.ts
-    lib/
-      env.ts
-      prisma.ts
-    middleware/
-      errorHandler.ts
-      notFound.ts
-      requireAuth.ts
-      validate.ts
-    routes/
-      auth.ts
-      health.ts
-      index.ts
-    types/
-      express.d.ts
-    uploads/
-    app.ts
-    index.ts
-```
-
 ## Environment
-
-Copy and configure:
 
 ```bash
 cp .env.example .env
 ```
 
-Required keys:
+Required:
 
 - `DATABASE_URL`
 - `SESSION_SECRET`
@@ -87,37 +58,206 @@ npm run dev
 
 ## Auth API
 
-### POST `/api/auth/register`
-Body:
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+
+## Products API
+
+See product routes in codebase. Public `GET`, admin-only `POST` / `PATCH` / `DELETE`.
+
+## Cart API (authenticated)
+
+All cart routes require a valid session.
+
+#### `GET /api/cart`
+Returns the user's cart with items, `totalItems`, and `totalPrice`.
+
+#### `POST /api/cart/items`
 
 ```json
 {
-  "email": "user@example.com",
-  "password": "secret123",
-  "displayName": "User Name"
+  "productId": "clx...",
+  "quantity": 1
 }
 ```
 
-### POST `/api/auth/login`
-Body:
+If the product is already in the cart, quantity is increased instead of creating a duplicate row. Price/name/image are snapshotted at add time.
+
+#### `PATCH /api/cart/items/:id`
 
 ```json
 {
-  "email": "user@example.com",
-  "password": "secret123"
+  "quantity": 3
 }
 ```
 
-Creates a session and stores `userId` in session.
+`:id` is the **cart item id**, not the product id.
 
-### POST `/api/auth/logout`
-Destroys the session.
+#### `DELETE /api/cart/items/:id`
+Remove one cart item.
 
-### GET `/api/auth/me`
-Returns current user from session or `null`.
+#### `DELETE /api/cart`
+Clear all cart items.
 
-### GET `/api/auth/session`
-Protected route using `requireAuth` middleware (returns logged-in user).
+## Wishlist API (authenticated)
+
+All wishlist routes require a valid session.
+
+#### `GET /api/wishlist`
+Returns the user's wishlist items.
+
+#### `POST /api/wishlist/items`
+
+```json
+{
+  "productId": "clx..."
+}
+```
+
+Duplicate products return `409` with `"Product already in wishlist"`. Price/name/image/badge are snapshotted at add time.
+
+#### `DELETE /api/wishlist/items/:id`
+Remove one wishlist item.
+
+#### `DELETE /api/wishlist`
+Clear all wishlist items.
+
+## Orders API (authenticated)
+
+Users can only access their own orders.
+
+#### `POST /api/orders`
+
+Creates an order from the current cart, snapshots line-item pricing, and clears the cart.
+
+```json
+{
+  "paymentMethod": "COD",
+  "shippingName": "Jane Doe",
+  "shippingEmail": "jane@example.com",
+  "shippingPhone": "9876543210",
+  "shippingAddress": "123 Main St",
+  "shippingCity": "Mumbai",
+  "shippingState": "Maharashtra",
+  "shippingPincode": "400001"
+}
+```
+
+`paymentMethod` is `COD` or `ONLINE`.
+
+For `ONLINE` orders:
+
+- `paymentStatus` is set to `PENDING`
+- `onlinePaymentReview` is set to `PENDING`
+- optional `userClaimedPaidAt` (ISO date) when the customer claims UPI payment
+
+Returns `400` if the cart is empty.
+
+#### `GET /api/orders`
+Returns the authenticated user's orders (newest first).
+
+#### `GET /api/orders/:id`
+Returns a single order owned by the authenticated user.
+
+## Admin Orders API (admin only)
+
+Requires `ADMIN` role.
+
+#### `GET /api/admin/orders`
+
+Query parameters:
+
+- `page` (default `1`)
+- `limit` (default `20`, max `100`)
+- `status` — `PENDING`, `PROCESSING`, `SHIPPED`, `DELIVERED`, `CANCELLED`
+- `paymentStatus` — `PENDING`, `PAID`, `FAILED`
+- `search` — matches order id, shipping fields, or customer email/name
+- `fromDate` — ISO date (inclusive)
+- `toDate` — ISO date (inclusive)
+
+#### `GET /api/admin/orders/:id`
+Returns full order details including customer summary.
+
+#### `PATCH /api/admin/orders/:id/status`
+
+```json
+{
+  "status": "PROCESSING"
+}
+```
+
+#### `PATCH /api/admin/orders/:id/payment-review`
+
+Online orders only. Approve or reject a customer's payment claim.
+
+```json
+{
+  "action": "approve"
+}
+```
+
+```json
+{
+  "action": "reject",
+  "rejectionReason": "UTR could not be verified"
+}
+```
+
+- `approve` sets `paymentStatus` to `PAID` and `onlinePaymentReview` to `APPROVED`
+- `reject` sets `paymentStatus` to `FAILED` and `onlinePaymentReview` to `REJECTED`
+
+## Uploads API
+
+Uploaded files are stored under `server/uploads/` and served at `/uploads/*`.
+
+Allowed types: `jpg`, `jpeg`, `png`, `webp` (max 5MB each). Filenames are server-generated; client filenames are not trusted.
+
+Product `imageUrl` values may use either a full URL or a local path such as `/uploads/products/<uuid>.jpg`.
+
+### Static files
+
+#### `GET /uploads/*`
+Serves files from the upload directory (for example `/uploads/products/abc.jpg`).
+
+### Product images (admin only)
+
+#### `POST /api/uploads/products`
+
+`multipart/form-data` with field `images` (one or more files).
+
+```json
+{
+  "success": true,
+  "data": [
+    { "url": "/uploads/products/abc.jpg" }
+  ]
+}
+```
+
+#### `DELETE /api/uploads/products`
+
+```json
+{
+  "url": "/uploads/products/abc.jpg"
+}
+```
+
+### Profile image (authenticated user)
+
+#### `POST /api/uploads/profile`
+
+`multipart/form-data` with field `image` (single file). Updates the user's `photoUrl` and deletes their previous local profile image if present.
+
+```json
+{
+  "success": true,
+  "data": {
+    "url": "/uploads/users/abc.jpg"
+  }
+}
+```
 
 ## Scripts
 
@@ -132,12 +272,7 @@ Protected route using `requireAuth` middleware (returns logged-in user).
 
 ## Out of scope (not implemented)
 
-- Orders
-- Products
-- Cart
-- Wishlist
-- Upload workflows
-- Admin management endpoints
 - Password reset flow
+- Frontend integration
 
-Firebase frontend remains untouched.
+Firebase Storage and the Firebase-powered frontend remain untouched.
