@@ -1,59 +1,71 @@
-import { doc, setDoc, getDoc, updateDoc, deleteField } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import {
+  addCartItem,
+  clearCart as clearCartApi,
+  getCart,
+  removeCartItem,
+  updateCartItem,
+  type ApiCart,
+} from "@/services/cartApiService";
 
 export interface CartItem {
   id: string;
+  productId: string;
   name: string;
   price: number;
   image: string;
   quantity: number;
 }
 
-const CART_COLLECTION = 'carts';
+export function mapApiCartToItems(cart: ApiCart): CartItem[] {
+  return cart.items.map((item) => ({
+    id: item.id,
+    productId: item.productId,
+    name: item.name,
+    price: item.price,
+    image: item.image || "/placeholder.svg",
+    quantity: item.quantity,
+  }));
+}
 
-// Get user's cart from Firestore
-export const getUserCart = async (userId: string): Promise<CartItem[]> => {
+export const getUserCart = async (): Promise<CartItem[]> => {
   try {
-    const cartRef = doc(db, CART_COLLECTION, userId);
-    const cartSnap = await getDoc(cartRef);
-    
-    if (cartSnap.exists()) {
-      const data = cartSnap.data();
-      return data.items || [];
-    }
-    return [];
+    const cart = await getCart();
+    return mapApiCartToItems(cart);
   } catch (error) {
-    console.error('Error getting cart:', error);
-    return [];
-  }
-};
-
-// Save cart to Firestore
-export const saveCart = async (userId: string, items: CartItem[]): Promise<void> => {
-  try {
-    const cartRef = doc(db, CART_COLLECTION, userId);
-    await setDoc(cartRef, {
-      items,
-      updatedAt: new Date().toISOString()
-    }, { merge: true });
-  } catch (error) {
-    console.error('Error saving cart:', error);
+    console.error("Error getting cart:", error);
     throw error;
   }
 };
 
-// Clear cart in Firestore
-export const clearUserCart = async (userId: string): Promise<void> => {
+export const addItemToCart = async (
+  productId: string,
+  quantity = 1
+): Promise<CartItem[]> => {
+  const cart = await addCartItem(productId, quantity);
+  return mapApiCartToItems(cart);
+};
+
+export const updateCartItemQuantity = async (
+  itemId: string,
+  quantity: number
+): Promise<CartItem[]> => {
+  const cart = await updateCartItem(itemId, quantity);
+  return mapApiCartToItems(cart);
+};
+
+export const removeItemFromCart = async (
+  itemId: string
+): Promise<CartItem[]> => {
+  const cart = await removeCartItem(itemId);
+  return mapApiCartToItems(cart);
+};
+
+export const clearUserCart = async (): Promise<CartItem[]> => {
   try {
-    const cartRef = doc(db, CART_COLLECTION, userId);
-    await setDoc(cartRef, {
-      items: [],
-      updatedAt: new Date().toISOString()
-    });
+    const cart = await clearCartApi();
+    return mapApiCartToItems(cart);
   } catch (error) {
-    console.error('Error clearing cart:', error);
+    console.error("Error clearing cart:", error);
     throw error;
   }
 };
-
-

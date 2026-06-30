@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { addressesRouter } from "./addresses.js";
+import { profileRouter } from "./profile.js";
 import { adminOrdersRouter } from "./admin/orders.js";
 import { authRouter } from "./auth.js";
 import { cartRouter } from "./cart.js";
@@ -16,5 +18,7 @@ apiRouter.use("/products", productsRouter);
 apiRouter.use("/cart", cartRouter);
 apiRouter.use("/wishlist", wishlistRouter);
 apiRouter.use("/orders", ordersRouter);
+apiRouter.use("/profile", profileRouter);
+apiRouter.use("/addresses", addressesRouter);
 apiRouter.use("/admin/orders", adminOrdersRouter);
 apiRouter.use("/uploads", uploadsRouter);

@@ -8,31 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Leaf, Recycle, Heart, Truck } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
-import { LCP_LAVENDER_IMAGE_URL } from "@/config/lcp";
+import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
+import { listProducts, type ProductListItem } from "@/services/productService";
 import circularBestsellers from "@/assets/circular-bestsellers.jpg";
 import circularDhoop from "@/assets/circular-dhoop.jpg";
-
-// Product images (public + Firebase). Lavender URL is shared with `index.html` preload + `src/config/lcp.ts`.
-const img1 = "/products/IMG-20251017-WA0022.jpg";
-const img2 = "/products/IMG-20251017-WA0023.jpg";
-const img3 = "/products/IMG-20251017-WA0024.jpg";
-const img4 = "/products/IMG-20251017-WA0033.jpg";
-const img5 = "/products/IMG-20251017-WA0037.jpg";
-const img6 = "/products/IMG-20251017-WA0025.jpg";
-const img7 = "/products/IMG-20251017-WA0026.jpg";
-const img8 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Sandalwood%20Front.png?alt=media&token=a7ee7aaa-993f-41ac-b35a-392635fedce5";
-const img9 = "/products/oudh-premium-dhoop.jpg";
-const img10 = "/products/delux-dhoop.jpg";
-const img11 = "/products/mahadev-dhoop.jpg";
-const img12 = "/products/sai-baba-dhoop.jpg";
-const img13 = "/products/tornado-dhoop.jpg";
-const img14 = "/products/devi-dhoop.jpg";
-const img15 = LCP_LAVENDER_IMAGE_URL;
-const img16 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mogra%20Main.jpg?alt=media&token=7a784f6f-6917-484a-98c1-d1a7dd7f617f";
-const img17 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mahadev%20dhoop%20front.jpeg?alt=media&token=669c8f3a-2d99-4253-b38e-2f9a968f0998";
-const img19 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Tornado%20Dhoop%20Front.jpeg?alt=media&token=3297f953-b5fa-41af-b62b-e9198d3a4e36";
 
 const Index = () => {
   const [adminProducts, setAdminProducts] = useState<any[]>(() => {
@@ -44,47 +25,52 @@ const Index = () => {
     }
     return [];
   });
+  const [bestSellers, setBestSellers] = useState<ProductListItem[]>([]);
+  const [isLoadingBestSellers, setIsLoadingBestSellers] = useState(true);
+  const [bestSellersError, setBestSellersError] = useState<string | null>(null);
   const { products: recentlyViewed } = useRecentlyViewed();
+
+  useEffect(() => {
+    let active = true;
+
+    const loadBestSellers = async () => {
+      setIsLoadingBestSellers(true);
+      setBestSellersError(null);
+
+      try {
+        const { items } = await listProducts({
+          sort: "newest",
+          page: 1,
+          limit: 4,
+        });
+
+        if (active) {
+          setBestSellers(items);
+        }
+      } catch (error) {
+        console.error("Error loading best sellers:", error);
+        if (active) {
+          setBestSellers([]);
+          setBestSellersError("Failed to load products.");
+        }
+      } finally {
+        if (active) {
+          setIsLoadingBestSellers(false);
+        }
+      }
+    };
+
+    loadBestSellers();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const circularCategories = [
     { title: "Best Sellers", image: circularBestsellers },
     { title: "Agarbatti", image: circularBestsellers }, // Using bestsellers as placeholder
     { title: "Bambooless Incense", image: circularDhoop },
-  ];
-
-  const bestSellers = [
-    {
-      id: "prod-1",
-      name: "Lavender",
-      price: 2,
-      originalPrice: 449,
-      image: img15,
-      badge: "New",
-    },
-    {
-      id: "prod-2",
-      name: "Mogra",
-      price: 399,
-      originalPrice: 499,
-      image: img16,
-      badge: "Premium",
-    },
-    {
-      id: "mahadev-dhoop",
-      name: "AromaWrap Mahadev Dhoop",
-      price: 399,
-      originalPrice: 499,
-      image: img17,
-      badge: "New",
-    },
-    {
-      id: "tornado-dhoop",
-      name: "AromaWrap Tornado Dhoop Premium Dhoop Cones",
-      price: 429,
-      originalPrice: 529,
-      image: img19,
-      badge: "Premium",
-    },
   ];
 
   const features = [
@@ -176,17 +162,29 @@ const Index = () => {
               Our most loved products
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
-            {bestSellers.map((product, index) => (
-              <div key={product.id}>
-                <ProductCard
-                  {...product}
-                  lcp={index === 0}
-                  priority={index < 6}
-                />
-              </div>
-            ))}
-          </div>
+          {isLoadingBestSellers ? (
+            <ProductGridSkeleton count={4} />
+          ) : bestSellersError ? (
+            <div className="text-center py-8 text-muted-foreground">
+              {bestSellersError}
+            </div>
+          ) : bestSellers.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+              {bestSellers.map((product, index) => (
+                <div key={product.id}>
+                  <ProductCard
+                    {...product}
+                    lcp={index === 0}
+                    priority={index < 6}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No products available right now.
+            </div>
+          )}
         </div>
       </section>
 

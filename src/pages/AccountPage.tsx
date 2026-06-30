@@ -15,9 +15,9 @@ import { useWishlist } from "@/context/WishlistContext";
 import { motion } from "framer-motion";
 import { OrderSkeleton } from "@/components/OrderSkeleton";
 import { useAuth } from "@/context/AuthContext";
-import { signIn, signUp, logout, updateUserProfile, addAddress, getUserProfile, isAdminUser } from "@/services/authService";
-import { auth } from "@/lib/firebase";
-import { getUserOrders, subscribeToUserOrders } from "@/services/orderService";
+import { signIn, signUp, logout, updateUserProfile, addAddress, isAdminUser } from "@/services/authService";
+import { ApiError } from "@/lib/api";
+import { subscribeToUserOrders } from "@/services/orderService";
 
 /** UPI online flow: messages while admin has not decided yet, or after approve / reject */
 const OrderUPIPaymentNotice = ({ order }: { order: any }) => {
@@ -130,13 +130,9 @@ const AccountPage = () => {
     setIsLoggingIn(true);
 
     try {
-      await signIn(loginEmail, loginPassword);
+      const profile = await signIn(loginEmail, loginPassword);
 
-      const profile = auth.currentUser
-        ? await getUserProfile(auth.currentUser.uid)
-        : null;
-
-      if (isAdminUser(auth.currentUser?.email, profile)) {
+      if (isAdminUser(profile.email, profile)) {
         toast({
           title: "Welcome Admin! 👑",
           description: "Redirecting to admin dashboard...",
@@ -148,11 +144,14 @@ const AccountPage = () => {
           description: "Welcome back to AromaWrap",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Login error:", error);
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid email or password. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Invalid email or password. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -206,18 +205,20 @@ const AccountPage = () => {
       setSignupEmail("");
       setSignupPassword("");
       setSignupConfirmPassword("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Signup error:", error);
       let errorMessage = "Failed to create account. Please try again.";
-      
-      if (error.code === "auth/email-already-in-use") {
-        errorMessage = "This email is already registered. Please login instead.";
-      } else if (error.code === "auth/invalid-email") {
-        errorMessage = "Invalid email address.";
-      } else if (error.code === "auth/weak-password") {
-        errorMessage = "Password is too weak. Use at least 6 characters.";
+
+      if (error instanceof ApiError) {
+        if (error.statusCode === 409) {
+          errorMessage = "This email is already registered. Please login instead.";
+        } else {
+          errorMessage = error.message;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
       }
-      
+
       toast({
         title: "Signup Failed",
         description: errorMessage,
@@ -934,7 +935,7 @@ const AccountPage = () => {
                               )}
                             </div>
                             <Button
-                              onClick={() => navigate(`/product/${item.id}`)}
+                              onClick={() => navigate(`/product/${item.productId}`)}
                               className="w-full bg-[#DC143C] hover:bg-[#801030]"
                               size="sm"
                             >

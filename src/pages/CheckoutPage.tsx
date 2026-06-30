@@ -8,8 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { createOrder } from "@/services/orderService";
-import { Timestamp } from "firebase/firestore";
+import { createOrder, type CreateOrderInput } from "@/services/orderService";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ShoppingBag, CreditCard, Truck, MapPin, Phone, Mail, User, Lock, ShieldCheck, Package, QrCode } from "lucide-react";
@@ -26,7 +25,7 @@ const CheckoutPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPincodeFetching, setIsPincodeFetching] = useState(false);
   const [showUpiModal, setShowUpiModal] = useState(false);
-  const [pendingOrderData, setPendingOrderData] = useState<Parameters<typeof createOrder>[0] | null>(null);
+  const [pendingOrderData, setPendingOrderData] = useState<CreateOrderInput | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -136,31 +135,15 @@ const CheckoutPage = () => {
 
     // For online payment, build the order data and show UPI modal
     if (paymentMethod === "online") {
-      const shippingCost = 0;
-      const finalTotal = totalPrice + shippingCost;
-
-      const orderData = {
-        userId: user.uid,
-        items: items.map(item => ({
-          productId: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image,
-        })),
-        total: finalTotal,
-        status: 'pending' as const,
-        shippingAddress: {
-          name: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          pincode: formData.pincode,
-        },
-        paymentMethod: 'online' as const,
-        paymentStatus: 'pending' as const,
+      const orderData: CreateOrderInput = {
+        shippingName: formData.fullName,
+        shippingEmail: formData.email,
+        shippingPhone: formData.phone,
+        shippingAddress: formData.address,
+        shippingCity: formData.city,
+        shippingState: formData.state,
+        shippingPincode: formData.pincode,
+        paymentMethod: "online",
       };
 
       setPendingOrderData(orderData);
@@ -175,35 +158,17 @@ const CheckoutPage = () => {
       const shippingCost = 0;
       const finalTotal = totalPrice + shippingCost;
 
-      // Map cart items to order items format
-      const orderItems = items.map(item => ({
-        productId: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image,
-      }));
-
-      // Create order object for Firestore
-      const orderData = {
-        userId: user.uid,
-        items: orderItems,
-        total: finalTotal,
-        status: 'pending' as const,
-        shippingAddress: {
-          name: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          pincode: formData.pincode,
-        },
-        paymentMethod: 'cod' as const,
-        paymentStatus: 'pending' as const,
+      const orderData: CreateOrderInput = {
+        shippingName: formData.fullName,
+        shippingEmail: formData.email,
+        shippingPhone: formData.phone,
+        shippingAddress: formData.address,
+        shippingCity: formData.city,
+        shippingState: formData.state,
+        shippingPincode: formData.pincode,
+        paymentMethod: "cod",
       };
 
-      // Save order to Firestore
       const orderId = await createOrder(orderData);
 
       // Clear cart silently after successful order (don't show "Cart cleared" toast)
@@ -231,14 +196,10 @@ const CheckoutPage = () => {
   const handleUpiPaymentConfirmed = async () => {
     if (!pendingOrderData) return;
 
-    const orderData = {
+    const orderId = await createOrder({
       ...pendingOrderData,
-      paymentStatus: 'pending' as const,
-      onlinePaymentReview: 'pending' as const,
-      userClaimedPaidAt: Timestamp.now(),
-    };
-
-    const orderId = await createOrder(orderData);
+      userClaimedPaidAt: new Date(),
+    });
     await clearCart(true);
 
     toast({

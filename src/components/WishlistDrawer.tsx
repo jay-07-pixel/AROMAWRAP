@@ -16,7 +16,7 @@ export const WishlistDrawer = () => {
 
   const handleAddToCart = (item: any) => {
     addToCart({
-      id: item.id,
+      id: item.productId,
       name: item.name,
       price: item.price,
       image: item.image,
@@ -160,7 +160,7 @@ export const WishlistDrawer = () => {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => navigate(`/product/${item.id}`)}
+                                onClick={() => navigate(`/product/${item.productId}`)}
                                 className="h-9"
                               >
                                 View

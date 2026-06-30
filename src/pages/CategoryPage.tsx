@@ -13,118 +13,9 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Filter, SortAsc, ChevronDown } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
-// Product images served from public/products. Please place files there.
-const img1 = "/products/IMG-20251017-WA0022.jpg";
-const img2 = "/products/IMG-20251017-WA0023.jpg";
-const img3 = "/products/IMG-20251017-WA0024.jpg";
-const img4 = "/products/IMG-20251017-WA0033.jpg";
-const img5 = "/products/IMG-20251017-WA0037.jpg";
-const img6 = "/products/IMG-20251017-WA0025.jpg";
-const img7 = "/products/IMG-20251017-WA0026.jpg";
-const img8 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Sandalwood%20Front.png?alt=media&token=a7ee7aaa-993f-41ac-b35a-392635fedce5";
-const img9 = "/products/oudh-premium-dhoop.jpg";
-const img10 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/mannat%20front.png?alt=media&token=0e407864-da64-4bc4-9133-12b64810ab89";
-const img11 = "/products/mahadev-dhoop.jpg";
-const img12 = "/products/sai-baba-dhoop.jpg";
-const img13 = "/products/tornado-dhoop.jpg";
-const img14 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/devi%20dhoop%20front.png?alt=media&token=a944733d-d1eb-4f1e-91d4-3e724d45946a";
-const img15 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Lavender%20Main.jpg?alt=media&token=7af415cb-0550-413f-bc21-ef85d99f08e8";
-const img16 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mogra%20Main.jpg?alt=media&token=7a784f6f-6917-484a-98c1-d1a7dd7f617f";
-const img17 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Mahadev%20dhoop%20front.jpeg?alt=media&token=669c8f3a-2d99-4253-b38e-2f9a968f0998";
-const img18 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Saibaba%20Dhoop%20Front.jpeg?alt=media&token=430ed46d-f7d3-4a17-ac41-a0482804e870";
-const img19 = "https://firebasestorage.googleapis.com/v0/b/aromawarap.firebasestorage.app/o/Tornado%20Dhoop%20Front.jpeg?alt=media&token=3297f953-b5fa-41af-b62b-e9198d3a4e36";
-
-// Sample products for different categories
-const categoryProducts = {
-  "agarbatti": [
-    {
-      id: "premium-sandalwood-agarbatti-new",
-      name: "Premium Sandalwood Agarbatti",
-      price: 150,
-      image: img8,
-      badge: "New",
-    },
-    {
-      id: "prod-1",
-      name: "Lavender",
-      price: 2,
-      originalPrice: 449,
-      image: img15,
-      badge: "New",
-    },
-    {
-      id: "prod-2",
-      name: "Mogra",
-      price: 399,
-      originalPrice: 499,
-      image: img16,
-      badge: "Premium",
-    },
-  ],
-  "sandalwood-dhoop": [
-    {
-      id: "sandalwood-dhoop-1",
-      name: "AromaWrap Devi Premium Dhoop",
-      price: 399,
-      originalPrice: 499,
-      image: img14,
-      badge: "Premium",
-    },
-    {
-      id: "delux-dhoop",
-      name: "AromaWrap Mannat Delux Dhoop",
-      price: 449,
-      originalPrice: 549,
-      image: img10,
-      badge: "Premium",
-    },
-    {
-      id: "mahadev-dhoop",
-      name: "AromaWrap Mahadev Dhoop",
-      price: 399,
-      originalPrice: 499,
-      image: img17,
-      badge: "New",
-    },
-    {
-      id: "sai-baba-dhoop",
-      name: "AromaWrap Sai Baba Dhoop Premium Dhoop Cones",
-      price: 379,
-      originalPrice: 479,
-      image: img18,
-      badge: "Bestseller",
-    },
-    {
-      id: "tornado-dhoop",
-      name: "AromaWrap Tornado Dhoop Premium Dhoop Cones",
-      price: 429,
-      originalPrice: 529,
-      image: img19,
-      badge: "Premium",
-    },
-  ],
-};
-
-// Related products for "You May Also Like" section
-const relatedProducts = [
-  {
-    id: "related-1",
-    name: "AromaWrap Devi Premium Dhoop",
-    price: 399,
-    originalPrice: 499,
-    image: "/placeholder.svg",
-    badge: "Premium",
-  },
-  {
-    id: "related-2",
-    name: "AromaWrap Mahadev Dhoop",
-    price: 399,
-    originalPrice: 499,
-    image: img17,
-    badge: "New",
-  },
-];
+import { listProducts, mapUiSortToApiSort, type ProductListItem } from "@/services/productService";
+import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
+import { useEffect, useMemo, useState } from "react";
 
 const CategoryPage = () => {
   const { category } = useParams();
@@ -143,8 +34,59 @@ const CategoryPage = () => {
   
   const [sortBy, setSortBy] = useState("featured");
   const [showFilters, setShowFilters] = useState(false);
+  const [baseProducts, setBaseProducts] = useState<ProductListItem[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [productsError, setProductsError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Get category name from URL parameter
+  useEffect(() => {
+    let active = true;
+
+    const loadProducts = async () => {
+      if (!category) {
+        setBaseProducts([]);
+        setIsLoadingProducts(false);
+        return;
+      }
+
+      setIsLoadingProducts(true);
+      setProductsError(null);
+
+      try {
+        const { items, pagination } = await listProducts({
+          category,
+          sort: mapUiSortToApiSort(sortBy),
+          page,
+          limit: 20,
+        });
+
+        if (!active) return;
+
+        setBaseProducts(items);
+        setTotalPages(pagination.totalPages);
+      } catch (error) {
+        console.error("Error loading category products:", error);
+        if (!active) return;
+        setBaseProducts([]);
+        setProductsError("Failed to load products. Please try again.");
+      } finally {
+        if (active) {
+          setIsLoadingProducts(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      active = false;
+    };
+  }, [category, sortBy, page]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [category, sortBy, filters]);
   const getCategoryName = (categoryParam: string | undefined) => {
     if (!categoryParam) return "Products";
     
@@ -158,9 +100,6 @@ const CategoryPage = () => {
   };
 
   const categoryName = getCategoryName(category);
-  const baseProducts = categoryProducts[category as keyof typeof categoryProducts] || [];
-
-  // Apply filters
   const applyFilters = (products: any[]) => {
     return products.filter(product => {
       // Price filter
@@ -209,7 +148,10 @@ const CategoryPage = () => {
     }
   };
 
-  const filteredProducts = applySorting(applyFilters(baseProducts));
+  const filteredProducts = useMemo(
+    () => applySorting(applyFilters(baseProducts)),
+    [baseProducts, filters, sortBy]
+  );
   const products = filteredProducts;
 
   // Filter options
@@ -328,7 +270,18 @@ const CategoryPage = () => {
       {/* Products Grid */}
       <section className="pt-2 pb-4 sm:pt-3 sm:pb-6 bg-background">
         <div className="container mx-auto px-3 sm:px-4">
-          {products.length > 0 ? (
+          {isLoadingProducts ? (
+            <ProductGridSkeleton count={8} />
+          ) : productsError ? (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-semibold mb-2">Unable to load products</h3>
+              <p className="text-muted-foreground mb-4 text-sm">{productsError}</p>
+              <Button size="sm" onClick={() => setPage(1)}>
+                Try Again
+              </Button>
+            </div>
+          ) : products.length > 0 ? (
+            <>
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
               {products.map((product, index) => (
                 <div
@@ -343,6 +296,32 @@ const CategoryPage = () => {
                 </div>
               ))}
             </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Page {page} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= totalPages}
+                  onClick={() =>
+                    setPage((current) => Math.min(totalPages, current + 1))
+                  }
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+            </>
           ) : (
             <div className="text-center py-12">
               <div className="w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">

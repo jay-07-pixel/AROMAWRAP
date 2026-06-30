@@ -24,4 +24,10 @@ export const env = {
   sessionSecret: required("SESSION_SECRET"),
   sessionName: process.env.SESSION_NAME ?? "aromawrap.sid",
   isProduction: process.env.NODE_ENV === "production",
+  smtpHost: process.env.SMTP_HOST,
+  smtpPort: Number(process.env.SMTP_PORT ?? 587),
+  smtpSecure: process.env.SMTP_SECURE === "true",
+  smtpUser: process.env.SMTP_USER,
+  smtpPass: process.env.SMTP_PASS,
+  smtpFrom: process.env.SMTP_FROM,
 };

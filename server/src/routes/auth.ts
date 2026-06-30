@@ -1,7 +1,12 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma.js";
-import { loginSchema, registerSchema } from "../auth/schemas.js";
+import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from "../auth/schemas.js";
+import {
+  PasswordResetError,
+  requestPasswordResetOtp,
+  resetPasswordWithOtp,
+} from "../auth/passwordReset.js";
 import { env } from "../lib/env.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validateBody } from "../middleware/validate.js";
@@ -168,3 +173,43 @@ authRouter.get("/session", requireAuth, (req, res) => {
     },
   });
 });
+
+authRouter.post(
+  "/forgot-password",
+  validateBody(forgotPasswordSchema),
+  async (req, res, next) => {
+    try {
+      const message = await requestPasswordResetOtp(req.body.email);
+      res.json({
+        success: true,
+        message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+authRouter.post(
+  "/reset-password",
+  validateBody(resetPasswordSchema),
+  async (req, res, next) => {
+    try {
+      const { email, otp, password } = req.body;
+      await resetPasswordWithOtp(email, otp, password);
+      res.json({
+        success: true,
+        message: "Password has been reset successfully",
+      });
+    } catch (error) {
+      if (error instanceof PasswordResetError) {
+        res.status(400).json({
+          success: false,
+          error: error.message,
+        });
+        return;
+      }
+      next(error);
+    }
+  }
+);

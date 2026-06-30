@@ -1,8 +1,14 @@
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import {
+  addWishlistItem,
+  clearWishlist as clearWishlistApi,
+  getWishlist,
+  removeWishlistItem,
+  type ApiWishlist,
+} from "@/services/wishlistApiService";
 
 export interface WishlistItem {
   id: string;
+  productId: string;
   name: string;
   price: number;
   image: string;
@@ -10,51 +16,48 @@ export interface WishlistItem {
   badge?: string;
 }
 
-const WISHLIST_COLLECTION = 'wishlists';
+export function mapApiWishlistToItems(wishlist: ApiWishlist): WishlistItem[] {
+  return wishlist.items.map((item) => ({
+    id: item.id,
+    productId: item.productId,
+    name: item.name,
+    price: item.price,
+    image: item.image || "/placeholder.svg",
+    originalPrice: item.originalPrice ?? undefined,
+    badge: item.badge ?? undefined,
+  }));
+}
 
-// Get user's wishlist from Firestore
-export const getUserWishlist = async (userId: string): Promise<WishlistItem[]> => {
+export const getUserWishlist = async (): Promise<WishlistItem[]> => {
   try {
-    const wishlistRef = doc(db, WISHLIST_COLLECTION, userId);
-    const wishlistSnap = await getDoc(wishlistRef);
-    
-    if (wishlistSnap.exists()) {
-      const data = wishlistSnap.data();
-      return data.items || [];
-    }
-    return [];
+    const wishlist = await getWishlist();
+    return mapApiWishlistToItems(wishlist);
   } catch (error) {
-    console.error('Error getting wishlist:', error);
-    return [];
-  }
-};
-
-// Save wishlist to Firestore
-export const saveWishlist = async (userId: string, items: WishlistItem[]): Promise<void> => {
-  try {
-    const wishlistRef = doc(db, WISHLIST_COLLECTION, userId);
-    await setDoc(wishlistRef, {
-      items,
-      updatedAt: new Date().toISOString()
-    }, { merge: true });
-  } catch (error) {
-    console.error('Error saving wishlist:', error);
+    console.error("Error getting wishlist:", error);
     throw error;
   }
 };
 
-// Clear wishlist in Firestore
-export const clearUserWishlist = async (userId: string): Promise<void> => {
+export const addItemToWishlist = async (
+  productId: string
+): Promise<WishlistItem[]> => {
+  const wishlist = await addWishlistItem(productId);
+  return mapApiWishlistToItems(wishlist);
+};
+
+export const removeItemFromWishlist = async (
+  itemId: string
+): Promise<WishlistItem[]> => {
+  const wishlist = await removeWishlistItem(itemId);
+  return mapApiWishlistToItems(wishlist);
+};
+
+export const clearUserWishlist = async (): Promise<WishlistItem[]> => {
   try {
-    const wishlistRef = doc(db, WISHLIST_COLLECTION, userId);
-    await setDoc(wishlistRef, {
-      items: [],
-      updatedAt: new Date().toISOString()
-    });
+    const wishlist = await clearWishlistApi();
+    return mapApiWishlistToItems(wishlist);
   } catch (error) {
-    console.error('Error clearing wishlist:', error);
+    console.error("Error clearing wishlist:", error);
     throw error;
   }
 };
-
-

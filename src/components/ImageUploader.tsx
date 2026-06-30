@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Upload, X, Check, Loader2 } from 'lucide-react';
-import { uploadImageToFirebase, uploadMultipleImages } from '@/utils/uploadImages';
+import { uploadImage, uploadMultipleImages } from '@/services/uploadService';
 
 interface ImageUploaderProps {
   onUploadComplete: (urls: string[]) => void;
@@ -34,7 +34,7 @@ export const ImageUploader = ({
       if (multiple) {
         urls = await uploadMultipleImages(fileArray, folder);
       } else {
-        const url = await uploadImageToFirebase(fileArray[0], folder);
+        const url = await uploadImage(fileArray[0], folder);
         urls = [url];
       }
 

@@ -1,19 +1,25 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { getUserCart, saveCart, clearUserCart } from "@/services/cartService";
+import {
+  addItemToCart,
+  clearUserCart,
+  getUserCart,
+  removeItemFromCart,
+  updateCartItemQuantity,
+  type CartItem,
+} from "@/services/cartService";
 
-interface CartItem {
+type AddToCartPayload = {
   id: string;
   name: string;
   price: number;
   image: string;
-  quantity: number;
-}
+};
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, "quantity">) => void;
+  addItem: (item: AddToCartPayload) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: (silent?: boolean) => void;
@@ -28,98 +34,91 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isLoadingCart, setIsLoadingCart] = useState(false);
   const { toast } = useToast();
   const { user, loading } = useAuth();
 
-  // Load cart from Firestore (only for logged-in users)
   useEffect(() => {
     const loadCart = async () => {
       if (!loading) {
-        setIsLoadingCart(true);
         if (user) {
-          // Logged-in user: Load from Firestore
           try {
-            const cartItems = await getUserCart(user.uid);
+            const cartItems = await getUserCart();
             setItems(cartItems);
           } catch (error) {
-            console.error('Error loading cart from Firestore:', error);
+            console.error("Error loading cart:", error);
             setItems([]);
           }
         } else {
-          // No user logged in: Clear cart
           setItems([]);
         }
-        setIsInitialized(true);
-        setIsLoadingCart(false);
       }
     };
 
     loadCart();
   }, [user, loading]);
 
-  // Save cart to Firestore whenever items change
-  useEffect(() => {
-    const syncCart = async () => {
-      // Don't save during initial load or when user is not logged in
-      if (isInitialized && user && !isLoadingCart) {
-        try {
-          await saveCart(user.uid, items);
-        } catch (error) {
-          console.error('Error syncing cart to Firestore:', error);
-        }
-      }
-    };
-
-    syncCart();
-  }, [items, user, isInitialized, isLoadingCart]);
-
-  const addItem = (item: Omit<CartItem, "quantity">) => {
-    // Check if user is logged in
+  const addItem = (item: AddToCartPayload) => {
     if (!user) {
       toast({
         title: "Login Required",
         description: "Please login to add items to your cart",
         variant: "destructive",
       });
-      // Redirect to login page
       setTimeout(() => {
-        window.location.href = '/account';
+        window.location.href = "/account";
       }, 1500);
       return;
     }
 
-    setItems((prevItems) => {
-      const existingItem = prevItems.find((i) => i.id === item.id);
-      
-      if (existingItem) {
+    const existingItem = items.find((cartItem) => cartItem.productId === item.id);
+
+    void (async () => {
+      try {
+        const cartItems = await addItemToCart(item.id, 1);
+        setItems(cartItems);
+
+        if (existingItem) {
+          toast({
+            title: "Updated cart",
+            description: `${item.name} quantity increased`,
+          });
+        } else {
+          toast({
+            title: "Added to cart",
+            description: `${item.name} has been added to your cart`,
+          });
+        }
+
+        setIsCartOpen(true);
+      } catch (error) {
+        console.error("Error adding item to cart:", error);
         toast({
-          title: "Updated cart",
-          description: `${item.name} quantity increased`,
+          title: "Error",
+          description: "Failed to add item to cart. Please try again.",
+          variant: "destructive",
         });
-        return prevItems.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
       }
-      
-      toast({
-        title: "Added to cart",
-        description: `${item.name} has been added to your cart`,
-      });
-      
-      return [...prevItems, { ...item, quantity: 1 }];
-    });
-    
-    setIsCartOpen(true);
+    })();
   };
 
   const removeItem = (id: string) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
-    toast({
-      title: "Removed from cart",
-      description: "Item has been removed from your cart",
-    });
+    void (async () => {
+      try {
+        const cartItems = await removeItemFromCart(id);
+        setItems(cartItems);
+        toast({
+          title: "Removed from cart",
+          description: "Item has been removed from your cart",
+        });
+      } catch (error) {
+        console.error("Error removing cart item:", error);
+        toast({
+          title: "Error",
+          description: "Failed to remove item. Please try again.",
+          variant: "destructive",
+        });
+      }
+    })();
   };
 
   const updateQuantity = (id: string, quantity: number) => {
@@ -127,23 +126,42 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       removeItem(id);
       return;
     }
-    
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, quantity } : item
-      )
-    );
+
+    void (async () => {
+      try {
+        const cartItems = await updateCartItemQuantity(id, quantity);
+        setItems(cartItems);
+      } catch (error) {
+        console.error("Error updating cart quantity:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update quantity. Please try again.",
+          variant: "destructive",
+        });
+      }
+    })();
   };
 
   const clearCart = async (silent: boolean = false) => {
-    setItems([]);
     if (user) {
       try {
-        await clearUserCart(user.uid);
+        const cartItems = await clearUserCart();
+        setItems(cartItems);
       } catch (error) {
-        console.error('Error clearing cart:', error);
+        console.error("Error clearing cart:", error);
+        if (!silent) {
+          toast({
+            title: "Error",
+            description: "Failed to clear cart. Please try again.",
+            variant: "destructive",
+          });
+        }
+        return;
       }
+    } else {
+      setItems([]);
     }
+
     if (!silent) {
       toast({
         title: "Cart cleared",
@@ -153,7 +171,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalPrice = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
   return (
     <CartContext.Provider

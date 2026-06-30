@@ -1,17 +1,13 @@
-import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  getDoc, 
-  doc, 
-  updateDoc,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  Timestamp 
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import type { ApiOrder } from "./orderApiService";
+import {
+  createOrderApi,
+  getAdminOrderByIdApi,
+  getAllAdminOrdersApi,
+  getOrderByIdApi,
+  getOrdersApi,
+  updateOnlinePaymentReviewApi,
+  updateOrderStatusApi,
+} from "./orderApiService";
 
 export interface OrderItem {
   productId: string;
@@ -21,12 +17,17 @@ export interface OrderItem {
   image: string;
 }
 
+export interface OrderTimestamp {
+  toDate: () => Date;
+  toMillis: () => number;
+}
+
 export interface Order {
   id?: string;
   userId: string;
   items: OrderItem[];
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   shippingAddress: {
     name: string;
     email?: string;
@@ -36,227 +37,193 @@ export interface Order {
     state: string;
     pincode: string;
   };
-  paymentMethod: 'cod' | 'online';
-  paymentStatus: 'pending' | 'paid' | 'failed';
-  /** Set when user completes UPI flow ("I have paid") — admin must approve or reject */
-  onlinePaymentReview?: 'pending' | 'approved' | 'rejected';
-  /** Filled by admin if payment claim is rejected */
+  paymentMethod: "cod" | "online";
+  paymentStatus: "pending" | "paid" | "failed";
+  onlinePaymentReview?: "pending" | "approved" | "rejected";
   paymentRejectionReason?: string;
-  /** When the customer clicked "I have paid" in the UPI modal */
-  userClaimedPaidAt?: Timestamp;
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
+  userClaimedPaidAt?: OrderTimestamp;
+  createdAt?: OrderTimestamp;
+  updatedAt?: OrderTimestamp;
 }
 
-const ORDERS_COLLECTION = 'orders';
+export interface CreateOrderInput {
+  shippingName: string;
+  shippingEmail?: string;
+  shippingPhone: string;
+  shippingAddress: string;
+  shippingCity: string;
+  shippingState: string;
+  shippingPincode: string;
+  paymentMethod: "cod" | "online";
+  userClaimedPaidAt?: Date;
+}
 
-// Create new order
-export const createOrder = async (order: Omit<Order, 'id'>): Promise<string> => {
+function toTimestampLike(value: string | null | undefined): OrderTimestamp | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return {
+    toDate: () => date,
+    toMillis: () => date.getTime(),
+  };
+}
+
+function toLowerEnum<T extends string>(value: string): T {
+  return value.toLowerCase() as T;
+}
+
+function mapApiOrder(api: ApiOrder): Order {
+  return {
+    id: api.id,
+    userId: api.userId,
+    items: api.items.map((item) => ({
+      productId: item.productId,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      image: item.image ?? "",
+    })),
+    total: api.total,
+    status: toLowerEnum<Order["status"]>(api.status),
+    shippingAddress: {
+      name: api.shippingAddress.name,
+      email: api.shippingAddress.email ?? undefined,
+      phone: api.shippingAddress.phone,
+      address: api.shippingAddress.address,
+      city: api.shippingAddress.city,
+      state: api.shippingAddress.state,
+      pincode: api.shippingAddress.pincode,
+    },
+    paymentMethod: toLowerEnum<Order["paymentMethod"]>(api.paymentMethod),
+    paymentStatus: toLowerEnum<Order["paymentStatus"]>(api.paymentStatus),
+    onlinePaymentReview: api.onlinePaymentReview
+      ? toLowerEnum<NonNullable<Order["onlinePaymentReview"]>>(
+          api.onlinePaymentReview
+        )
+      : undefined,
+    paymentRejectionReason: api.paymentRejectionReason ?? undefined,
+    userClaimedPaidAt: toTimestampLike(api.userClaimedPaidAt),
+    createdAt: toTimestampLike(api.createdAt),
+    updatedAt: toTimestampLike(api.updatedAt),
+  };
+}
+
+function toApiPaymentMethod(method: CreateOrderInput["paymentMethod"]) {
+  return method === "cod" ? "COD" : "ONLINE";
+}
+
+function toApiOrderStatus(status: Order["status"]) {
+  return status.toUpperCase();
+}
+
+export const createOrder = async (input: CreateOrderInput): Promise<string> => {
   try {
-    const orderData = {
-      ...order,
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
-    };
-    const docRef = await addDoc(collection(db, ORDERS_COLLECTION), orderData);
-    return docRef.id;
+    const order = await createOrderApi({
+      shippingName: input.shippingName,
+      shippingEmail: input.shippingEmail,
+      shippingPhone: input.shippingPhone,
+      shippingAddress: input.shippingAddress,
+      shippingCity: input.shippingCity,
+      shippingState: input.shippingState,
+      shippingPincode: input.shippingPincode,
+      paymentMethod: toApiPaymentMethod(input.paymentMethod),
+      userClaimedPaidAt: input.userClaimedPaidAt?.toISOString(),
+    });
+    return order.id;
   } catch (error) {
-    console.error('Error creating order:', error);
+    console.error("Error creating order:", error);
     throw error;
   }
 };
 
-// Get order by ID
 export const getOrderById = async (id: string): Promise<Order | null> => {
   try {
-    const docRef = doc(db, ORDERS_COLLECTION, id);
-    const docSnap = await getDoc(docRef);
-    
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() } as Order;
-    }
-    return null;
+    const order = await getAdminOrderByIdApi(id);
+    return mapApiOrder(order);
   } catch (error) {
-    console.error('Error getting order:', error);
+    console.error("Error getting order:", error);
     throw error;
   }
 };
 
-// Get all orders for a user
-export const getUserOrders = async (userId: string): Promise<Order[]> => {
+export const getUserOrderById = async (id: string): Promise<Order | null> => {
   try {
-    // Try with orderBy first
-  try {
-    const q = query(
-      collection(db, ORDERS_COLLECTION),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Order));
-    } catch (orderByError: any) {
-      // If orderBy fails (likely missing index), try without it
-      if (orderByError.code === 'failed-precondition') {
-        const q = query(
-          collection(db, ORDERS_COLLECTION),
-          where('userId', '==', userId)
-        );
-        const querySnapshot = await getDocs(q);
-        const orders = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as Order));
-        // Sort manually by createdAt
-        return orders.sort((a, b) => {
-          const aTime = a.createdAt?.toMillis() || 0;
-          const bTime = b.createdAt?.toMillis() || 0;
-          return bTime - aTime;
-        });
-      }
-      throw orderByError;
-    }
+    const order = await getOrderByIdApi(id);
+    return mapApiOrder(order);
   } catch (error) {
-    console.error('Error getting user orders:', error);
+    console.error("Error getting user order:", error);
     throw error;
   }
 };
 
-// Subscribe to user orders for real-time updates
+export const getUserOrders = async (_userId?: string): Promise<Order[]> => {
+  try {
+    const orders = await getOrdersApi();
+    return orders.map(mapApiOrder);
+  } catch (error) {
+    console.error("Error getting user orders:", error);
+    throw error;
+  }
+};
+
 export const subscribeToUserOrders = (
-  userId: string,
+  _userId: string,
   callback: (orders: Order[]) => void
 ): (() => void) => {
-  try {
-    const q = query(
-      collection(db, ORDERS_COLLECTION),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    );
-    
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const orders = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Order));
-      callback(orders);
-    }, (error) => {
-      if (error.code === 'permission-denied') {
-        // Firestore rules don't allow this read — return empty list silently
-        callback([]);
-        return;
-      }
-      // If orderBy index is missing, fall back to unordered query
-      if (error.code === 'failed-precondition') {
-        const q2 = query(
-          collection(db, ORDERS_COLLECTION),
-          where('userId', '==', userId)
-        );
-        const unsubscribe2 = onSnapshot(q2, (querySnapshot) => {
-          const orders = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          } as Order));
-          orders.sort((a, b) => {
-            const aTime = a.createdAt?.toMillis() || 0;
-            const bTime = b.createdAt?.toMillis() || 0;
-            return bTime - aTime;
-          });
-          callback(orders);
-        }, (err) => {
-          console.error('Error in fallback order listener:', err);
-          callback([]);
-        });
-        return unsubscribe2;
-      }
-      console.error('Error subscribing to user orders:', error);
-      callback([]);
-    });
-    
-    return unsubscribe;
-  } catch (error) {
-    console.error('Error setting up order subscription:', error);
-    // Return a no-op function if subscription fails
-    return () => {};
-  }
+  let active = true;
+
+  void (async () => {
+    try {
+      const orders = await getUserOrders();
+      if (active) callback(orders);
+    } catch (error) {
+      console.error("Error loading user orders:", error);
+      if (active) callback([]);
+    }
+  })();
+
+  return () => {
+    active = false;
+  };
 };
 
-// Get all orders (admin)
 export const getAllOrders = async (): Promise<Order[]> => {
   try {
-    const q = query(
-      collection(db, ORDERS_COLLECTION),
-      orderBy('createdAt', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Order));
+    const orders = await getAllAdminOrdersApi();
+    return orders.map(mapApiOrder);
   } catch (error) {
-    console.error('Error getting all orders:', error);
+    console.error("Error getting all orders:", error);
     throw error;
   }
 };
 
-// Update order status
 export const updateOrderStatus = async (
-  id: string, 
-  status: Order['status']
+  id: string,
+  status: Order["status"]
 ): Promise<void> => {
   try {
-    const docRef = doc(db, ORDERS_COLLECTION, id);
-    await updateDoc(docRef, {
-      status,
-      updatedAt: Timestamp.now()
-    });
+    await updateOrderStatusApi(id, toApiOrderStatus(status));
   } catch (error) {
-    console.error('Error updating order status:', error);
+    console.error("Error updating order status:", error);
     throw error;
   }
 };
 
-// Update payment status
 export const updatePaymentStatus = async (
-  id: string, 
-  paymentStatus: Order['paymentStatus']
+  _id: string,
+  _paymentStatus: Order["paymentStatus"]
 ): Promise<void> => {
-  try {
-    const docRef = doc(db, ORDERS_COLLECTION, id);
-    await updateDoc(docRef, {
-      paymentStatus,
-      updatedAt: Timestamp.now()
-    });
-  } catch (error) {
-    console.error('Error updating payment status:', error);
-    throw error;
-  }
+  throw new Error("Payment status updates are handled via payment review");
 };
 
-/** Admin approves or rejects a customer's UPI "I have paid" claim (online orders only). */
 export const updateOnlinePaymentReview = async (
   id: string,
-  action: 'approve' | 'reject',
+  action: "approve" | "reject",
   rejectionReason?: string
 ): Promise<void> => {
-  const docRef = doc(db, ORDERS_COLLECTION, id);
-  if (action === 'approve') {
-    await updateDoc(docRef, {
-      paymentStatus: 'paid',
-      onlinePaymentReview: 'approved',
-      updatedAt: Timestamp.now()
-    });
-  } else {
-    const reason = (rejectionReason?.trim() || 'Payment could not be verified. Please contact support with your UTR.');
-    await updateDoc(docRef, {
-      paymentStatus: 'failed',
-      onlinePaymentReview: 'rejected',
-      paymentRejectionReason: reason,
-      updatedAt: Timestamp.now()
-    });
+  try {
+    await updateOnlinePaymentReviewApi(id, action, rejectionReason);
+  } catch (error) {
+    console.error("Error updating online payment review:", error);
+    throw error;
   }
 };
-
-

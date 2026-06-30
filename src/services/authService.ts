@@ -1,236 +1,595 @@
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  updateProfile,
-  User
-} from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
 
-export interface UserProfile {
+  apiForgotPassword,
+
+  apiGetMe,
+
+  apiLogin,
+
+  apiLogout,
+
+  apiRegister,
+
+  apiResetPassword,
+
+  type ApiUser,
+
+} from "@/services/apiAuthService";
+
+import {
+
+  createAddressApi,
+
+  deleteAddressApi,
+
+  getAddressesApi,
+
+  updateAddressApi,
+
+  type ApiAddress,
+
+} from "@/services/addressApiService";
+
+import { getProfileApi, updateProfileApi } from "@/services/profileApiService";
+
+import { notifyAuthSessionChanged } from "@/services/authSession";
+
+
+
+export interface SessionUser {
+
   uid: string;
+
   email: string;
-  displayName: string;
-  phone?: string;
-  photoURL?: string;
-  addresses?: Array<{
-    name: string;
-    phone: string;
-    address: string;
-    city: string;
-    state: string;
-    pincode: string;
-    isDefault?: boolean;
-  }>;
-  role: 'user' | 'admin';
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
+
+  displayName: string | null;
+
+  photoURL?: string | null;
+
 }
 
-const USERS_COLLECTION = 'users';
-const ADMIN_COLLECTION = 'admin';
+
+
+export interface UserAddress {
+
+  id?: string;
+
+  name: string;
+
+  phone: string;
+
+  address: string;
+
+  city: string;
+
+  state: string;
+
+  pincode: string;
+
+  isDefault?: boolean;
+
+}
+
+
+
+export interface UserProfile {
+
+  uid: string;
+
+  email: string;
+
+  displayName: string;
+
+  phone?: string;
+
+  photoURL?: string;
+
+  addresses?: UserAddress[];
+
+  role: "user" | "admin";
+
+  createdAt?: string;
+
+  updatedAt?: string;
+
+}
+
+
 
 const configuredAdminEmail = () =>
-  import.meta.env.VITE_ADMIN_EMAIL?.toLowerCase().trim() || '';
 
-export const isAdminUser = (
-  email: string | null | undefined,
-  profile: UserProfile | null | undefined
-): boolean => {
-  if (profile?.role === 'admin') return true;
-  const adminEmail = configuredAdminEmail();
-  return !!adminEmail && email?.toLowerCase() === adminEmail;
-};
+  import.meta.env.VITE_ADMIN_EMAIL?.toLowerCase().trim() || "";
 
-const syncAdminRecord = async (email: string, uid: string): Promise<void> => {
-  const adminDoc = {
-    email,
-    uid,
-    updatedAt: Timestamp.now(),
+
+
+export function mapApiUserToSessionUser(apiUser: ApiUser): SessionUser {
+
+  return {
+
+    uid: apiUser.id,
+
+    email: apiUser.email,
+
+    displayName: apiUser.displayName,
+
+    photoURL: apiUser.photoUrl,
+
   };
 
-  await setDoc(doc(db, ADMIN_COLLECTION, email.toLowerCase()), adminDoc, { merge: true });
-  await setDoc(doc(db, ADMIN_COLLECTION, uid), adminDoc, { merge: true });
+}
+
+
+
+function mapApiAddressToUserAddress(apiAddress: ApiAddress): UserAddress {
+
+  const address = apiAddress.addressLine2
+
+    ? `${apiAddress.addressLine1}, ${apiAddress.addressLine2}`
+
+    : apiAddress.addressLine1;
+
+
+
+  return {
+
+    id: apiAddress.id,
+
+    name: apiAddress.fullName,
+
+    phone: apiAddress.phone,
+
+    address,
+
+    city: apiAddress.city,
+
+    state: apiAddress.state,
+
+    pincode: apiAddress.pincode,
+
+    isDefault: apiAddress.isDefault,
+
+  };
+
+}
+
+
+
+function mapUserAddressToCreateRequest(
+
+  address: UserAddress
+
+): Parameters<typeof createAddressApi>[0] {
+
+  return {
+
+    fullName: address.name,
+
+    phone: address.phone,
+
+    addressLine1: address.address,
+
+    city: address.city,
+
+    state: address.state,
+
+    pincode: address.pincode,
+
+    country: "India",
+
+    isDefault: address.isDefault,
+
+  };
+
+}
+
+
+
+function mapUserAddressToUpdateRequest(
+
+  address: UserAddress
+
+): Parameters<typeof updateAddressApi>[1] {
+
+  return {
+
+    fullName: address.name,
+
+    phone: address.phone,
+
+    addressLine1: address.address,
+
+    city: address.city,
+
+    state: address.state,
+
+    pincode: address.pincode,
+
+    country: "India",
+
+    isDefault: address.isDefault,
+
+  };
+
+}
+
+
+
+export function mapApiUserToProfile(apiUser: ApiUser): UserProfile {
+
+  return {
+
+    uid: apiUser.id,
+
+    email: apiUser.email,
+
+    displayName: apiUser.displayName,
+
+    phone: apiUser.phone ?? undefined,
+
+    photoURL: apiUser.photoUrl ?? undefined,
+
+    role: apiUser.role === "ADMIN" ? "admin" : "user",
+
+    createdAt: apiUser.createdAt,
+
+    updatedAt: apiUser.updatedAt,
+
+  };
+
+}
+
+
+
+async function buildUserProfileFromApi(): Promise<UserProfile | null> {
+
+  const [profile, addresses] = await Promise.all([
+
+    getProfileApi(),
+
+    getAddressesApi(),
+
+  ]);
+
+
+
+  return {
+
+    uid: profile.id,
+
+    email: profile.email,
+
+    displayName: profile.displayName,
+
+    phone: profile.phone ?? undefined,
+
+    photoURL: profile.photoUrl ?? undefined,
+
+    role: profile.role === "ADMIN" ? "admin" : "user",
+
+    createdAt: profile.createdAt,
+
+    updatedAt: profile.updatedAt,
+
+    addresses: addresses.map(mapApiAddressToUserAddress),
+
+  };
+
+}
+
+
+
+export const isAdminUser = (
+
+  email: string | null | undefined,
+
+  profile: UserProfile | null | undefined
+
+): boolean => {
+
+  if (profile?.role === "admin") return true;
+
+  const adminEmail = configuredAdminEmail();
+
+  return !!adminEmail && email?.toLowerCase() === adminEmail;
+
 };
 
-const ensureAdminProfile = async (user: User): Promise<void> => {
-  const userProfile = await getUserProfile(user.uid);
 
-  if (userProfile) {
-    if (userProfile.role !== 'admin') {
-      await updateUserProfile(user.uid, { role: 'admin' });
-    }
-  } else {
-    const adminProfile: UserProfile = {
-      uid: user.uid,
-      email: user.email!,
-      displayName: user.displayName || 'Admin',
-      role: 'admin',
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
-    };
-    await setDoc(doc(db, USERS_COLLECTION, user.uid), adminProfile);
-  }
 
-  await syncAdminRecord(user.email!, user.uid);
-};
-
-// Sign up new user
 export const signUp = async (
+
   email: string,
+
   password: string,
+
   displayName: string
-): Promise<User> => {
+
+): Promise<UserProfile> => {
+
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
 
-    await updateProfile(user, { displayName });
+    await apiRegister(email, password, displayName);
 
-    const userProfile: UserProfile = {
-      uid: user.uid,
-      email: user.email!,
-      displayName,
-      role: 'user',
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
-    };
+    return await signIn(email, password);
 
-    await setDoc(doc(db, USERS_COLLECTION, user.uid), userProfile);
-
-    return user;
   } catch (error) {
-    console.error('Error signing up:', error);
+
+    console.error("Error signing up:", error);
+
     throw error;
+
   }
+
 };
 
-// Sign in user
-export const signIn = async (email: string, password: string): Promise<User> => {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
 
-    if (isAdminUser(user.email, null)) {
-      await ensureAdminProfile(user);
+
+export const signIn = async (
+
+  email: string,
+
+  password: string
+
+): Promise<UserProfile> => {
+
+  try {
+
+    await apiLogin(email, password);
+
+    await notifyAuthSessionChanged();
+
+    const profile = await buildUserProfileFromApi();
+
+    if (!profile) {
+
+      throw new Error("Failed to load user profile");
+
     }
 
-    return user;
+    return profile;
+
   } catch (error) {
-    console.error('Error signing in:', error);
+
+    console.error("Error signing in:", error);
+
     throw error;
+
   }
+
 };
 
-// Sign out user
+
+
 export const logout = async (): Promise<void> => {
+
   try {
-    await signOut(auth);
+
+    await apiLogout();
+
+    await notifyAuthSessionChanged();
+
   } catch (error) {
-    console.error('Error signing out:', error);
+
+    console.error("Error signing out:", error);
+
     throw error;
+
   }
+
 };
 
-// Reset password
+
+
+export const getCurrentUser = async (): Promise<UserProfile | null> => {
+
+  try {
+
+    const apiUser = await apiGetMe();
+
+    if (!apiUser) return null;
+
+    return await buildUserProfileFromApi();
+
+  } catch (error) {
+
+    console.error("Error getting current user:", error);
+
+    throw error;
+
+  }
+
+};
+
+
+
 export const resetPassword = async (email: string): Promise<void> => {
+
   try {
-    await sendPasswordResetEmail(auth, email);
+
+    await apiForgotPassword(email);
+
   } catch (error) {
-    console.error('Error sending password reset email:', error);
+
+    console.error("Error sending password reset email:", error);
+
     throw error;
+
   }
+
 };
 
-// Get user profile
-export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {
-  try {
-    const docRef = doc(db, USERS_COLLECTION, uid);
-    const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      return docSnap.data() as UserProfile;
-    }
-    return null;
+
+export const confirmPasswordReset = async (
+
+  email: string,
+
+  otp: string,
+
+  password: string
+
+): Promise<void> => {
+
+  try {
+
+    await apiResetPassword(email, otp, password);
+
   } catch (error) {
-    console.error('Error getting user profile:', error);
+
+    console.error("Error resetting password:", error);
+
     throw error;
+
   }
+
 };
 
-// Update user profile
+
+
+export const getUserProfile = async (_uid?: string): Promise<UserProfile | null> => {
+
+  try {
+
+    return await buildUserProfileFromApi();
+
+  } catch (error) {
+
+    console.error("Error getting user profile:", error);
+
+    throw error;
+
+  }
+
+};
+
+
+
 export const updateUserProfile = async (
-  uid: string,
-  data: Partial<UserProfile>
+
+  _uid: string,
+
+  data: Partial<Pick<UserProfile, "displayName" | "phone" | "photoURL">>
+
 ): Promise<void> => {
+
   try {
-    const docRef = doc(db, USERS_COLLECTION, uid);
-    await updateDoc(docRef, {
-      ...data,
-      updatedAt: Timestamp.now()
+
+    await updateProfileApi({
+
+      displayName: data.displayName,
+
+      phone: data.phone ?? null,
+
+      photoUrl: data.photoURL ?? null,
+
     });
+
+    await notifyAuthSessionChanged();
+
   } catch (error) {
-    console.error('Error updating user profile:', error);
+
+    console.error("Error updating user profile:", error);
+
     throw error;
+
   }
+
 };
 
-// Add address
+
+
 export const addAddress = async (
-  uid: string,
-  address: UserProfile['addresses'][0]
+
+  _uid: string,
+
+  address: UserAddress
+
 ): Promise<void> => {
+
   try {
-    const userProfile = await getUserProfile(uid);
-    const addresses = userProfile?.addresses || [];
-    
-    if (addresses.length === 0) {
-      address.isDefault = true;
-    }
 
-    addresses.push(address);
+    await createAddressApi(mapUserAddressToCreateRequest(address));
 
-    await updateUserProfile(uid, { addresses });
+    await notifyAuthSessionChanged();
+
   } catch (error) {
-    console.error('Error adding address:', error);
+
+    console.error("Error adding address:", error);
+
     throw error;
+
   }
+
 };
 
-// Update address
+
+
 export const updateAddress = async (
-  uid: string,
+
+  _uid: string,
+
   index: number,
-  address: UserProfile['addresses'][0]
+
+  address: UserAddress
+
 ): Promise<void> => {
+
   try {
-    const userProfile = await getUserProfile(uid);
-    const addresses = userProfile?.addresses || [];
-    
-    if (index >= 0 && index < addresses.length) {
-      addresses[index] = address;
-      await updateUserProfile(uid, { addresses });
-    }
+
+    const addresses = await getAddressesApi();
+
+    const target = addresses[index];
+
+    if (!target) return;
+
+
+
+    await updateAddressApi(target.id, mapUserAddressToUpdateRequest(address));
+
+    await notifyAuthSessionChanged();
+
   } catch (error) {
-    console.error('Error updating address:', error);
+
+    console.error("Error updating address:", error);
+
     throw error;
+
   }
+
 };
 
-// Delete address
-export const deleteAddress = async (uid: string, index: number): Promise<void> => {
+
+
+export const deleteAddress = async (
+
+  _uid: string,
+
+  index: number
+
+): Promise<void> => {
+
   try {
-    const userProfile = await getUserProfile(uid);
-    const addresses = userProfile?.addresses || [];
-    
-    if (index >= 0 && index < addresses.length) {
-      addresses.splice(index, 1);
-      await updateUserProfile(uid, { addresses });
-    }
+
+    const addresses = await getAddressesApi();
+
+    const target = addresses[index];
+
+    if (!target) return;
+
+
+
+    await deleteAddressApi(target.id);
+
+    await notifyAuthSessionChanged();
+
   } catch (error) {
-    console.error('Error deleting address:', error);
+
+    console.error("Error deleting address:", error);
+
     throw error;
+
   }
+
 };
+
+
