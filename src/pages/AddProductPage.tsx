@@ -32,11 +32,53 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { isAdminUser } from "@/services/authService";
+import { addProduct } from "@/services/productService";
+import { uploadProductImage } from "@/services/uploadService";
+
+function buildProductDescription(formData: {
+  description: string;
+  features: string;
+  packSize: string;
+  burningTime: string;
+  weight: string;
+  ingredients: string;
+}): string {
+  const parts: string[] = [];
+
+  if (formData.description.trim()) {
+    parts.push(formData.description.trim());
+  }
+
+  const features = formData.features
+    .split("\n")
+    .map((feature) => feature.trim())
+    .filter(Boolean);
+
+  if (features.length > 0) {
+    parts.push(
+      `\n\nFeatures:\n${features.map((feature) => `• ${feature}`).join("\n")}`
+    );
+  }
+
+  const specifications: string[] = [];
+  if (formData.packSize) specifications.push(`Pack Size: ${formData.packSize}`);
+  if (formData.burningTime) specifications.push(`Burning Time: ${formData.burningTime}`);
+  if (formData.weight) specifications.push(`Weight: ${formData.weight}`);
+  if (formData.ingredients) specifications.push(`Ingredients: ${formData.ingredients}`);
+
+  if (specifications.length > 0) {
+    parts.push(`\n\nSpecifications:\n${specifications.join("\n")}`);
+  }
+
+  return parts.join("");
+}
 
 const AddProductPage = () => {
   const navigate = useNavigate();
   const { user, userProfile, loading } = useAuth();
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -83,6 +125,7 @@ const AddProductPage = () => {
         return;
       }
 
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -103,11 +146,10 @@ const AddProductPage = () => {
 
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
-    if (!formData.name || !formData.category || !formData.price || !imagePreview) {
+    if (!formData.name || !formData.category || !formData.price || !imageFile) {
       toast({
         title: "Error",
         description: "Please fill in all required fields and upload an image",
@@ -117,7 +159,9 @@ const AddProductPage = () => {
     }
 
     const price = parseFloat(formData.price);
-    const originalPrice = formData.originalPrice ? parseFloat(formData.originalPrice) : undefined;
+    const originalPrice = formData.originalPrice
+      ? parseFloat(formData.originalPrice)
+      : undefined;
     const stock = parseInt(formData.stock) || 0;
 
     if (price <= 0) {
@@ -138,61 +182,56 @@ const AddProductPage = () => {
       return;
     }
 
-    const productId = `PROD-${Date.now()}`;
+    setIsSubmitting(true);
+    try {
+      const imageUrl = await uploadProductImage(imageFile);
+      await addProduct({
+        name: formData.name,
+        category: formData.category,
+        price,
+        originalPrice,
+        stock,
+        description: buildProductDescription(formData),
+        image: imageUrl,
+        badge: formData.badge || undefined,
+        features: [],
+        specifications: {},
+      });
 
-    const product = {
-      id: productId,
-      name: formData.name,
-      category: formData.category,
-      price: price,
-      originalPrice: originalPrice,
-      stock: stock,
-      sold: 0,
-      status: stock > 20 ? "In Stock" : stock > 0 ? "Low Stock" : "Out of Stock",
-      description: formData.description,
-      image: imagePreview,
-      badge: formData.badge || undefined,
-      details: {
-        features: formData.features.split("\n").filter(f => f.trim()),
-        packSize: formData.packSize,
-        burningTime: formData.burningTime,
-        weight: formData.weight,
-        ingredients: formData.ingredients,
-      },
-    };
+      toast({
+        title: "Success! 🎉",
+        description: `${formData.name} has been added successfully`,
+      });
 
-    // Save to localStorage
-    const existingProducts = localStorage.getItem("adminProducts");
-    const products = existingProducts ? JSON.parse(existingProducts) : [];
-    products.push(product);
-    localStorage.setItem("adminProducts", JSON.stringify(products));
+      setFormData({
+        name: "",
+        category: "",
+        price: "",
+        originalPrice: "",
+        stock: "",
+        description: "",
+        badge: "",
+        features: "",
+        packSize: "",
+        burningTime: "",
+        weight: "",
+        ingredients: "",
+      });
+      setImagePreview("");
+      setImageFile(null);
 
-    toast({
-      title: "Success! 🎉",
-      description: `${formData.name} has been added successfully`,
-    });
-
-    // Reset form
-    setFormData({
-      name: "",
-      category: "",
-      price: "",
-      originalPrice: "",
-      stock: "",
-      description: "",
-      badge: "",
-      features: "",
-      packSize: "",
-      burningTime: "",
-      weight: "",
-      ingredients: "",
-    });
-    setImagePreview("");
-
-    // Redirect to admin dashboard
-    setTimeout(() => {
-      navigate("/admin");
-    }, 1500);
+      setTimeout(() => {
+        navigate("/admin");
+      }, 1500);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to save product",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -548,7 +587,10 @@ const AddProductPage = () => {
                           <Button
                             type="button"
                             variant="outline"
-                            onClick={() => setImagePreview("")}
+                            onClick={() => {
+                              setImagePreview("");
+                              setImageFile(null);
+                            }}
                             className="w-full"
                           >
                             Change Image
@@ -659,10 +701,11 @@ const AddProductPage = () => {
             </Button>
             <Button
               type="submit"
+              disabled={isSubmitting}
               className="flex-1 bg-[#DC143C] hover:bg-[#801030]"
             >
               <Save className="h-4 w-4 mr-2" />
-              Save Product
+              {isSubmitting ? "Saving..." : "Save Product"}
             </Button>
           </motion.div>
         </form>

@@ -64,6 +64,14 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { isAdminUser } from "@/services/authService";
 import { getAllOrders, getOrderById, updateOrderStatus, updateOnlinePaymentReview, Order } from "@/services/orderService";
+import {
+  addProduct,
+  deleteProduct,
+  getAllProducts,
+  updateProduct,
+  type Product as ApiProduct,
+} from "@/services/productService";
+import { uploadProductImage } from "@/services/uploadService";
 
 interface Product {
   id: string;
@@ -79,6 +87,28 @@ interface Product {
   badge?: string;
 }
 
+function stockStatus(stock: number): string {
+  if (stock > 20) return "In Stock";
+  if (stock > 0) return "Low Stock";
+  return "Out of Stock";
+}
+
+function mapProductToAdminRow(product: ApiProduct): Product {
+  return {
+    id: product.id,
+    name: product.name,
+    category: product.category,
+    price: product.price,
+    originalPrice: product.originalPrice,
+    stock: product.stock,
+    sold: 0,
+    status: stockStatus(product.stock),
+    description: product.description,
+    image: product.image,
+    badge: product.badge,
+  };
+}
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, userProfile, loading } = useAuth();
@@ -86,7 +116,23 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isEditProductOpen, setIsEditProductOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string>("");
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    category: "",
+    price: "",
+    originalPrice: "",
+    stock: "",
+    description: "",
+    badge: "",
+  });
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -162,10 +208,25 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (loading || !isAdmin) return;
-    const storedProducts = localStorage.getItem("adminProducts");
-    if (storedProducts) {
-      setProducts(JSON.parse(storedProducts));
-    }
+
+    const loadProducts = async () => {
+      setIsLoadingProducts(true);
+      try {
+        const apiProducts = await getAllProducts();
+        setProducts(apiProducts.map(mapProductToAdminRow));
+      } catch (error) {
+        console.error("Error loading products:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load products",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+
+    loadProducts();
   }, [loading, isAdmin]);
 
   useEffect(() => {
@@ -349,11 +410,15 @@ const AdminDashboard = () => {
     }
   };
 
-  // Handle image upload
+  const reloadProducts = async () => {
+    const apiProducts = await getAllProducts();
+    setProducts(apiProducts.map(mapProductToAdminRow));
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "Error",
           description: "Image size should be less than 5MB",
@@ -362,6 +427,7 @@ const AdminDashboard = () => {
         return;
       }
 
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -370,9 +436,45 @@ const AdminDashboard = () => {
     }
   };
 
-  // Add new product
-  const handleAddProduct = () => {
-    if (!newProduct.name || !newProduct.category || !newProduct.price || !imagePreview) {
+  const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "Image size should be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setEditImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const openEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setEditForm({
+      name: product.name,
+      category: product.category,
+      price: String(product.price),
+      originalPrice: product.originalPrice ? String(product.originalPrice) : "",
+      stock: String(product.stock),
+      description: product.description || "",
+      badge: product.badge || "",
+    });
+    setEditImagePreview(product.image);
+    setEditImageFile(null);
+    setIsEditProductOpen(true);
+  };
+
+  const handleAddProduct = async () => {
+    if (!newProduct.name || !newProduct.category || !newProduct.price || !imageFile) {
       toast({
         title: "Error",
         description: "Please fill in all required fields and upload an image",
@@ -381,58 +483,127 @@ const AdminDashboard = () => {
       return;
     }
 
-    const productId = `PROD-${Date.now()}`;
     const price = parseFloat(newProduct.price);
-    const originalPrice = newProduct.originalPrice ? parseFloat(newProduct.originalPrice) : undefined;
+    const originalPrice = newProduct.originalPrice
+      ? parseFloat(newProduct.originalPrice)
+      : undefined;
     const stock = parseInt(newProduct.stock) || 0;
 
-    const product: Product = {
-      id: productId,
-      name: newProduct.name,
-      category: newProduct.category,
-      price: price,
-      originalPrice: originalPrice,
-      stock: stock,
-      sold: 0,
-      status: stock > 20 ? "In Stock" : stock > 0 ? "Low Stock" : "Out of Stock",
-      description: newProduct.description,
-      image: imagePreview,
-      badge: newProduct.badge || undefined,
-    };
+    setIsSavingProduct(true);
+    try {
+      const imageUrl = await uploadProductImage(imageFile);
+      await addProduct({
+        name: newProduct.name,
+        category: newProduct.category,
+        price,
+        originalPrice,
+        stock,
+        description: newProduct.description || "",
+        image: imageUrl,
+        badge: newProduct.badge || undefined,
+        features: [],
+        specifications: {},
+      });
+      await reloadProducts();
 
-    const updatedProducts = [...products, product];
-    setProducts(updatedProducts);
-    localStorage.setItem("adminProducts", JSON.stringify(updatedProducts));
+      toast({
+        title: "Success! 🎉",
+        description: `${newProduct.name} has been added successfully`,
+      });
 
-    toast({
-      title: "Success! 🎉",
-      description: `${newProduct.name} has been added successfully`,
-    });
-
-    // Reset form
-    setNewProduct({
-      name: "",
-      category: "",
-      price: "",
-      originalPrice: "",
-      stock: "",
-      description: "",
-      badge: "",
-    });
-    setImagePreview("");
-    setIsAddProductOpen(false);
+      setNewProduct({
+        name: "",
+        category: "",
+        price: "",
+        originalPrice: "",
+        stock: "",
+        description: "",
+        badge: "",
+      });
+      setImagePreview("");
+      setImageFile(null);
+      setIsAddProductOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to add product",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProduct(false);
+    }
   };
 
-  // Delete product
-  const handleDeleteProduct = (productId: string) => {
-    const updatedProducts = products.filter(p => p.id !== productId);
-    setProducts(updatedProducts);
-    localStorage.setItem("adminProducts", JSON.stringify(updatedProducts));
+  const handleUpdateProduct = async () => {
+    if (!editingProduct || !editForm.name || !editForm.category || !editForm.price) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    toast({
-      title: "Product Deleted",
-      description: "Product has been removed successfully",
-    });
+    const price = parseFloat(editForm.price);
+    const originalPrice = editForm.originalPrice
+      ? parseFloat(editForm.originalPrice)
+      : undefined;
+    const stock = parseInt(editForm.stock) || 0;
+
+    setIsSavingProduct(true);
+    try {
+      const updates: Partial<ApiProduct> = {
+        name: editForm.name,
+        category: editForm.category,
+        price,
+        originalPrice,
+        stock,
+        description: editForm.description || "",
+        badge: editForm.badge || undefined,
+      };
+
+      if (editImageFile) {
+        updates.image = await uploadProductImage(editImageFile);
+      }
+
+      await updateProduct(editingProduct.id, updates);
+      await reloadProducts();
+
+      toast({
+        title: "Product Updated",
+        description: `${editForm.name} has been updated successfully`,
+      });
+
+      setIsEditProductOpen(false);
+      setEditingProduct(null);
+      setEditImagePreview("");
+      setEditImageFile(null);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to update product",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProduct(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await deleteProduct(productId);
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
+      toast({
+        title: "Product Deleted",
+        description: "Product has been removed successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to delete product",
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -770,7 +941,14 @@ const AdminDashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {products.length > 0 ? (
+                        {isLoadingProducts ? (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center py-8">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                              <p className="text-muted-foreground">Loading products...</p>
+                            </TableCell>
+                          </TableRow>
+                        ) : products.length > 0 ? (
                           products.map((product) => (
                           <TableRow key={product.id}>
                             <TableCell className="font-medium">{product.id}</TableCell>
@@ -784,10 +962,20 @@ const AdminDashboard = () => {
                             <TableCell>{getStatusBadge(product.status)}</TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
-                                <Button variant="ghost" size="sm">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  title="View on store"
+                                  onClick={() => navigate(`/product/${product.id}`)}
+                                >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button variant="ghost" size="sm">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  title="Edit product"
+                                  onClick={() => openEditProduct(product)}
+                                >
                                   <Edit className="h-4 w-4" />
                                 </Button>
                                 <Button 
@@ -857,7 +1045,10 @@ const AdminDashboard = () => {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => setImagePreview("")}
+                        onClick={() => {
+                          setImagePreview("");
+                          setImageFile(null);
+                        }}
                       >
                         Change Image
                       </Button>
@@ -1012,10 +1203,200 @@ const AdminDashboard = () => {
               <Button
                 type="button"
                 onClick={handleAddProduct}
+                disabled={isSavingProduct}
                 className="bg-[#DC143C] hover:bg-[#801030]"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Product
+                {isSavingProduct ? "Saving..." : "Add Product"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Product Dialog */}
+        <Dialog open={isEditProductOpen} onOpenChange={setIsEditProductOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-[#DC143C] flex items-center gap-2">
+                <Edit className="h-6 w-6" />
+                Edit Product
+              </DialogTitle>
+              <DialogDescription>
+                Update product details below
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-product-image" className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4 text-[#DC143C]" />
+                  Product Image
+                </Label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#DC143C] transition-colors">
+                  {editImagePreview ? (
+                    <div className="space-y-4">
+                      <img
+                        src={editImagePreview}
+                        alt="Preview"
+                        className="max-h-48 mx-auto rounded-lg object-cover"
+                      />
+                      <div className="flex gap-2 justify-center">
+                        <label htmlFor="edit-product-image">
+                          <Button type="button" variant="outline" asChild>
+                            <span>Change Image</span>
+                          </Button>
+                        </label>
+                        <Input
+                          id="edit-product-image"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleEditImageUpload}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <label htmlFor="edit-product-image" className="cursor-pointer">
+                      <Upload className="h-12 w-12 mx-auto text-gray-400 mb-2" />
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Click to upload or drag and drop
+                      </p>
+                      <Input
+                        id="edit-product-image"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleEditImageUpload}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-product-name">Product Name *</Label>
+                <Input
+                  id="edit-product-name"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="border-2 focus:border-[#DC143C]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category">Category *</Label>
+                  <Select
+                    value={editForm.category}
+                    onValueChange={(value) => setEditForm({ ...editForm, category: value })}
+                  >
+                    <SelectTrigger className="border-2 focus:border-[#DC143C]">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Agarbatti">Agarbatti</SelectItem>
+                      <SelectItem value="Dhoop">Dhoop</SelectItem>
+                      <SelectItem value="Cones">Incense Cones</SelectItem>
+                      <SelectItem value="Puja">Puja Essentials</SelectItem>
+                      <SelectItem value="Karpure">Karpure</SelectItem>
+                      <SelectItem value="Havan">Havan</SelectItem>
+                      <SelectItem value="Gift Set">Gift Set</SelectItem>
+                      <SelectItem value="Accessories">Accessories</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-badge">Badge (Optional)</Label>
+                  <Select
+                    value={editForm.badge || "none"}
+                    onValueChange={(value) =>
+                      setEditForm({
+                        ...editForm,
+                        badge: value === "none" ? "" : value,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="border-2 focus:border-[#DC143C]">
+                      <SelectValue placeholder="Select badge" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Badge</SelectItem>
+                      <SelectItem value="Bestseller">Bestseller</SelectItem>
+                      <SelectItem value="New">New</SelectItem>
+                      <SelectItem value="Popular">Popular</SelectItem>
+                      <SelectItem value="Limited">Limited Edition</SelectItem>
+                      <SelectItem value="Premium">Premium</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-price">Price (₹) *</Label>
+                  <Input
+                    id="edit-price"
+                    type="number"
+                    value={editForm.price}
+                    onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                    className="border-2 focus:border-[#DC143C]"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-original-price">Original Price (₹)</Label>
+                  <Input
+                    id="edit-original-price"
+                    type="number"
+                    value={editForm.originalPrice}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, originalPrice: e.target.value })
+                    }
+                    className="border-2 focus:border-[#DC143C]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-stock">Stock Quantity *</Label>
+                <Input
+                  id="edit-stock"
+                  type="number"
+                  value={editForm.stock}
+                  onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })}
+                  className="border-2 focus:border-[#DC143C]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Product Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editForm.description}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, description: e.target.value })
+                  }
+                  className="border-2 focus:border-[#DC143C] min-h-24"
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditProductOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleUpdateProduct}
+                disabled={isSavingProduct}
+                className="bg-[#DC143C] hover:bg-[#801030]"
+              >
+                {isSavingProduct ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </DialogContent>
