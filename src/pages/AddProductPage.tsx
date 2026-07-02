@@ -302,16 +302,19 @@ const AddProductPage = () => {
                           Product Badge
                         </Label>
                         <Select
-                          value={formData.badge}
+                          value={formData.badge || "none"}
                           onValueChange={(value) =>
-                            setFormData({ ...formData, badge: value })
+                            setFormData({
+                              ...formData,
+                              badge: value === "none" ? "" : value,
+                            })
                           }
                         >
                           <SelectTrigger className="border-2 focus:border-[#DC143C]">
                             <SelectValue placeholder="Select badge (optional)" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">No Badge</SelectItem>
+                            <SelectItem value="none">No Badge</SelectItem>
                             <SelectItem value="Bestseller">Bestseller</SelectItem>
                             <SelectItem value="New">New</SelectItem>
                             <SelectItem value="Popular">Popular</SelectItem>

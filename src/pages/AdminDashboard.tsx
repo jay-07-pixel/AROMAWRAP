@@ -922,14 +922,19 @@ const AdminDashboard = () => {
                 <div className="space-y-2">
                   <Label htmlFor="badge">Badge (Optional)</Label>
                   <Select
-                    value={newProduct.badge}
-                    onValueChange={(value) => setNewProduct({ ...newProduct, badge: value })}
+                    value={newProduct.badge || "none"}
+                    onValueChange={(value) =>
+                      setNewProduct({
+                        ...newProduct,
+                        badge: value === "none" ? "" : value,
+                      })
+                    }
                   >
                     <SelectTrigger className="border-2 focus:border-[#DC143C]">
                       <SelectValue placeholder="Select badge" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Badge</SelectItem>
+                      <SelectItem value="none">No Badge</SelectItem>
                       <SelectItem value="Bestseller">Bestseller</SelectItem>
                       <SelectItem value="New">New</SelectItem>
                       <SelectItem value="Popular">Popular</SelectItem>
