@@ -31,6 +31,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { isLegacyProductId } from "@/lib/legacyProducts";
 
 function StarDisplay({ rating, size = "h-4 w-4" }: { rating: number; size?: string }) {
   const filled = renderStarCount(rating);
@@ -105,6 +106,13 @@ const ProductPage = () => {
       return;
     }
 
+    if (isLegacyProductId(productId)) {
+      setProduct(null);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     let active = true;
 
     const loadProduct = async () => {
@@ -150,17 +158,21 @@ const ProductPage = () => {
   }, [product?.id]);
 
   useEffect(() => {
-    if (!productId) return;
+    if (!product?.id) {
+      setReviews([]);
+      return;
+    }
 
     let active = true;
 
     const loadReviews = async () => {
       setReviewsLoading(true);
       try {
-        const { items } = await listProductReviews(productId, 1, 20);
+        const { items } = await listProductReviews(product.id, 1, 20);
         if (active) setReviews(items);
       } catch (loadError) {
         console.error("Error loading reviews:", loadError);
+        if (active) setReviews([]);
       } finally {
         if (active) setReviewsLoading(false);
       }
@@ -170,10 +182,10 @@ const ProductPage = () => {
     return () => {
       active = false;
     };
-  }, [productId]);
+  }, [product?.id]);
 
   useEffect(() => {
-    if (!productId || !user) {
+    if (!product?.id || !user) {
       setMyReview(null);
       return;
     }
@@ -182,7 +194,7 @@ const ProductPage = () => {
 
     const loadMyReview = async () => {
       try {
-        const review = await getMyProductReview(productId);
+        const review = await getMyProductReview(product.id);
         if (!active) return;
         setMyReview(review);
         if (review) {
@@ -203,25 +215,25 @@ const ProductPage = () => {
     return () => {
       active = false;
     };
-  }, [productId, user]);
+  }, [product?.id, user]);
 
   const refreshProductAndReviews = async () => {
-    if (!productId) return;
+    if (!product?.id) return;
     const [updatedProduct, reviewData] = await Promise.all([
-      getProduct(productId),
-      listProductReviews(productId, 1, 20),
+      getProduct(product.id),
+      listProductReviews(product.id, 1, 20),
     ]);
     if (updatedProduct) setProduct(updatedProduct);
     setReviews(reviewData.items);
     if (user) {
-      const mine = await getMyProductReview(productId);
+      const mine = await getMyProductReview(product.id);
       setMyReview(mine);
     }
   };
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!productId) return;
+    if (!product?.id) return;
 
     if (!user) {
       navigate("/account");
@@ -239,7 +251,7 @@ const ProductPage = () => {
 
     setIsSubmittingReview(true);
     try {
-      await submitProductReview(productId, {
+      await submitProductReview(product.id, {
         rating: reviewRating,
         title: reviewTitle.trim() || undefined,
         comment: reviewComment.trim(),

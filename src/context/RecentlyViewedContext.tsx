@@ -1,4 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import {
+  clearLegacyProductStorage,
+  isValidStoreProductRef,
+} from "@/lib/legacyProducts";
 
 interface RecentlyViewedProduct {
   id: string;
@@ -20,12 +24,16 @@ const RecentlyViewedContext = createContext<RecentlyViewedContextType | undefine
 export const RecentlyViewedProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<RecentlyViewedProduct[]>([]);
 
-  // Load from localStorage on mount
   useEffect(() => {
+    clearLegacyProductStorage();
+
     const stored = localStorage.getItem("recentlyViewed");
     if (stored) {
       try {
-        setProducts(JSON.parse(stored));
+        const parsed = JSON.parse(stored) as RecentlyViewedProduct[];
+        if (Array.isArray(parsed)) {
+          setProducts(parsed.filter(isValidStoreProductRef));
+        }
       } catch (error) {
         console.error("Error parsing recently viewed:", error);
       }

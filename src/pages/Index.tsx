@@ -12,23 +12,59 @@ import { useEffect, useState } from "react";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
 import { listProducts, type ProductListItem } from "@/services/productService";
+import { clearLegacyProductStorage, isValidStoreProductRef } from "@/lib/legacyProducts";
 import circularBestsellers from "@/assets/circular-bestsellers.jpg";
 import circularDhoop from "@/assets/circular-dhoop.jpg";
 
 const Index = () => {
-  const [adminProducts, setAdminProducts] = useState<any[]>(() => {
-    try {
-      const stored = localStorage.getItem("adminProducts");
-      if (stored) return JSON.parse(stored) as any[];
-    } catch (e) {
-      console.error("Error parsing admin products:", e);
-    }
-    return [];
-  });
+  const [newArrivals, setNewArrivals] = useState<ProductListItem[]>([]);
+  const [isLoadingNewArrivals, setIsLoadingNewArrivals] = useState(true);
+  const [newArrivalsError, setNewArrivalsError] = useState<string | null>(null);
   const [bestSellers, setBestSellers] = useState<ProductListItem[]>([]);
   const [isLoadingBestSellers, setIsLoadingBestSellers] = useState(true);
   const [bestSellersError, setBestSellersError] = useState<string | null>(null);
   const { products: recentlyViewed } = useRecentlyViewed();
+
+  useEffect(() => {
+    clearLegacyProductStorage();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadNewArrivals = async () => {
+      setIsLoadingNewArrivals(true);
+      setNewArrivalsError(null);
+
+      try {
+        const { items } = await listProducts({
+          sort: "newest",
+          page: 1,
+          limit: 4,
+        });
+
+        if (active) {
+          setNewArrivals(items);
+        }
+      } catch (error) {
+        console.error("Error loading new arrivals:", error);
+        if (active) {
+          setNewArrivals([]);
+          setNewArrivalsError("Failed to load products.");
+        }
+      } finally {
+        if (active) {
+          setIsLoadingNewArrivals(false);
+        }
+      }
+    };
+
+    loadNewArrivals();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -39,7 +75,7 @@ const Index = () => {
 
       try {
         const { items } = await listProducts({
-          sort: "newest",
+          sort: "rating",
           page: 1,
           limit: 4,
         });
@@ -102,8 +138,8 @@ const Index = () => {
       <CartDrawer />
       <Header />
 
-      {/* Admin Products Section */}
-      {adminProducts.length > 0 && (
+      {/* New Arrivals — from API (MySQL), not localStorage */}
+      {(isLoadingNewArrivals || newArrivals.length > 0 || newArrivalsError) && (
         <section className="pt-3 pb-4 sm:pt-4 sm:pb-6 bg-gradient-to-b from-white to-gray-50">
           <div className="container mx-auto px-3 sm:px-4">
             <div className="text-center mb-3">
@@ -111,6 +147,13 @@ const Index = () => {
                 New Arrivals
               </h2>
             </div>
+            {isLoadingNewArrivals ? (
+              <ProductGridSkeleton count={4} />
+            ) : newArrivalsError ? (
+              <div className="text-center py-6 text-muted-foreground">
+                {newArrivalsError}
+              </div>
+            ) : (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -118,7 +161,7 @@ const Index = () => {
               transition={{ duration: 0.6 }}
               className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8"
             >
-              {adminProducts.map((product, index) => (
+              {newArrivals.map((product, index) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -138,6 +181,7 @@ const Index = () => {
                 </motion.div>
               ))}
             </motion.div>
+            )}
           </div>
         </section>
       )}
@@ -181,7 +225,7 @@ const Index = () => {
 
 
       {/* Recently Viewed Section */}
-      {recentlyViewed.length > 0 && (
+      {recentlyViewed.filter(isValidStoreProductRef).length > 0 && (
         <section className="py-6 sm:py-8 bg-gradient-to-b from-gray-50 to-white">
           <div className="container mx-auto px-3 sm:px-4">
             <motion.div
@@ -199,7 +243,7 @@ const Index = () => {
               </p>
             </motion.div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
-              {recentlyViewed.slice(0, 5).map((product, index) => (
+              {recentlyViewed.filter(isValidStoreProductRef).slice(0, 5).map((product, index) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 20 }}
