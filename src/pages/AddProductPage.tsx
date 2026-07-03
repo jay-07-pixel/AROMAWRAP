@@ -16,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft,
-  Upload,
   Image as ImageIcon,
   Package,
   IndianRupee,
@@ -33,51 +32,17 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { isAdminUser } from "@/services/authService";
 import { addProduct } from "@/services/productService";
-import { uploadProductImage } from "@/services/uploadService";
-
-function buildProductDescription(formData: {
-  description: string;
-  features: string;
-  packSize: string;
-  burningTime: string;
-  weight: string;
-  ingredients: string;
-}): string {
-  const parts: string[] = [];
-
-  if (formData.description.trim()) {
-    parts.push(formData.description.trim());
-  }
-
-  const features = formData.features
-    .split("\n")
-    .map((feature) => feature.trim())
-    .filter(Boolean);
-
-  if (features.length > 0) {
-    parts.push(
-      `\n\nFeatures:\n${features.map((feature) => `• ${feature}`).join("\n")}`
-    );
-  }
-
-  const specifications: string[] = [];
-  if (formData.packSize) specifications.push(`Pack Size: ${formData.packSize}`);
-  if (formData.burningTime) specifications.push(`Burning Time: ${formData.burningTime}`);
-  if (formData.weight) specifications.push(`Weight: ${formData.weight}`);
-  if (formData.ingredients) specifications.push(`Ingredients: ${formData.ingredients}`);
-
-  if (specifications.length > 0) {
-    parts.push(`\n\nSpecifications:\n${specifications.join("\n")}`);
-  }
-
-  return parts.join("");
-}
+import { buildProductDescription } from "@/lib/productFormDescription";
+import {
+  AdminProductImagesField,
+  resolveProductImageUrls,
+  type ProductImageItem,
+} from "@/components/AdminProductImagesField";
 
 const AddProductPage = () => {
   const navigate = useNavigate();
   const { user, userProfile, loading } = useAuth();
-  const [imagePreview, setImagePreview] = useState<string>("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageItems, setImageItems] = useState<ProductImageItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -103,37 +68,6 @@ const AddProductPage = () => {
     return null;
   }
 
-  // Handle image upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Error",
-          description: "Image size should be less than 5MB",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!file.type.startsWith("image/")) {
-        toast({
-          title: "Error",
-          description: "Please upload a valid image file",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   // Handle input change
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -149,10 +83,10 @@ const AddProductPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.category || !formData.price || !imageFile) {
+    if (!formData.name || !formData.category || !formData.price || imageItems.length === 0) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields and upload an image",
+        description: "Please fill in all required fields and upload at least one image",
         variant: "destructive",
       });
       return;
@@ -184,7 +118,7 @@ const AddProductPage = () => {
 
     setIsSubmitting(true);
     try {
-      const imageUrl = await uploadProductImage(imageFile);
+      const imageUrls = await resolveProductImageUrls(imageItems);
       await addProduct({
         name: formData.name,
         category: formData.category,
@@ -192,7 +126,8 @@ const AddProductPage = () => {
         originalPrice,
         stock,
         description: buildProductDescription(formData),
-        image: imageUrl,
+        image: imageUrls[0],
+        images: imageUrls,
         badge: formData.badge || undefined,
         features: [],
         specifications: {},
@@ -217,8 +152,7 @@ const AddProductPage = () => {
         weight: "",
         ingredients: "",
       });
-      setImagePreview("");
-      setImageFile(null);
+      setImageItems([]);
 
       setTimeout(() => {
         navigate("/admin");
@@ -571,55 +505,17 @@ const AddProductPage = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <ImageIcon className="h-5 w-5 text-[#DC143C]" />
-                      Product Image *
+                      Product Images *
                     </CardTitle>
-                    <CardDescription>Upload a high-quality image</CardDescription>
+                    <CardDescription>Upload one or more high-quality images</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#DC143C] transition-colors">
-                      {imagePreview ? (
-                        <div className="space-y-4">
-                          <img
-                            src={imagePreview}
-                            alt="Product Preview"
-                            className="w-full h-64 object-cover rounded-lg"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                              setImagePreview("");
-                              setImageFile(null);
-                            }}
-                            className="w-full"
-                          >
-                            Change Image
-                          </Button>
-                        </div>
-                      ) : (
-                        <label htmlFor="product-image" className="cursor-pointer block">
-                          <Upload className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                          <p className="text-sm text-muted-foreground mb-2 font-semibold">
-                            Click to upload or drag and drop
-                          </p>
-                          <p className="text-xs text-muted-foreground mb-4">
-                            PNG, JPG, WEBP up to 5MB
-                          </p>
-                          <Input
-                            id="product-image"
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleImageUpload}
-                          />
-                          <Badge variant="outline" className="border-[#DC143C] text-[#DC143C]">
-                            Required
-                          </Badge>
-                        </label>
-                      )}
-                    </div>
+                    <AdminProductImagesField
+                      images={imageItems}
+                      onChange={setImageItems}
+                      required
+                    />
 
-                    {/* Image Requirements */}
                     <div className="bg-muted/50 p-4 rounded-lg space-y-2 text-xs">
                       <p className="font-semibold">Image Guidelines:</p>
                       <ul className="space-y-1 text-muted-foreground list-disc list-inside">
@@ -633,7 +529,7 @@ const AddProductPage = () => {
                 </Card>
 
                 {/* Product Preview Card */}
-                {formData.name && imagePreview && (
+                {formData.name && imageItems.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -650,7 +546,7 @@ const AddProductPage = () => {
                         <div className="bg-white rounded-lg overflow-hidden shadow-md">
                           <div className="relative">
                             <img
-                              src={imagePreview}
+                              src={imageItems[0].preview}
                               alt={formData.name}
                               className="w-full h-48 object-cover"
                             />

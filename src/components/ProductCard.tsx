@@ -17,13 +17,15 @@ interface ProductCardProps {
   image: string;
   badge?: string;
   description?: string;
+  rating?: number;
+  reviews?: number;
   /** Request earlier fetch; use for first screen of grids */
   priority?: boolean;
   /** First / LCP product on home: eager + high fetch priority, minimal animation */
   lcp?: boolean;
 }
 
-export const ProductCard = ({ id, name, price, originalPrice, image, badge, description, priority = false, lcp = false }: ProductCardProps) => {
+export const ProductCard = ({ id, name, price, originalPrice, image, badge, description, rating, reviews, priority = false, lcp = false }: ProductCardProps) => {
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
@@ -207,7 +209,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
     <QuickViewModal
       isOpen={isQuickViewOpen}
       onClose={() => setIsQuickViewOpen(false)}
-      product={{ id, name, price, originalPrice, image, badge, description }}
+      product={{ id, name, price, originalPrice, image, badge, description, rating, reviews }}
     />
   </>
   );

@@ -30,6 +30,8 @@ function getSortOrder(
       return { price: "desc" };
     case "name-asc":
       return { name: "asc" };
+    case "rating":
+      return { rating: "desc" };
     case "newest":
     default:
       return { createdAt: "desc" };

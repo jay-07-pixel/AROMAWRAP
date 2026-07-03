@@ -30,7 +30,7 @@ export const listProductsQuerySchema = z.object({
   category: z.string().trim().optional(),
   search: z.string().trim().optional(),
   sort: z
-    .enum(["newest", "price-low", "price-high", "name-asc"])
+    .enum(["newest", "price-low", "price-high", "name-asc", "rating"])
     .optional()
     .default("newest"),
   page: z.coerce.number().int().min(1).optional().default(1),

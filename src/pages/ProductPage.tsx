@@ -3,6 +3,9 @@ import { Footer } from "@/components/Footer";
 import { CartDrawer } from "@/components/CartDrawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowLeft,
   Heart,
@@ -17,12 +20,68 @@ import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 import { getProduct, type Product } from "@/services/productService";
+import {
+  formatReviewDate,
+  getMyProductReview,
+  listProductReviews,
+  renderStarCount,
+  submitProductReview,
+  type ProductReview,
+} from "@/services/reviewService";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
+
+function StarDisplay({ rating, size = "h-4 w-4" }: { rating: number; size?: string }) {
+  const filled = renderStarCount(rating);
+  return (
+    <>
+      {[...Array(5)].map((_, i) => (
+        <Star
+          key={i}
+          className={`${size} ${
+            i < filled ? "text-yellow-400 fill-current" : "text-gray-300"
+          }`}
+        />
+      ))}
+    </>
+  );
+}
+
+function StarRatingInput({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (rating: number) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => onChange(star)}
+          className="p-0.5 rounded hover:scale-110 transition-transform"
+          aria-label={`Rate ${star} stars`}
+        >
+          <Star
+            className={`h-6 w-6 ${
+              star <= value ? "text-yellow-400 fill-current" : "text-gray-300"
+            }`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const ProductPage = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
   const { addProduct } = useRecentlyViewed();
+  const { user } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +90,13 @@ const ProductPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
+  const [reviews, setReviews] = useState<ProductReview[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [myReview, setMyReview] = useState<ProductReview | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewComment, setReviewComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
     if (!productId) {
@@ -83,6 +149,117 @@ const ProductPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?.id]);
 
+  useEffect(() => {
+    if (!productId) return;
+
+    let active = true;
+
+    const loadReviews = async () => {
+      setReviewsLoading(true);
+      try {
+        const { items } = await listProductReviews(productId, 1, 20);
+        if (active) setReviews(items);
+      } catch (loadError) {
+        console.error("Error loading reviews:", loadError);
+      } finally {
+        if (active) setReviewsLoading(false);
+      }
+    };
+
+    loadReviews();
+    return () => {
+      active = false;
+    };
+  }, [productId]);
+
+  useEffect(() => {
+    if (!productId || !user) {
+      setMyReview(null);
+      return;
+    }
+
+    let active = true;
+
+    const loadMyReview = async () => {
+      try {
+        const review = await getMyProductReview(productId);
+        if (!active) return;
+        setMyReview(review);
+        if (review) {
+          setReviewRating(review.rating);
+          setReviewTitle(review.title || "");
+          setReviewComment(review.comment);
+        } else {
+          setReviewRating(5);
+          setReviewTitle("");
+          setReviewComment("");
+        }
+      } catch (loadError) {
+        console.error("Error loading your review:", loadError);
+      }
+    };
+
+    loadMyReview();
+    return () => {
+      active = false;
+    };
+  }, [productId, user]);
+
+  const refreshProductAndReviews = async () => {
+    if (!productId) return;
+    const [updatedProduct, reviewData] = await Promise.all([
+      getProduct(productId),
+      listProductReviews(productId, 1, 20),
+    ]);
+    if (updatedProduct) setProduct(updatedProduct);
+    setReviews(reviewData.items);
+    if (user) {
+      const mine = await getMyProductReview(productId);
+      setMyReview(mine);
+    }
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!productId) return;
+
+    if (!user) {
+      navigate("/account");
+      return;
+    }
+
+    if (!reviewComment.trim()) {
+      toast({
+        title: "Review required",
+        description: "Please write your review before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    try {
+      await submitProductReview(productId, {
+        rating: reviewRating,
+        title: reviewTitle.trim() || undefined,
+        comment: reviewComment.trim(),
+      });
+      await refreshProductAndReviews();
+      toast({
+        title: myReview ? "Review updated" : "Review submitted",
+        description: "Thank you for sharing your feedback!",
+      });
+    } catch (submitError: any) {
+      toast({
+        title: "Could not submit review",
+        description: submitError?.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -134,7 +311,8 @@ const ProductPage = () => {
     ? product.images
     : [product.image];
   const rating = product.rating ?? 0;
-  const reviews = product.reviews ?? 0;
+  const reviewCount = product.reviews ?? 0;
+  const ratingLabel = reviewCount > 0 ? rating.toFixed(1) : "—";
 
   const handleAddToCart = () => {
     addItem({
@@ -238,21 +416,19 @@ const ProductPage = () => {
 
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < Math.floor(rating)
-                            ? "text-yellow-400 fill-current"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
+                    <StarDisplay rating={rating} />
                   </div>
-                  <span className="font-semibold text-foreground">{rating}</span>
-                  <span className="text-muted-foreground">
-                    ({reviews} reviews)
-                  </span>
+                  {reviewCount > 0 && (
+                    <>
+                      <span className="font-semibold text-foreground">{ratingLabel}</span>
+                      <span className="text-muted-foreground">
+                        ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
+                      </span>
+                    </>
+                  )}
+                  {reviewCount === 0 && (
+                    <span className="text-muted-foreground">No reviews yet</span>
+                  )}
                 </div>
               </div>
 
@@ -421,73 +597,113 @@ const ProductPage = () => {
                       <h3 className="text-xl font-semibold mb-4">
                         Customer Reviews
                       </h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-4 mb-6">
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-4 pb-4 border-b">
                           <div className="text-center">
-                            <div className="text-3xl font-bold">{rating}</div>
-                            <div className="flex items-center gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`h-4 w-4 ${
-                                    i < Math.floor(rating)
-                                      ? "text-yellow-400 fill-current"
-                                      : "text-gray-300"
-                                  }`}
+                            <div className="text-3xl font-bold">{ratingLabel}</div>
+                            <div className="flex items-center gap-1 justify-center">
+                              <StarDisplay rating={rating} />
+                            </div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              {reviewCount > 0
+                                ? `Based on ${reviewCount} ${reviewCount === 1 ? "review" : "reviews"}`
+                                : "Be the first to review"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 md:p-6">
+                          <h4 className="font-semibold mb-4">
+                            {myReview ? "Update your review" : "Write a review"}
+                          </h4>
+                          {user ? (
+                            <form onSubmit={handleSubmitReview} className="space-y-4">
+                              <div className="space-y-2">
+                                <Label>Your rating *</Label>
+                                <StarRatingInput
+                                  value={reviewRating}
+                                  onChange={setReviewRating}
                                 />
-                              ))}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              Based on {reviews} reviews
-                            </div>
-                          </div>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="review-title">Review title (optional)</Label>
+                                <Input
+                                  id="review-title"
+                                  value={reviewTitle}
+                                  onChange={(e) => setReviewTitle(e.target.value)}
+                                  placeholder="Summarize your experience"
+                                  maxLength={100}
+                                  className="border-2 focus:border-primary"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="review-comment">Your review *</Label>
+                                <Textarea
+                                  id="review-comment"
+                                  value={reviewComment}
+                                  onChange={(e) => setReviewComment(e.target.value)}
+                                  placeholder="Share what you liked about this product..."
+                                  className="border-2 focus:border-primary min-h-28"
+                                  maxLength={2000}
+                                  required
+                                />
+                              </div>
+                              <Button
+                                type="submit"
+                                disabled={isSubmittingReview}
+                                className="bg-primary hover:bg-primary/90"
+                              >
+                                {isSubmittingReview
+                                  ? "Submitting..."
+                                  : myReview
+                                    ? "Update Review"
+                                    : "Submit Review"}
+                              </Button>
+                            </form>
+                          ) : (
+                            <p className="text-muted-foreground">
+                              Please{" "}
+                              <Link
+                                to="/account"
+                                className="text-primary font-medium hover:underline"
+                              >
+                                sign in
+                              </Link>{" "}
+                              to leave a rating and review.
+                            </p>
+                          )}
                         </div>
 
-                        <div className="space-y-4">
-                          <div className="border rounded-lg p-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="flex items-center gap-1">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className="h-4 w-4 text-yellow-400 fill-current"
-                                  />
-                                ))}
-                              </div>
-                              <span className="font-medium">Amazing Quality!</span>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              "The fragrance is exactly as described. Long-lasting
-                              and creates a peaceful atmosphere. Highly
-                              recommended!"
-                            </p>
-                            <div className="text-xs text-muted-foreground mt-2">
-                              - Priya S.
-                            </div>
+                        {reviewsLoading ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            Loading reviews...
                           </div>
-
-                          <div className="border rounded-lg p-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="flex items-center gap-1">
-                                {[...Array(4)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className="h-4 w-4 text-yellow-400 fill-current"
-                                  />
-                                ))}
-                                <Star className="h-4 w-4 text-gray-300" />
+                        ) : reviews.length > 0 ? (
+                          <div className="space-y-4">
+                            {reviews.map((review) => (
+                              <div key={review.id} className="border rounded-lg p-4">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                  <div className="flex items-center gap-1">
+                                    <StarDisplay rating={review.rating} size="h-4 w-4" />
+                                  </div>
+                                  {review.title && (
+                                    <span className="font-medium">{review.title}</span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                  {review.comment}
+                                </p>
+                                <div className="text-xs text-muted-foreground mt-2">
+                                  — {review.authorName} · {formatReviewDate(review.createdAt)}
+                                </div>
                               </div>
-                              <span className="font-medium">Good Value</span>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              "Good quality for the price. Packaging could be
-                              better but the product itself is great."
-                            </p>
-                            <div className="text-xs text-muted-foreground mt-2">
-                              - Raj K.
-                            </div>
+                            ))}
                           </div>
-                        </div>
+                        ) : (
+                          <p className="text-center py-6 text-muted-foreground">
+                            No reviews yet. Be the first to share your experience!
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}

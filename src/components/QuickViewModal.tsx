@@ -25,6 +25,8 @@ interface QuickViewModalProps {
     image: string;
     badge?: string;
     description?: string;
+    rating?: number;
+    reviews?: number;
   } | null;
 }
 
@@ -103,17 +105,28 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
 
             <div className="mt-6 space-y-6">
               {/* Rating */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className="h-5 w-5 fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
+              {product.reviews && product.reviews > 0 ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`h-5 w-5 ${
+                          star <= Math.round(product.rating ?? 0)
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {(product.rating ?? 0).toFixed(1)} ({product.reviews}{" "}
+                    {product.reviews === 1 ? "review" : "reviews"})
+                  </span>
                 </div>
-                <span className="text-sm text-muted-foreground">(248 reviews)</span>
-              </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No reviews yet</p>
+              )}
 
               {/* Price */}
               <div className="flex items-baseline gap-3">

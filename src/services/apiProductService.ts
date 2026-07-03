@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/api";
 
-export type ProductSort = "newest" | "price-low" | "price-high" | "name-asc";
+export type ProductSort = "newest" | "price-low" | "price-high" | "name-asc" | "rating";
 
 export interface ApiProductImage {
   id: string;

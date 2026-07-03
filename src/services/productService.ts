@@ -43,6 +43,8 @@ export interface ProductListItem {
   badge?: string;
   category?: string;
   slug?: string;
+  rating?: number;
+  reviews?: number;
 }
 
 export interface ProductListResult {
@@ -138,6 +140,8 @@ export function mapApiProductToListItem(product: ApiProduct): ProductListItem {
     badge: product.badge ?? undefined,
     category: product.category,
     slug: product.slug,
+    rating: product.rating ?? undefined,
+    reviews: product.reviewsCount ?? undefined,
   };
 }
 
@@ -175,6 +179,8 @@ export function mapUiSortToApiSort(
       return "price-high";
     case "name-asc":
       return "name-asc";
+    case "rating":
+      return "rating";
     case "newest":
       return "newest";
     default:

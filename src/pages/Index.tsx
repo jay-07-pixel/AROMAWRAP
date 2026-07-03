@@ -104,22 +104,13 @@ const Index = () => {
 
       {/* Admin Products Section */}
       {adminProducts.length > 0 && (
-        <section className="py-6 sm:py-8 bg-gradient-to-b from-white to-gray-50">
+        <section className="pt-3 pb-4 sm:pt-4 sm:pb-6 bg-gradient-to-b from-white to-gray-50">
           <div className="container mx-auto px-3 sm:px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="text-center mb-8"
-            >
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-primary">
-                ✨ New Arrivals
+            <div className="text-center mb-3">
+              <h2 className="text-xl sm:text-2xl font-bold text-primary">
+                New Arrivals
               </h2>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Fresh additions to our collection
-              </p>
-            </motion.div>
+            </div>
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
