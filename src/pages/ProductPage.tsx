@@ -16,7 +16,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/context/CartContext";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 import { getProduct, type Product } from "@/services/productService";
@@ -52,22 +52,27 @@ function StarDisplay({ rating, size = "h-4 w-4" }: { rating: number; size?: stri
 function StarRatingInput({
   value,
   onChange,
+  size = "h-7 w-7 sm:h-6 sm:w-6",
+  disabled = false,
 }: {
   value: number;
   onChange: (rating: number) => void;
+  size?: string;
+  disabled?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-0.5 sm:gap-1" role="group" aria-label="Rate this product">
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
           type="button"
+          disabled={disabled}
           onClick={() => onChange(star)}
-          className="p-0.5 rounded hover:scale-110 transition-transform"
+          className="p-1.5 sm:p-0.5 rounded-md hover:scale-110 active:scale-95 transition-transform touch-manipulation disabled:opacity-50"
           aria-label={`Rate ${star} stars`}
         >
           <Star
-            className={`h-6 w-6 ${
+            className={`${size} ${
               star <= value ? "text-yellow-400 fill-current" : "text-gray-300"
             }`}
           />
@@ -98,6 +103,7 @@ const ProductPage = () => {
   const [reviewTitle, setReviewTitle] = useState("");
   const [reviewComment, setReviewComment] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const reviewFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!productId) {
@@ -339,14 +345,28 @@ const ProductPage = () => {
     setQuantity((prev) => Math.max(1, prev + change));
   };
 
+  const handleHeaderRating = (value: number) => {
+    if (!user) {
+      navigate("/account");
+      return;
+    }
+    setReviewRating(value);
+    setActiveTab("reviews");
+    window.setTimeout(() => {
+      reviewFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
+  const headerStarValue = user ? reviewRating : renderStarCount(rating);
+
   return (
     <div className="min-h-screen flex flex-col">
       <CartDrawer />
       <Header />
 
-      <section className="bg-background py-4 border-b">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-2 text-sm">
+      <section className="bg-background py-2 sm:py-4 border-b hidden sm:block">
+        <div className="container mx-auto px-3 sm:px-4">
+          <div className="flex items-center gap-2 text-sm overflow-x-auto">
             <button
               onClick={() => navigate("/")}
               className="text-primary hover:text-secondary transition-colors"
@@ -373,11 +393,11 @@ const ProductPage = () => {
         </div>
       </section>
 
-      <section className="py-6 bg-gradient-to-br from-background to-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-3 max-w-md mx-auto lg:max-w-sm">
-              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl group max-h-96 bg-gray-100">
+      <section className="py-4 sm:py-6 bg-gradient-to-br from-background to-muted/30">
+        <div className="container mx-auto px-3 sm:px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div className="space-y-3 w-full max-w-md mx-auto lg:max-w-sm">
+              <div className="relative aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-2xl group max-h-72 sm:max-h-96 bg-gray-100">
                 <img
                   src={productImages[selectedImage]}
                   alt={product.name}
@@ -410,71 +430,82 @@ const ProductPage = () => {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4 min-w-0">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all duration-300 mb-2"
+                className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all duration-300 mb-2"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to Products
               </Button>
 
               <div className="space-y-2">
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-tight">
                   {product.name}
                 </h1>
 
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <StarDisplay rating={rating} />
-                  </div>
-                  {reviewCount > 0 && (
-                    <>
-                      <span className="font-semibold text-foreground">{ratingLabel}</span>
-                      <span className="text-muted-foreground">
-                        ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
+                <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+                  <StarRatingInput
+                    value={headerStarValue}
+                    onChange={handleHeaderRating}
+                  />
+                  <div className="text-sm text-muted-foreground">
+                    {reviewCount > 0 ? (
+                      <span>
+                        <span className="font-semibold text-foreground">{ratingLabel}</span>
+                        {" · "}
+                        {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
+                        {user && !myReview && (
+                          <span className="block sm:inline sm:ml-1 text-primary">
+                            · Tap a star to rate
+                          </span>
+                        )}
                       </span>
-                    </>
-                  )}
-                  {reviewCount === 0 && (
-                    <span className="text-muted-foreground">No reviews yet</span>
-                  )}
+                    ) : user ? (
+                      <span>Tap a star to rate this product</span>
+                    ) : (
+                      <span>
+                        No reviews yet ·{" "}
+                        <Link to="/account" className="text-primary font-medium hover:underline">
+                          Sign in to rate
+                        </Link>
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-4 border border-primary/10">
-                <div className="flex items-center justify-between gap-6">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="text-3xl font-bold text-primary">
-                        ₹{product.price}
+              <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-3 sm:p-4 border border-primary/10">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
+                    <span className="text-2xl sm:text-3xl font-bold text-primary shrink-0">
+                      ₹{product.price}
+                    </span>
+                    {product.originalPrice && (
+                      <span className="text-base sm:text-xl text-muted-foreground line-through shrink-0">
+                        ₹{product.originalPrice}
                       </span>
-                      {product.originalPrice && (
-                        <span className="text-xl text-muted-foreground line-through">
-                          ₹{product.originalPrice}
-                        </span>
-                      )}
-                      {product.badge && (
-                        <Badge className="bg-primary text-white px-3 py-1 text-sm font-bold">
-                          {product.badge}
-                        </Badge>
-                      )}
-                    </div>
+                    )}
+                    {product.badge && (
+                      <Badge className="bg-primary text-white px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-bold shrink-0">
+                        {product.badge}
+                      </Badge>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium text-foreground">Qty:</span>
+                  <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto shrink-0">
+                    <span className="font-medium text-foreground text-sm">Qty:</span>
                     <div className="flex items-center gap-1 border-2 border-primary/20 rounded-lg bg-white shadow-sm">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleQuantityChange(-1)}
                         disabled={quantity <= 1}
-                        className="w-8 h-8 hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed text-primary"
+                        className="w-9 h-9 sm:w-8 sm:h-8 hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed text-primary"
                       >
-                        <Minus className="h-3 w-3" />
+                        <Minus className="h-4 w-4 sm:h-3 sm:w-3" />
                       </Button>
                       <span className="px-3 py-1 min-w-[2.5rem] text-center text-base font-bold text-primary">
                         {quantity}
@@ -483,9 +514,9 @@ const ProductPage = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleQuantityChange(1)}
-                        className="w-8 h-8 hover:bg-primary/10 text-primary"
+                        className="w-9 h-9 sm:w-8 sm:h-8 hover:bg-primary/10 text-primary"
                       >
-                        <Plus className="h-3 w-3" />
+                        <Plus className="h-4 w-4 sm:h-3 sm:w-3" />
                       </Button>
                     </div>
                   </div>
@@ -493,19 +524,19 @@ const ProductPage = () => {
               </div>
 
               <div className="space-y-2">
-                <div className="flex gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   <Button
                     size="lg"
-                    className="flex-1 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-bold py-3 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 min-w-0"
+                    className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-bold py-3 text-base sm:text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                     onClick={handleAddToCart}
                   >
-                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    <ShoppingCart className="h-5 w-5 mr-2 shrink-0" />
                     Add to Cart
                   </Button>
 
                   <Button
                     size="lg"
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 min-w-0"
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 text-base sm:text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                     onClick={() => {
                       handleAddToCart();
                       alert("Redirecting to checkout...");
@@ -515,7 +546,7 @@ const ProductPage = () => {
                   </Button>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <Button
                     size="sm"
                     variant="outline"
@@ -542,17 +573,17 @@ const ProductPage = () => {
                 </div>
               </div>
 
-              <div className="mt-6">
-                <div className="flex flex-wrap gap-3 mb-6 justify-center">
+              <div className="mt-4 sm:mt-6">
+                <div className="grid grid-cols-3 gap-2 mb-4 sm:flex sm:flex-wrap sm:gap-3 sm:mb-6">
                   {[
                     { id: "description", label: "Description" },
-                    { id: "specifications", label: "Specifications" },
+                    { id: "specifications", label: "Specs" },
                     { id: "reviews", label: "Reviews" },
                   ].map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`px-6 py-3 rounded-lg font-semibold text-base transition-all duration-300 ${
+                      className={`px-2 py-2.5 sm:px-6 sm:py-3 rounded-lg font-semibold text-xs sm:text-base transition-all duration-300 text-center ${
                         activeTab === tab.id
                           ? "bg-primary text-white shadow-lg"
                           : "bg-white text-foreground hover:bg-primary/10 hover:text-primary border border-gray-200 hover:border-primary/30"
@@ -563,7 +594,7 @@ const ProductPage = () => {
                   ))}
                 </div>
 
-                <div className="bg-white rounded-lg p-4 shadow-md border border-gray-100">
+                <div className="bg-white rounded-lg p-3 sm:p-4 shadow-md border border-gray-100">
                   {activeTab === "description" && (
                     <div>
                       <h3 className="text-xl font-semibold mb-4">
@@ -624,7 +655,10 @@ const ProductPage = () => {
                           </div>
                         </div>
 
-                        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 md:p-6">
+                        <div
+                          ref={reviewFormRef}
+                          className="rounded-lg border border-primary/20 bg-primary/5 p-3 sm:p-6"
+                        >
                           <h4 className="font-semibold mb-4">
                             {myReview ? "Update your review" : "Write a review"}
                           </h4>
