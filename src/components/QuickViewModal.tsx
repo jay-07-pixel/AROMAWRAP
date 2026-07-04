@@ -25,6 +25,7 @@ interface QuickViewModalProps {
     image: string;
     badge?: string;
     description?: string;
+    slug?: string;
     rating?: number;
     reviews?: number;
   } | null;
@@ -60,7 +61,7 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
   };
 
   const handleViewFullDetails = () => {
-    navigate(`/product/${product.id}`);
+    navigate(`/product/${product.slug || product.id}`);
     onClose();
   };
 

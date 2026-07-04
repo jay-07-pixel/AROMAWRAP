@@ -13,7 +13,7 @@ export interface ProductReview {
   productId: string;
   rating: number;
   title?: string;
-  comment: string;
+  comment?: string;
   authorName: string;
   createdAt: string;
   updatedAt: string;
@@ -30,7 +30,7 @@ function mapReview(review: ApiReview): ProductReview {
     productId: review.productId,
     rating: review.rating,
     title: review.title ?? undefined,
-    comment: review.comment,
+    comment: review.comment ?? undefined,
     authorName: review.authorName,
     createdAt: review.createdAt,
     updatedAt: review.updatedAt,

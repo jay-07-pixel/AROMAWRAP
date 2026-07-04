@@ -19,7 +19,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/context/CartContext";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
-import { getProduct, type Product } from "@/services/productService";
+import {
+  getProduct,
+  getProductPath,
+  getProductPublicUrl,
+  type Product,
+} from "@/services/productService";
+import { toast } from "@/hooks/use-toast";
 import {
   formatReviewDate,
   getMyProductReview,
@@ -29,7 +35,6 @@ import {
   type ProductReview,
 } from "@/services/reviewService";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { isLegacyProductId } from "@/lib/legacyProducts";
 
@@ -149,6 +154,14 @@ const ProductPage = () => {
     };
   }, [productId]);
 
+  // Canonical URL: /product/lavender-incense-sticks (stable for packaging QR codes)
+  useEffect(() => {
+    if (!product?.slug || !productId) return;
+    if (productId !== product.slug) {
+      navigate(getProductPath(product), { replace: true });
+    }
+  }, [product, productId, navigate]);
+
   useEffect(() => {
     if (product) {
       addProduct({
@@ -206,7 +219,7 @@ const ProductPage = () => {
         if (review) {
           setReviewRating(review.rating);
           setReviewTitle(review.title || "");
-          setReviewComment(review.comment);
+          setReviewComment(review.comment || "");
         } else {
           setReviewRating(5);
           setReviewTitle("");
@@ -246,15 +259,6 @@ const ProductPage = () => {
       return;
     }
 
-    if (!reviewComment.trim()) {
-      toast({
-        title: "Review required",
-        description: "Please write your review before submitting.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSubmittingReview(true);
     try {
       await submitProductReview(product.id, {
@@ -264,8 +268,10 @@ const ProductPage = () => {
       });
       await refreshProductAndReviews();
       toast({
-        title: myReview ? "Review updated" : "Review submitted",
-        description: "Thank you for sharing your feedback!",
+        title: myReview ? "Review updated" : "Rating submitted",
+        description: reviewComment.trim()
+          ? "Thank you for sharing your feedback!"
+          : `Your ${reviewRating}-star rating has been saved.`,
       });
     } catch (submitError: any) {
       toast({
@@ -345,16 +351,31 @@ const ProductPage = () => {
     setQuantity((prev) => Math.max(1, prev + change));
   };
 
-  const handleHeaderRating = (value: number) => {
+  const handleHeaderRating = async (value: number) => {
     if (!user) {
       navigate("/account");
       return;
     }
+    if (!product?.id || isSubmittingReview) return;
+
     setReviewRating(value);
-    setActiveTab("reviews");
-    window.setTimeout(() => {
-      reviewFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
+    setIsSubmittingReview(true);
+    try {
+      await submitProductReview(product.id, { rating: value });
+      await refreshProductAndReviews();
+      toast({
+        title: myReview ? "Rating updated" : "Rating saved",
+        description: `You rated this product ${value} out of 5 stars.`,
+      });
+    } catch (submitError: any) {
+      toast({
+        title: "Could not save rating",
+        description: submitError?.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   const headerStarValue = user ? reviewRating : renderStarCount(rating);
@@ -450,6 +471,7 @@ const ProductPage = () => {
                   <StarRatingInput
                     value={headerStarValue}
                     onChange={handleHeaderRating}
+                    disabled={isSubmittingReview}
                   />
                   <div className="text-sm text-muted-foreground">
                     {reviewCount > 0 ? (
@@ -459,12 +481,12 @@ const ProductPage = () => {
                         {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
                         {user && !myReview && (
                           <span className="block sm:inline sm:ml-1 text-primary">
-                            · Tap a star to rate
+                            · Tap a star to save your rating
                           </span>
                         )}
                       </span>
                     ) : user ? (
-                      <span>Tap a star to rate this product</span>
+                      <span>Tap a star to save your rating</span>
                     ) : (
                       <span>
                         No reviews yet ·{" "}
@@ -566,6 +588,22 @@ const ProductPage = () => {
                     size="sm"
                     variant="outline"
                     className="flex-1 py-2 rounded-lg border-primary/20 hover:border-primary hover:bg-primary/5 transition-all duration-300"
+                    onClick={async () => {
+                      const url = getProductPublicUrl(product);
+                      try {
+                        if (navigator.share) {
+                          await navigator.share({ title: product.name, url });
+                          return;
+                        }
+                        await navigator.clipboard.writeText(url);
+                        toast({
+                          title: "Link copied",
+                          description: url,
+                        });
+                      } catch {
+                        /* user cancelled share */
+                      }
+                    }}
                   >
                     <Share2 className="h-4 w-4 mr-1" />
                     Share
@@ -669,6 +707,7 @@ const ProductPage = () => {
                                 <StarRatingInput
                                   value={reviewRating}
                                   onChange={setReviewRating}
+                                  disabled={isSubmittingReview}
                                 />
                               </div>
                               <div className="space-y-2">
@@ -683,15 +722,19 @@ const ProductPage = () => {
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="review-comment">Your review *</Label>
+                                <Label htmlFor="review-comment">
+                                  Your review{" "}
+                                  <span className="text-muted-foreground font-normal">
+                                    (optional)
+                                  </span>
+                                </Label>
                                 <Textarea
                                   id="review-comment"
                                   value={reviewComment}
                                   onChange={(e) => setReviewComment(e.target.value)}
-                                  placeholder="Share what you liked about this product..."
+                                  placeholder="Share what you liked about this product (optional)..."
                                   className="border-2 focus:border-primary min-h-28"
                                   maxLength={2000}
-                                  required
                                 />
                               </div>
                               <Button
@@ -702,8 +745,12 @@ const ProductPage = () => {
                                 {isSubmittingReview
                                   ? "Submitting..."
                                   : myReview
-                                    ? "Update Review"
-                                    : "Submit Review"}
+                                    ? reviewComment.trim()
+                                      ? "Update Review"
+                                      : "Update Rating"
+                                    : reviewComment.trim()
+                                      ? "Submit Review"
+                                      : "Submit Rating"}
                               </Button>
                             </form>
                           ) : (
@@ -736,9 +783,15 @@ const ProductPage = () => {
                                     <span className="font-medium">{review.title}</span>
                                   )}
                                 </div>
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                  {review.comment}
-                                </p>
+                                {review.comment ? (
+                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                    {review.comment}
+                                  </p>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground italic">
+                                    Rated {review.rating} out of 5 stars
+                                  </p>
+                                )}
                                 <div className="text-xs text-muted-foreground mt-2">
                                   — {review.authorName} · {formatReviewDate(review.createdAt)}
                                 </div>

@@ -67,11 +67,18 @@ export async function getUserReviewForProduct(
   });
 }
 
+function normalizeComment(comment?: string): string | null {
+  const trimmed = comment?.trim();
+  return trimmed ? trimmed : null;
+}
+
 export async function submitProductReview(
   productId: string,
   userId: string,
   input: SubmitReviewInput
 ) {
+  const comment = normalizeComment(input.comment);
+
   const review = await prisma.review.upsert({
     where: {
       productId_userId: {
@@ -84,12 +91,14 @@ export async function submitProductReview(
       userId,
       rating: input.rating,
       title: input.title ?? null,
-      comment: input.comment,
+      comment,
     },
     update: {
       rating: input.rating,
       title: input.title ?? null,
-      comment: input.comment,
+      ...(input.comment !== undefined
+        ? { comment: normalizeComment(input.comment) }
+        : {}),
     },
     include: reviewInclude,
   });

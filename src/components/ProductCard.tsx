@@ -17,6 +17,7 @@ interface ProductCardProps {
   image: string;
   badge?: string;
   description?: string;
+  slug?: string;
   rating?: number;
   reviews?: number;
   /** Request earlier fetch; use for first screen of grids */
@@ -25,7 +26,7 @@ interface ProductCardProps {
   lcp?: boolean;
 }
 
-export const ProductCard = ({ id, name, price, originalPrice, image, badge, description, rating, reviews, priority = false, lcp = false }: ProductCardProps) => {
+export const ProductCard = ({ id, name, price, originalPrice, image, badge, description, slug, rating, reviews, priority = false, lcp = false }: ProductCardProps) => {
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
   };
 
   const handleProductClick = () => {
-    navigate(`/product/${id}`);
+    navigate(`/product/${slug || id}`);
   };
 
   const handleQuickView = (e: React.MouseEvent) => {
@@ -209,7 +210,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
     <QuickViewModal
       isOpen={isQuickViewOpen}
       onClose={() => setIsQuickViewOpen(false)}
-      product={{ id, name, price, originalPrice, image, badge, description, rating, reviews }}
+      product={{ id, name, price, originalPrice, image, badge, description, slug, rating, reviews }}
     />
   </>
   );

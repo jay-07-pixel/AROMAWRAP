@@ -526,24 +526,24 @@ const AccountPage = () => {
       <Header />
 
       {/* Account Header */}
-      <section className="bg-background py-8 border-b">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[#DC143C]/20 to-[#DC143C]/30 flex items-center justify-center">
-                <User className="h-10 w-10 text-[#DC143C]" />
+      <section className="bg-background py-4 sm:py-6 border-b">
+        <div className="container mx-auto px-3 sm:px-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+              <div className="h-14 w-14 sm:h-20 sm:w-20 shrink-0 rounded-full bg-gradient-to-br from-[#DC143C]/20 to-[#DC143C]/30 flex items-center justify-center">
+                <User className="h-7 w-7 sm:h-10 sm:w-10 text-[#DC143C]" />
               </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-[#DC143C] mb-1">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#DC143C] mb-0.5 sm:mb-1 truncate">
                   Welcome, {userProfile?.displayName || user?.email?.split("@")[0]}!
                 </h1>
-                <p className="text-muted-foreground">{user?.email}</p>
+                <p className="text-sm sm:text-base text-muted-foreground truncate">{user?.email}</p>
               </div>
             </div>
             <Button
               variant="outline"
               onClick={handleLogout}
-              className="flex items-center gap-2 border-[#DC143C] text-[#DC143C] hover:bg-[#DC143C] hover:text-white"
+              className="w-full sm:w-auto shrink-0 min-h-[44px] flex items-center justify-center gap-2 border-[#DC143C] text-[#DC143C] hover:bg-[#DC143C] hover:text-white touch-manipulation"
             >
               <LogOut className="h-4 w-4" />
               Logout
@@ -553,24 +553,36 @@ const AccountPage = () => {
       </section>
 
       {/* Account Content */}
-      <section className="flex-1 py-8 bg-background">
-        <div className="container mx-auto px-4">
-          <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="bg-muted/50 p-1">
-              <TabsTrigger value="profile" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
+      <section className="flex-1 py-4 sm:py-8 bg-background">
+        <div className="container mx-auto px-3 sm:px-4">
+          <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1 bg-muted/50 p-1">
+              <TabsTrigger
+                value="profile"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 min-h-[44px] text-xs sm:text-sm whitespace-normal"
+              >
+                <User className="h-4 w-4 shrink-0" />
                 Profile
               </TabsTrigger>
-              <TabsTrigger value="orders" className="flex items-center gap-2">
-                <Package className="h-4 w-4" />
+              <TabsTrigger
+                value="orders"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 min-h-[44px] text-xs sm:text-sm whitespace-normal"
+              >
+                <Package className="h-4 w-4 shrink-0" />
                 Orders
               </TabsTrigger>
-              <TabsTrigger value="wishlist" className="flex items-center gap-2">
-                <Heart className="h-4 w-4" />
+              <TabsTrigger
+                value="wishlist"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 min-h-[44px] text-xs sm:text-sm whitespace-normal"
+              >
+                <Heart className="h-4 w-4 shrink-0" />
                 Wishlist
               </TabsTrigger>
-              <TabsTrigger value="history" className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
+              <TabsTrigger
+                value="history"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 min-h-[44px] text-xs sm:text-sm whitespace-normal"
+              >
+                <Clock className="h-4 w-4 shrink-0" />
                 History
               </TabsTrigger>
             </TabsList>
@@ -648,7 +660,7 @@ const AccountPage = () => {
                         onChange={(e) => setAddressCity(e.target.value)}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="state">State</Label>
                         <Input 
@@ -740,10 +752,10 @@ const AccountPage = () => {
                     >
                       <Card className="border hover:shadow-md transition-shadow">
                         {/* Compact Header */}
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between gap-4 mb-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
+                        <CardContent className="p-3 sm:p-4">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
                                 <span className="text-sm font-medium text-muted-foreground">Order placed</span>
                                 <span className="text-sm text-muted-foreground">
                                   {order.createdAt 
@@ -764,7 +776,7 @@ const AccountPage = () => {
                               <p className="text-xs text-muted-foreground">Order #{order.id?.substring(0, 8)}...</p>
                             </div>
                             <Badge
-                              className={`px-3 py-1 text-xs ${
+                              className={`self-start px-3 py-1 text-xs shrink-0 ${
                                 order.status === "delivered"
                                   ? "bg-green-100 text-green-800 border-green-200"
                                   : order.status === "processing"
@@ -782,14 +794,14 @@ const AccountPage = () => {
 
                           <OrderUPIPaymentNotice order={order} />
 
-                          {/* Order Items - Compact Horizontal Layout */}
-                          <div className="flex items-start gap-4 pb-3 border-b">
+                          {/* Order Items */}
+                          <div className="flex flex-col gap-3 pb-3 border-b">
                             {order.items.map((item: any, idx: number) => (
-                              <div key={idx} className="flex items-center gap-3 flex-1">
+                              <div key={idx} className="flex items-center gap-3">
                                 <img
                                   src={item.image}
                                   alt={item.name}
-                                  className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded border"
+                                  className="h-16 w-16 sm:h-24 sm:w-24 object-cover rounded border shrink-0"
                                 />
                                 <div className="flex-1 min-w-0">
                                   <h5 className="font-medium text-sm sm:text-base line-clamp-2 mb-1">
@@ -806,27 +818,27 @@ const AccountPage = () => {
                             ))}
                           </div>
 
-                          {/* Compact Summary Row */}
-                          <div className="flex items-center justify-between pt-3">
-                            <div className="flex items-center gap-4 text-sm">
+                          {/* Summary */}
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-3">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                               <div>
                                 <span className="text-muted-foreground">Total: </span>
                                 <span className="font-bold text-[#DC143C]">₹{order.total.toFixed(2)}</span>
                               </div>
-                              <Separator orientation="vertical" className="h-4" />
+                              <Separator orientation="vertical" className="hidden sm:block h-4" />
                               <div className="text-muted-foreground">
-                                {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
+                                {order.items.length} {order.items.length === 1 ? "item" : "items"}
                               </div>
                             </div>
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm" className="h-8 text-xs">
+                            <div className="flex gap-2 w-full sm:w-auto">
+                              <Button variant="outline" size="sm" className="flex-1 sm:flex-none min-h-[40px] text-xs">
                                 <Truck className="h-3 w-3 mr-1" />
                                 Track
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-8 text-xs border-[#DC143C] text-[#DC143C] hover:bg-[#DC143C] hover:text-white"
+                                className="flex-1 sm:flex-none min-h-[40px] text-xs border-[#DC143C] text-[#DC143C] hover:bg-[#DC143C] hover:text-white"
                                 onClick={() => {
                                   // Add reorder functionality
                                   toast({
@@ -892,9 +904,9 @@ const AccountPage = () => {
               ) : (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
+                    <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <span>Your Wishlist</span>
-                      <Badge variant="secondary">{wishlistItems.length} items</Badge>
+                      <Badge variant="secondary" className="w-fit">{wishlistItems.length} items</Badge>
                     </CardTitle>
                     <CardDescription>Products you've saved for later</CardDescription>
                   </CardHeader>
@@ -999,9 +1011,11 @@ const AccountPage = () => {
                         <CardHeader className="bg-gradient-to-r from-gray-50 to-white">
                           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div>
-                              <CardTitle className="flex items-center gap-2">
-                                <Package className="h-5 w-5 text-[#DC143C]" />
-                                Order {order.id}
+                              <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center text-base sm:text-lg">
+                                <span className="flex items-center gap-2 min-w-0">
+                                  <Package className="h-5 w-5 text-[#DC143C] shrink-0" />
+                                  <span className="truncate">Order {order.id}</span>
+                                </span>
                               </CardTitle>
                               <CardDescription className="flex items-center gap-2 mt-2">
                                 <Calendar className="h-4 w-4" />
@@ -1072,13 +1086,14 @@ const AccountPage = () => {
                             )}
                           </div>
                           <Separator className="my-4" />
-                          <div className="flex justify-between items-center">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
                             <div>
                               <p className="text-sm text-muted-foreground">Total Amount</p>
-                              <p className="text-2xl font-bold text-[#DC143C]">₹{order.total.toFixed(2)}</p>
+                              <p className="text-xl sm:text-2xl font-bold text-[#DC143C]">₹{order.total.toFixed(2)}</p>
                             </div>
                             <Button
                               variant="outline"
+                              className="w-full sm:w-auto min-h-[44px]"
                               onClick={() => {
                                 // Scroll to orders tab to see full details
                                 const ordersTab = document.querySelector('[value="orders"]') as HTMLElement;

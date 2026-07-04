@@ -247,27 +247,21 @@ productsRouter.patch(
         images,
       } = req.body;
 
+      // Keep slug stable for packaging QR codes unless admin explicitly changes it.
       let slug = existing.slug;
       if (inputSlug) {
-        slug = await buildUniqueSlug(
-          slugify(inputSlug),
-          async (candidate) =>
-            prisma.product.findUnique({
-              where: { slug: candidate },
-              select: { id: true },
-            }),
-          existing.id
-        );
-      } else if (name && name !== existing.name) {
-        slug = await buildUniqueSlug(
-          name,
-          async (candidate) =>
-            prisma.product.findUnique({
-              where: { slug: candidate },
-              select: { id: true },
-            }),
-          existing.id
-        );
+        const nextSlug = slugify(inputSlug);
+        if (nextSlug && nextSlug !== existing.slug) {
+          slug = await buildUniqueSlug(
+            nextSlug,
+            async (candidate) =>
+              prisma.product.findUnique({
+                where: { slug: candidate },
+                select: { id: true },
+              }),
+            existing.id
+          );
+        }
       }
 
       const product = await prisma.$transaction(async (tx) => {
@@ -281,7 +275,7 @@ productsRouter.patch(
           where: { id: existing.id },
           data: {
             ...(name !== undefined ? { name } : {}),
-            slug,
+            ...(slug !== existing.slug ? { slug } : {}),
             ...(description !== undefined ? { description } : {}),
             ...(category !== undefined ? { category } : {}),
             ...(price !== undefined ? { price } : {}),

@@ -5,7 +5,7 @@ export interface ApiReview {
   productId: string;
   rating: number;
   title: string | null;
-  comment: string;
+  comment: string | null;
   authorName: string;
   createdAt: string;
   updatedAt: string;
@@ -21,7 +21,7 @@ export interface ReviewPagination {
 export interface SubmitReviewRequest {
   rating: number;
   title?: string;
-  comment: string;
+  comment?: string;
 }
 
 type ReviewsListResponse = {

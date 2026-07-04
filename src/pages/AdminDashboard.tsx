@@ -56,6 +56,8 @@ import {
   Mail,
   Phone,
   Calendar,
+  Copy,
+  Link2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -68,6 +70,9 @@ import {
   addProduct,
   deleteProduct,
   getAllProducts,
+  getProductPath,
+  getProductPublicUrl,
+  type Product as StoreProduct,
 } from "@/services/productService";
 import {
   AdminProductImagesField,
@@ -78,6 +83,7 @@ import {
 interface Product {
   id: string;
   name: string;
+  slug: string;
   category: string;
   price: number;
   originalPrice?: number;
@@ -95,10 +101,11 @@ function stockStatus(stock: number): string {
   return "Out of Stock";
 }
 
-function mapProductToAdminRow(product: ApiProduct): Product {
+function mapProductToAdminRow(product: StoreProduct): Product {
   return {
     id: product.id,
     name: product.name,
+    slug: product.slug || product.id,
     category: product.category,
     price: product.price,
     originalPrice: product.originalPrice,
@@ -109,6 +116,23 @@ function mapProductToAdminRow(product: ApiProduct): Product {
     image: product.image,
     badge: product.badge,
   };
+}
+
+async function copyProductQrUrl(product: Product) {
+  const url = getProductPublicUrl(product);
+  try {
+    await navigator.clipboard.writeText(url);
+    toast({
+      title: "QR URL copied",
+      description: "Paste this into your QR code generator for packaging.",
+    });
+  } catch {
+    toast({
+      title: "Copy failed",
+      description: url,
+      variant: "destructive",
+    });
+  }
 }
 
 const AdminDashboard = () => {
@@ -805,7 +829,7 @@ const AdminDashboard = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Product ID</TableHead>
+                          <TableHead>Product URL</TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead>Category</TableHead>
                           <TableHead>Price</TableHead>
@@ -826,7 +850,17 @@ const AdminDashboard = () => {
                         ) : products.length > 0 ? (
                           products.map((product) => (
                           <TableRow key={product.id}>
-                            <TableCell className="font-medium">{product.id}</TableCell>
+                            <TableCell className="max-w-[220px]">
+                              <div className="flex items-center gap-1 min-w-0">
+                                <Link2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                <span
+                                  className="font-mono text-xs truncate"
+                                  title={getProductPublicUrl(product)}
+                                >
+                                  /product/{product.slug}
+                                </span>
+                              </div>
+                            </TableCell>
                             <TableCell>{product.name}</TableCell>
                             <TableCell>
                               <Badge variant="outline">{product.category}</Badge>
@@ -836,12 +870,20 @@ const AdminDashboard = () => {
                             <TableCell className="text-muted-foreground">{product.sold}</TableCell>
                             <TableCell>{getStatusBadge(product.status)}</TableCell>
                             <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  title="Copy QR packaging URL"
+                                  onClick={() => copyProductQrUrl(product)}
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   title="View on store"
-                                  onClick={() => navigate(`/product/${product.id}`)}
+                                  onClick={() => navigate(getProductPath(product))}
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>

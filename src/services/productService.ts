@@ -24,7 +24,7 @@ export interface Product {
   images?: string[];
   badge?: string;
   category: string;
-  slug?: string;
+  slug: string;
   features: string[];
   specifications: Record<string, string>;
   rating?: number;
@@ -42,9 +42,42 @@ export interface ProductListItem {
   image: string;
   badge?: string;
   category?: string;
-  slug?: string;
+  slug: string;
   rating?: number;
   reviews?: number;
+}
+
+/** Preview slug from a product name (matches server slugify). */
+export function slugifyProductName(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/** Stable storefront path for QR codes and product links. */
+export function getProductPath(product: {
+  id: string;
+  slug?: string | null;
+}): string {
+  const segment = product.slug?.trim() || product.id;
+  return `/product/${segment}`;
+}
+
+/** Full public URL for packaging QR codes. */
+export function getProductPublicUrl(
+  product: { id: string; slug?: string | null },
+  origin?: string
+): string {
+  const base =
+    origin ??
+    (typeof window !== "undefined"
+      ? window.location.origin
+      : "https://aromawrap.co.in");
+  return `${base}${getProductPath(product)}`;
 }
 
 export interface ProductListResult {
@@ -139,7 +172,7 @@ export function mapApiProductToListItem(product: ApiProduct): ProductListItem {
     image: images[0],
     badge: product.badge ?? undefined,
     category: product.category,
-    slug: product.slug,
+    slug: product.slug || product.id,
     rating: product.rating ?? undefined,
     reviews: product.reviewsCount ?? undefined,
   };
@@ -151,7 +184,7 @@ export function mapApiProductToDetail(product: ApiProduct): Product {
   return {
     id: product.id,
     name: product.name,
-    slug: product.slug,
+    slug: product.slug || product.id,
     price: product.price,
     originalPrice: product.originalPrice ?? undefined,
     description: product.description,
@@ -238,10 +271,21 @@ export const getProductBySlug = async (slug: string): Promise<Product | null> =>
   }
 };
 
+function looksLikeProductId(value: string): boolean {
+  return /^c[a-z0-9]{20,}$/i.test(value);
+}
+
+/** Resolve product by public slug (preferred) or internal id. */
 export const getProduct = async (identifier: string): Promise<Product | null> => {
-  const byId = await getProductById(identifier);
-  if (byId) return byId;
-  return getProductBySlug(identifier);
+  if (looksLikeProductId(identifier)) {
+    const byId = await getProductById(identifier);
+    if (byId) return byId;
+    return getProductBySlug(identifier);
+  }
+
+  const bySlug = await getProductBySlug(identifier);
+  if (bySlug) return bySlug;
+  return getProductById(identifier);
 };
 
 export const getProductsByCategory = async (

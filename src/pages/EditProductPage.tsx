@@ -25,6 +25,8 @@ import {
   Save,
   Eye,
   Edit,
+  Copy,
+  QrCode,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -32,7 +34,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { isAdminUser } from "@/services/authService";
-import { getProductById, updateProduct } from "@/services/productService";
+import {
+  getProductById,
+  getProductPath,
+  getProductPublicUrl,
+  updateProduct,
+} from "@/services/productService";
 import {
   buildProductDescription,
   parseProductDescription,
@@ -51,6 +58,7 @@ const EditProductPage = () => {
   const [imageItems, setImageItems] = useState<ProductImageItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingProduct, setIsLoadingProduct] = useState(true);
+  const [productSlug, setProductSlug] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -89,6 +97,7 @@ const EditProductPage = () => {
         }
 
         const parsed = parseProductDescription(product.description);
+        setProductSlug(product.slug || product.id);
         setFormData({
           name: product.name,
           category: product.category,
@@ -250,10 +259,75 @@ const EditProductPage = () => {
                 Edit Product
               </h1>
               <p className="text-muted-foreground mt-1">
-                Update product details for your store
+                Update images and content anytime — the packaging QR URL stays the same
               </p>
             </div>
           </div>
+
+          {productSlug && (
+            <Card className="mt-6 border-[#DC143C]/20 bg-[#FFF8F8]">
+              <CardContent className="pt-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-[#DC143C]">
+                      <QrCode className="h-4 w-4" />
+                      Packaging QR URL (permanent)
+                    </div>
+                    <p className="font-mono text-sm break-all text-foreground">
+                      {getProductPublicUrl({ id: productId || "", slug: productSlug })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Print this on packaging. Editing name, images, or description will not change it.
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="min-h-[40px]"
+                      onClick={async () => {
+                        const url = getProductPublicUrl({
+                          id: productId || "",
+                          slug: productSlug,
+                        });
+                        try {
+                          await navigator.clipboard.writeText(url);
+                          toast({
+                            title: "QR URL copied",
+                            description: "Paste this into your QR code generator.",
+                          });
+                        } catch {
+                          toast({
+                            title: "Copy failed",
+                            description: url,
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy URL
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="min-h-[40px]"
+                      onClick={() =>
+                        navigate(
+                          getProductPath({ id: productId || "", slug: productSlug })
+                        )
+                      }
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Open
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
 
         <form onSubmit={handleSubmit}>

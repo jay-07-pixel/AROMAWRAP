@@ -31,7 +31,11 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { isAdminUser } from "@/services/authService";
-import { addProduct } from "@/services/productService";
+import {
+  addProduct,
+  getProductPublicUrl,
+  slugifyProductName,
+} from "@/services/productService";
 import { buildProductDescription } from "@/lib/productFormDescription";
 import {
   AdminProductImagesField,
@@ -232,12 +236,24 @@ const AddProductPage = () => {
                       <Input
                         id="name"
                         name="name"
-                        placeholder="e.g., AromaWrap Devi Premium Dhoop"
+                        placeholder="e.g., Lavender Incense Sticks"
                         value={formData.name}
                         onChange={handleInputChange}
                         required
                         className="border-2 focus:border-[#DC143C]"
                       />
+                      {formData.name.trim() && (
+                        <p className="text-xs text-muted-foreground break-all">
+                          Packaging QR URL will be:{" "}
+                          <span className="font-mono text-foreground">
+                            {getProductPublicUrl({
+                              id: "new",
+                              slug: slugifyProductName(formData.name) || "product",
+                            })}
+                          </span>
+                          . This stays fixed after create — safe for packaging QR codes.
+                        </p>
+                      )}
                     </div>
 
                     {/* Category and Badge */}
