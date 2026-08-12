@@ -1,5 +1,11 @@
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Instagram, Twitter, Youtube, Mail, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const CONTACT_EMAIL = "contact@aromawrap.co.in";
+const CONTACT_ADDRESS =
+  "3063, Shreehari Nikitan, Gajanan Nagar, Hingna Rd, Near Electric Zone Square, Nagpur, Maharashtra 440016";
+const MAPS_URL =
+  "https://www.google.com/maps/search/?api=1&query=3063+Shreehari+Nikitan+Gajanan+Nagar+Hingna+Rd+Near+Electric+Zone+Square+Nagpur+Maharashtra+440016";
 
 export const Footer = () => {
   return (
@@ -11,7 +17,7 @@ export const Footer = () => {
           {/* About Section */}
           <div>
             <h3 className="text-xl sm:text-2xl font-bold text-primary mb-3 sm:mb-4">
-              SuganShoppee
+              AromaWrap
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
               Your trusted source for 100% natural, eco-friendly incense and puja essentials. Handcrafted with pure cow dung and traditional herbs for authentic spiritual experiences.
@@ -58,17 +64,28 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Get In Touch</h4>
             <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
-              <li className="flex items-start gap-2 hover:text-primary transition-colors cursor-pointer">
+              <li className="flex items-start gap-2">
                 <Mail className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>care@suganshoppee.com</span>
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="hover:text-primary transition-colors break-all"
+                >
+                  {CONTACT_EMAIL}
+                </a>
               </li>
-              <li className="flex items-start gap-2 hover:text-primary transition-colors cursor-pointer">
-                <Phone className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>+91 12345 67890</span>
-              </li>
-              <li className="flex items-start gap-2 hover:text-primary transition-colors cursor-pointer">
+              <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>Mumbai, Maharashtra, India</span>
+                <span>
+                  {CONTACT_ADDRESS}
+                  <a
+                    href={MAPS_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block mt-1 text-primary hover:underline"
+                  >
+                    Google Map Direction
+                  </a>
+                </span>
               </li>
             </ul>
             <div className="mt-4 pt-4 border-t">
@@ -83,7 +100,7 @@ export const Footer = () => {
 
         <div className="border-t mt-6 sm:mt-8 pt-6 sm:pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs sm:text-sm text-muted-foreground">
-            <p>© 2025 SuganShoppee. All rights reserved. | Made with ❤️ in India</p>
+            <p>© {new Date().getFullYear()} AromaWrap. All rights reserved. | Made with ❤️ in India</p>
             <div className="flex gap-4">
               <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
               <span>•</span>

@@ -88,12 +88,6 @@ export const Header = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Function to convert category name to URL parameter
-  const getCategoryUrl = (categoryName: string, itemName: string) => {
-    return `/category/${itemName.toLowerCase().replace(/\s+/g, '-')}`;
-  };
-
-  // Handle search
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -102,27 +96,27 @@ export const Header = () => {
     }
   };
 
-  // Handle search on Enter key
   const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
+    if (e.key === "Enter" && searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
     }
   };
 
+  // Function to convert category name to URL parameter
+  const getCategoryUrl = (categoryName: string, itemName: string) => {
+    return `/category/${itemName.toLowerCase().replace(/\s+/g, "-")}`;
+  };
+
   const categories = [
     {
       name: "Agarbatti",
-      items: [
-        "Sandalwood Agarbatti"
-      ]
+      items: ["Sandalwood Agarbatti"],
     },
     {
       name: "Dhoop Sticks",
-      items: [
-        "Sandalwood Dhoop"
-      ]
-    }
+      items: ["Sandalwood Dhoop"],
+    },
   ];
 
   return (
@@ -257,9 +251,8 @@ export const Header = () => {
                 {categories.map((category) => (
                   <li key={category.name}>
                     {category.name === "Agarbatti" || category.name === "Dhoop Sticks" ? (
-                      // Direct link for Agarbatti and Dhoop Sticks - no dropdown
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         className="w-auto justify-center font-semibold text-sm md:text-base text-primary hover:text-secondary hover:bg-accent/20 transition-all duration-300 px-2 md:px-3 py-1.5 rounded-md"
                         onClick={() => {
                           if (category.name === "Agarbatti") {
@@ -272,30 +265,29 @@ export const Header = () => {
                         {category.name}
                       </Button>
                     ) : (
-                      // Dropdown for other categories
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             className="w-auto justify-center font-semibold text-sm md:text-base text-primary hover:text-secondary hover:bg-accent/20 transition-all duration-300 px-2 md:px-3 py-1.5 rounded-md"
                           >
                             {category.name}
                             <ChevronDown className="ml-1 h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent 
-                          align="center" 
+                        <DropdownMenuContent
+                          align="center"
                           className="w-56 bg-background border shadow-xl rounded-lg"
                         >
-                        {category.items.map((item, index) => (
-                          <DropdownMenuItem 
-                            key={index}
-                            className="cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
-                            onClick={() => navigate(getCategoryUrl(category.name, item))}
-                          >
-                            {item}
-                          </DropdownMenuItem>
-                        ))}
+                          {category.items.map((item, index) => (
+                            <DropdownMenuItem
+                              key={index}
+                              className="cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+                              onClick={() => navigate(getCategoryUrl(category.name, item))}
+                            >
+                              {item}
+                            </DropdownMenuItem>
+                          ))}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
