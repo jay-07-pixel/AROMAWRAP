@@ -9,7 +9,7 @@ Add-Type -AssemblyName System.Drawing
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $sourcePath = Join-Path $projectRoot "public\experience\lavender-dieline.jpeg"
-$outputDir = Join-Path $projectRoot "public\experience\lavender"
+$outputDir = Join-Path $projectRoot "public\experience\textures\lavender"
 
 $expectedWidth = 809
 $expectedHeight = 1246

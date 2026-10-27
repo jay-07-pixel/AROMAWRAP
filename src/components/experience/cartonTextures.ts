@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const BASE = "/experience/lavender";
+const BASE = "/experience/textures/lavender";
 
 /**
  * Closed-carton proportions, in source pixels.

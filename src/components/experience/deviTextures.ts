@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { canvasOf, loadImage, panelColor, textureFrom } from "@/components/experience/cartonTextures";
 
-const BASE = "/experience/devi";
+const BASE = "/experience/textures/devi";
 
 /**
  * Sleeve proportions, in source pixels from the Devi dieline.

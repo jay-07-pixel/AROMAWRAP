@@ -11,7 +11,7 @@ Add-Type -AssemblyName System.Drawing
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $sourcePath = Join-Path $projectRoot "public\experience\devi-dieline.jpg"
-$outputDir = Join-Path $projectRoot "public\experience\devi"
+$outputDir = Join-Path $projectRoot "public\experience\textures\devi"
 
 $expectedWidth = 1024
 $expectedHeight = 1018
