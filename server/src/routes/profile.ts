@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { updateProfileSchema } from "../profile/schemas.js";
+import {
+  UPLOADED_PROFILE_PHOTO,
+  updateProfileSchema,
+  type UpdateProfileInput,
+} from "../profile/schemas.js";
 import { serializeProfile } from "../profile/serializer.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validateBody } from "../middleware/validate.js";
@@ -22,9 +26,23 @@ profileRouter.get("/", async (req, res, next) => {
 
 profileRouter.patch("/", validateBody(updateProfileSchema), async (req, res, next) => {
   try {
+    const { displayName, phone, photoUrl } = req.body as UpdateProfileInput;
+
+    if (
+      photoUrl &&
+      photoUrl !== req.user!.photoUrl &&
+      !UPLOADED_PROFILE_PHOTO.test(photoUrl)
+    ) {
+      res.status(400).json({
+        success: false,
+        error: "Upload the photo instead of linking it",
+      });
+      return;
+    }
+
     const user = await prisma.user.update({
       where: { id: req.user!.id },
-      data: req.body,
+      data: { displayName, phone, photoUrl },
     });
 
     res.json({

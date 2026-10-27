@@ -1,9 +1,11 @@
 import nodemailer from "nodemailer";
 import { env } from "./env.js";
 
-let transporter: nodemailer.Transporter | null = null;
+type Transporter = ReturnType<typeof nodemailer.createTransport>;
 
-function getTransporter(): nodemailer.Transporter | null {
+let transporter: Transporter | null = null;
+
+function getTransporter(): Transporter | null {
   if (!env.smtpHost || !env.smtpFrom) {
     return null;
   }
@@ -21,6 +23,11 @@ function getTransporter(): nodemailer.Transporter | null {
   }
 
   return transporter;
+}
+
+/** Outside local development, reset codes may only go out by email. */
+export function canSendEmail(): boolean {
+  return getTransporter() !== null || env.isDevelopment;
 }
 
 export async function sendPasswordResetOtpEmail(
@@ -48,8 +55,11 @@ export async function sendPasswordResetOtpEmail(
   const mailer = getTransporter();
 
   if (!mailer) {
+    if (!env.isDevelopment) {
+      throw new Error("SMTP is not configured");
+    }
     console.info(
-      `[email] SMTP not configured — password reset OTP for ${to}: ${otp}`
+      `[email] Local development only, SMTP not configured. Password reset code for ${to}: ${otp}`
     );
     return;
   }

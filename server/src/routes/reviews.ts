@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import { writeLimiter } from "../middleware/rateLimit.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import { serializeReview } from "../reviews/serializer.js";
@@ -85,6 +86,7 @@ reviewsRouter.get("/me", requireAuth, async (req, res, next) => {
 reviewsRouter.post(
   "/",
   requireAuth,
+  writeLimiter,
   validateBody(submitReviewSchema),
   async (req, res, next) => {
     try {

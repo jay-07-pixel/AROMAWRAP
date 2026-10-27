@@ -1,5 +1,7 @@
 # Firestore Security Rules
 
+> **Legacy.** The site no longer uses Firebase; it runs on the Express + MySQL API in `server/`. Kept for reference only.
+
 ## Updated Rules for Admin Collection
 
 Copy and paste these rules in **Firebase Console → Firestore Database → Rules**:
@@ -15,7 +17,7 @@ service cloud.firestore {
     // Helper function to check if user is admin
     function isAdmin() {
       return request.auth != null && 
-        (request.auth.token.email == 'admin@gmail.com' ||
+        (request.auth.token.email == 'admin@example.com' ||
          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
@@ -31,8 +33,8 @@ service cloud.firestore {
     
     // Admin collection - NEW (allows admin to store credentials)
     match /admin/{adminId} {
-      allow read: if isAdmin() || (request.auth != null && request.auth.token.email == 'admin@gmail.com');
-      allow write: if isAdmin() || (request.auth != null && request.auth.token.email == 'admin@gmail.com');
+      allow read: if isAdmin() || (request.auth != null && request.auth.token.email == 'admin@example.com');
+      allow write: if isAdmin() || (request.auth != null && request.auth.token.email == 'admin@example.com');
     }
     
     // Products collection
@@ -96,7 +98,7 @@ service cloud.firestore {
     // Admin collection - Allow authenticated users to write (for initial setup)
     match /admin/{adminId} {
       allow read, write: if request.auth != null && 
-        request.auth.token.email == 'admin@gmail.com';
+        request.auth.token.email == 'admin@example.com';
     }
     
     // Products collection
@@ -126,14 +128,14 @@ service cloud.firestore {
 ## Testing
 
 After updating the rules:
-1. Try logging in with `admin@gmail.com` / `123456`
+1. Try logging in with your admin account
 2. The admin credentials should be stored in Firestore
 3. You should be redirected to the admin dashboard
 
 ## Troubleshooting
 
 If you still get permission errors:
-1. Make sure you're logged in with `admin@gmail.com`
+1. Make sure you're logged in with `admin@example.com`
 2. Check Firebase Console → Authentication → Users to verify the account exists
 3. Try Option 2 rules temporarily to test
 4. Once working, switch back to Option 1 for better security

@@ -1,17 +1,20 @@
 # AromaWrap Server
 
-Standalone Express + Prisma + MySQL API for the AromaWrap migration from Firebase.
+Express + Prisma + MySQL API for the AromaWrap storefront.
 
-This backend is **not connected to the React frontend yet**. The existing Firebase-powered frontend is unchanged.
+The React frontend calls this API for auth, products, cart, wishlist, orders, reviews, profile, addresses, and file uploads. Sessions use HTTP-only cookies (`credentials: "include"` on all frontend requests).
 
 ## Implemented modules
 
-- Authentication (`/api/auth/*`)
-- Products (`/api/products/*`)
+- Authentication (`/api/auth/*`) — register, login, logout, password reset OTP
+- Products (`/api/products/*`) — CRUD, slug lookup, search, pagination
+- Reviews (`/api/products/:productId/reviews/*`) — list, submit, get own review
 - Cart (`/api/cart/*`)
 - Wishlist (`/api/wishlist/*`)
 - Orders (`/api/orders/*`)
 - Admin orders (`/api/admin/orders/*`)
+- Profile (`/api/profile/*`)
+- Addresses (`/api/addresses/*`)
 - Uploads (`/api/uploads/*`, static `/uploads/*`)
 - Health check (`/api/health`)
 
@@ -43,8 +46,17 @@ cp .env.example .env
 
 Required:
 
-- `DATABASE_URL`
-- `SESSION_SECRET`
+- `DATABASE_URL` — MySQL connection string
+- `SESSION_SECRET` — session signing secret
+
+Optional:
+
+- `PORT` (default `3001`)
+- `CORS_ORIGIN` — frontend URL(s)
+- `UPLOAD_DIR` — upload folder (default `uploads`)
+- `SMTP_*` — password-reset emails. Required outside `NODE_ENV=development`; in development only, the code is printed to the console if unset
+- `CORS_ORIGIN` — required in production, `https://` origins only
+- `TRUST_PROXY` — reverse proxies in front of Express (defaults to `1` in production)
 
 ## Setup
 
@@ -56,16 +68,37 @@ npm run db:migrate
 npm run dev
 ```
 
+API runs at **http://localhost:3001**.
+
 ## Auth API
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `GET /api/auth/me`
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/register` | Create account |
+| POST | `/login` | Start session |
+| POST | `/logout` | End session |
+| GET | `/me` | Current user or null |
+| GET | `/session` | Session user (auth required) |
+| POST | `/forgot-password` | Send OTP email |
+| POST | `/reset-password` | Reset with OTP |
 
 ## Products API
 
-See product routes in codebase. Public `GET`, admin-only `POST` / `PATCH` / `DELETE`.
+Public `GET`, admin-only `POST` / `PATCH` / `DELETE`.
+
+- `GET /` — list with `category`, `search`, `sort`, `page`, `limit`
+- `GET /slug/:slug` — fetch by URL slug
+- `GET /:id` — fetch by id
+
+## Reviews API — `/api/products/:productId/reviews`
+
+| Method | Path | Auth |
+|--------|------|------|
+| GET | `/` | Public — paginated list |
+| GET | `/me` | Session — user's review for product |
+| POST | `/` | Session — `{ rating, title?, comment? }` |
+
+Star-only reviews are allowed (`comment` optional). One review per user per product (upsert). Product `rating` and `reviewsCount` sync on submit.
 
 ## Cart API (authenticated)
 
@@ -214,7 +247,7 @@ Uploaded files are stored under `server/uploads/` and served at `/uploads/*`.
 
 Allowed types: `jpg`, `jpeg`, `png`, `webp` (max 5MB each). Filenames are server-generated; client filenames are not trusted.
 
-Product `imageUrl` values may use either a full URL or a local path such as `/uploads/products/<uuid>.jpg`.
+Product `imageUrl` values use local paths such as `/uploads/products/<uuid>.jpg`.
 
 ### Static files
 
@@ -261,18 +294,13 @@ Serves files from the upload directory (for example `/uploads/products/abc.jpg`)
 
 ## Scripts
 
-- `npm run dev` - start dev server
-- `npm run build` - compile TypeScript
-- `npm start` - run compiled server
-- `npm run db:generate` - generate Prisma client
-- `npm run db:migrate` - create/apply migrations
-- `npm run db:migrate:deploy` - apply migrations in production
-- `npm run db:push` - sync schema (non-migration)
-- `npm run db:studio` - open Prisma Studio
+- `npm run dev` — start dev server (tsx watch)
+- `npm run build` — compile TypeScript
+- `npm start` — run compiled server
+- `npm run db:generate` — generate Prisma client
+- `npm run db:migrate` — create/apply migrations (dev)
+- `npm run db:migrate:deploy` — apply migrations (production)
+- `npm run db:push` — sync schema without migration (dev only)
+- `npm run db:studio` — open Prisma Studio
 
-## Out of scope (not implemented)
-
-- Password reset flow
-- Frontend integration
-
-Firebase Storage and the Firebase-powered frontend remain untouched.
+See the root [`README.md`](../README.md) for full deployment and environment documentation.

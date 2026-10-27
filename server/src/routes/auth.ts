@@ -8,14 +8,26 @@ import {
   resetPasswordWithOtp,
 } from "../auth/passwordReset.js";
 import { env } from "../lib/env.js";
+import {
+  forgotPasswordEmailLimiter,
+  forgotPasswordLimiter,
+  loginEmailLimiter,
+  loginLimiter,
+  registerLimiter,
+  resetPasswordEmailLimiter,
+  resetPasswordLimiter,
+} from "../middleware/rateLimit.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validateBody } from "../middleware/validate.js";
 
-const SALT_ROUNDS = 10;
+const SALT_ROUNDS = 12;
+
+/** Compared against when the email is unknown, so both cases take the same time. */
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync("aromawrap-timing-equaliser", SALT_ROUNDS);
 
 export const authRouter = Router();
 
-authRouter.post("/register", validateBody(registerSchema), async (req, res, next) => {
+authRouter.post("/register", registerLimiter, validateBody(registerSchema), async (req, res, next) => {
   try {
     const { email, password, displayName } = req.body;
     const normalizedEmail = email.toLowerCase();
@@ -62,7 +74,7 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
   }
 });
 
-authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
+authRouter.post("/login", loginLimiter, loginEmailLimiter, validateBody(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const normalizedEmail = email.toLowerCase();
@@ -71,7 +83,8 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
       where: { email: normalizedEmail },
     });
 
-    if (!user) {
+    const isValid = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
+    if (!user || !isValid) {
       res.status(401).json({
         success: false,
         error: "Invalid email or password",
@@ -79,15 +92,9 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
       return;
     }
 
-    const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) {
-      res.status(401).json({
-        success: false,
-        error: "Invalid email or password",
-      });
-      return;
-    }
-
+    await new Promise<void>((resolve, reject) => {
+      req.session.regenerate((error) => (error ? reject(error) : resolve()));
+    });
     req.session.userId = user.id;
 
     res.json({
@@ -176,6 +183,8 @@ authRouter.get("/session", requireAuth, (req, res) => {
 
 authRouter.post(
   "/forgot-password",
+  forgotPasswordLimiter,
+  forgotPasswordEmailLimiter,
   validateBody(forgotPasswordSchema),
   async (req, res, next) => {
     try {
@@ -185,6 +194,13 @@ authRouter.post(
         message,
       });
     } catch (error) {
+      if (error instanceof PasswordResetError) {
+        res.status(error.statusCode).json({
+          success: false,
+          error: error.message,
+        });
+        return;
+      }
       next(error);
     }
   }
@@ -192,6 +208,8 @@ authRouter.post(
 
 authRouter.post(
   "/reset-password",
+  resetPasswordLimiter,
+  resetPasswordEmailLimiter,
   validateBody(resetPasswordSchema),
   async (req, res, next) => {
     try {
@@ -203,7 +221,7 @@ authRouter.post(
       });
     } catch (error) {
       if (error instanceof PasswordResetError) {
-        res.status(400).json({
+        res.status(error.statusCode).json({
           success: false,
           error: error.message,
         });

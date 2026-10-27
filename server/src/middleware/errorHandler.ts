@@ -25,13 +25,22 @@ export function errorHandler(
     return;
   }
 
+  const status = (err as { status?: unknown }).status;
+  if (typeof status === "number" && status >= 400 && status < 500) {
+    res.status(status).json({
+      success: false,
+      error: status === 413 ? "Request is too large" : "Invalid request",
+    });
+    return;
+  }
+
   console.error("[Unhandled error]", err);
 
   res.status(500).json({
     success: false,
     error:
-      process.env.NODE_ENV === "production"
-        ? "Internal server error"
-        : err.message,
+      process.env.NODE_ENV === "development"
+        ? err.message
+        : "Internal server error",
   });
 }

@@ -180,10 +180,10 @@ const AccountPage = () => {
       return;
     }
 
-    if (signupPassword.length < 6) {
+    if (signupPassword.length < 8) {
       toast({
         title: "Error",
-        description: "Password must be at least 6 characters",
+        description: "Password must be at least 8 characters",
         variant: "destructive",
       });
       return;
@@ -192,7 +192,7 @@ const AccountPage = () => {
     setIsLoggingIn(true);
 
     try {
-      // Create account with Firebase and save to Firestore
+      // Create account via Express API
       await signUp(signupEmail, signupPassword, signupName);
     
     toast({
@@ -468,7 +468,7 @@ const AccountPage = () => {
                         <Input
                           id="signup-password"
                           type="password"
-                          placeholder="Create a password (min 6 characters)"
+                          placeholder="Create a password (min 8 characters)"
                           value={signupPassword}
                           onChange={(e) => setSignupPassword(e.target.value)}
                           required

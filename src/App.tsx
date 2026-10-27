@@ -16,6 +16,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AddProductPage from "./pages/AddProductPage";
 import EditProductPage from "./pages/EditProductPage";
 import SearchPage from "./pages/SearchPage";
+import LavenderExperiencePage from "./pages/LavenderExperiencePage";
+import DeviExperiencePage from "./pages/DeviExperiencePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +42,8 @@ const App = () => (
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/add-product" element={<AddProductPage />} />
                 <Route path="/admin/edit-product/:productId" element={<EditProductPage />} />
+                <Route path="/experience/lavender" element={<LavenderExperiencePage />} />
+                <Route path="/experience/devi" element={<DeviExperiencePage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

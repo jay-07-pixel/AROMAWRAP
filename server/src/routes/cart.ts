@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { getPrimaryImageUrl } from "../lib/productSnapshot.js";
-import { addCartItemSchema, updateCartItemSchema } from "../cart/schemas.js";
+import { MAX_LINE_QUANTITY, addCartItemSchema, updateCartItemSchema } from "../cart/schemas.js";
 import { serializeCart } from "../cart/serializer.js";
 import {
   findCartItemForUser,
@@ -67,7 +67,10 @@ cartRouter.post(
       if (existingItem) {
         await prisma.cartItem.update({
           where: { id: existingItem.id },
-          data: { quantity: existingItem.quantity + quantity },
+          data: {
+            quantity: Math.min(existingItem.quantity + quantity, MAX_LINE_QUANTITY),
+            unitPrice: product.price,
+          },
         });
       } else {
         await prisma.cartItem.create({

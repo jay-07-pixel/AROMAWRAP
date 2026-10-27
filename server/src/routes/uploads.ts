@@ -12,6 +12,7 @@ import {
   productImagesUpload,
   profileImageUpload,
 } from "../uploads/multer.js";
+import { uploadLimiter } from "../middleware/rateLimit.js";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validateBody } from "../middleware/validate.js";
@@ -21,8 +22,9 @@ export const uploadsRouter = Router();
 uploadsRouter.post(
   "/products",
   requireAdmin,
+  uploadLimiter,
   (req, res, next) => {
-    productImagesUpload.array("images")(req, res, (error) => {
+    productImagesUpload.array("images", 10)(req, res, (error) => {
       if (error) {
         res.status(400).json({
           success: false,
@@ -90,6 +92,7 @@ uploadsRouter.delete(
 uploadsRouter.post(
   "/profile",
   requireAuth,
+  uploadLimiter,
   (req, res, next) => {
     profileImageUpload.single("image")(req, res, (error) => {
       if (error) {

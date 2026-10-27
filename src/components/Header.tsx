@@ -247,7 +247,7 @@ export const Header = () => {
           {/* Navigation */}
           <nav className="block border-t border-b border-gray-200 py-1.5 bg-gradient-to-r from-blue-50/40 to-indigo-50/40 md:bg-gradient-to-r md:from-blue-50/30 md:to-indigo-50/30 shadow-sm">
             <div className="container mx-auto px-4">
-              <ul className="flex flex-row items-center justify-center gap-2 md:gap-8">
+              <ul className="flex flex-row flex-wrap items-center justify-center gap-2 md:gap-8">
                 {categories.map((category) => (
                   <li key={category.name}>
                     {category.name === "Agarbatti" || category.name === "Dhoop Sticks" ? (
@@ -293,6 +293,19 @@ export const Header = () => {
                     )}
                   </li>
                 ))}
+                <li>
+                  <Button
+                    variant="ghost"
+                    className={`w-auto justify-center font-semibold text-sm md:text-base hover:text-secondary hover:bg-accent/20 transition-all duration-300 px-2 md:px-3 py-1.5 rounded-md ${
+                      location.pathname.startsWith("/experience")
+                        ? "text-secondary bg-accent/20"
+                        : "text-primary"
+                    }`}
+                    onClick={() => navigate("/experience/lavender")}
+                  >
+                    3D Experience
+                  </Button>
+                </li>
               </ul>
             </div>
           </nav>

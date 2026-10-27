@@ -23,7 +23,7 @@ const adminOrderInclude = {
 } as const;
 
 function computeLineTotal(unitPrice: Prisma.Decimal, quantity: number) {
-  return new Prisma.Decimal(Number(unitPrice) * quantity);
+  return new Prisma.Decimal(unitPrice).mul(quantity);
 }
 
 export async function findOrderForUser(userId: string, orderId: string) {
@@ -121,14 +121,26 @@ export async function createOrderFromCart(
       throw new OrderError("Cart is empty", 400);
     }
 
-    const orderItems = cart.items.map((item) => ({
-      productId: item.productId,
-      productNameSnapshot: item.name,
-      productImageSnapshot: item.image,
-      unitPrice: item.unitPrice,
-      quantity: item.quantity,
-      lineTotal: computeLineTotal(item.unitPrice, item.quantity),
-    }));
+    const products = await tx.product.findMany({
+      where: { id: { in: cart.items.map((item) => item.productId) } },
+      select: { id: true, name: true, price: true },
+    });
+    const productsById = new Map(products.map((product) => [product.id, product]));
+
+    const orderItems = cart.items.map((item) => {
+      const product = productsById.get(item.productId);
+      if (!product) {
+        throw new OrderError("An item in your cart is no longer available. Please review your cart.", 409);
+      }
+      return {
+        productId: item.productId,
+        productNameSnapshot: product.name,
+        productImageSnapshot: item.image,
+        unitPrice: product.price,
+        quantity: item.quantity,
+        lineTotal: computeLineTotal(product.price, item.quantity),
+      };
+    });
 
     const total = orderItems.reduce(
       (sum, item) => sum.add(item.lineTotal),
@@ -146,7 +158,7 @@ export async function createOrderFromCart(
         onlinePaymentReview: isOnline
           ? OnlinePaymentReview.PENDING
           : null,
-        userClaimedPaidAt: isOnline ? input.userClaimedPaidAt ?? null : null,
+        userClaimedPaidAt: isOnline && input.userClaimedPaidAt ? new Date() : null,
         shippingName: input.shippingName,
         shippingEmail: input.shippingEmail,
         shippingPhone: input.shippingPhone,

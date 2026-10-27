@@ -7,6 +7,7 @@ import {
   getOrdersForUser,
   OrderError,
 } from "../orders/service.js";
+import { writeLimiter } from "../middleware/rateLimit.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validateBody } from "../middleware/validate.js";
 
@@ -18,7 +19,7 @@ function getRouteParam(value: string | string[]): string {
   return Array.isArray(value) ? value[0] : value;
 }
 
-ordersRouter.post("/", validateBody(createOrderSchema), async (req, res, next) => {
+ordersRouter.post("/", writeLimiter, validateBody(createOrderSchema), async (req, res, next) => {
   try {
     const order = await createOrderFromCart(req.user!.id, req.body);
     res.status(201).json({

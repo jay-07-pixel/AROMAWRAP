@@ -96,12 +96,6 @@ export interface UserProfile {
 
 
 
-const configuredAdminEmail = () =>
-
-  import.meta.env.VITE_ADMIN_EMAIL?.toLowerCase().trim() || "";
-
-
-
 export function mapApiUserToSessionUser(apiUser: ApiUser): SessionUser {
 
   return {
@@ -278,21 +272,14 @@ async function buildUserProfileFromApi(): Promise<UserProfile | null> {
 
 
 
+/** Admin access comes only from the server-side ADMIN role. */
 export const isAdminUser = (
 
-  email: string | null | undefined,
+  _email: string | null | undefined,
 
   profile: UserProfile | null | undefined
 
-): boolean => {
-
-  if (profile?.role === "admin") return true;
-
-  const adminEmail = configuredAdminEmail();
-
-  return !!adminEmail && email?.toLowerCase() === adminEmail;
-
-};
+): boolean => profile?.role === "admin";
 
 
 

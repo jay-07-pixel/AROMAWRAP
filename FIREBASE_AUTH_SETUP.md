@@ -1,5 +1,7 @@
 # 🔐 Firebase Authentication Setup - COMPLETE
 
+> **Legacy.** The site no longer uses Firebase; it runs on the Express + MySQL API in `server/`. Kept for reference only.
+
 ## ✅ What I've Done
 
 I've fully integrated Firebase Authentication and Firestore into your **existing** signup/login pages. The UI stays **exactly the same** - only the backend changed!
@@ -198,7 +200,7 @@ users/
 │   └── updatedAt: December 6, 2025
 └── def456uvw/
     ├── uid: "def456uvw"
-    ├── email: "admin@gmail.com"
+    ├── email: "admin@example.com"
     ├── displayName: "Admin"
     ├── role: "admin"
     └── ...

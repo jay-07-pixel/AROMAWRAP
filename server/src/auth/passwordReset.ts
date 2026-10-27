@@ -1,10 +1,15 @@
 import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma.js";
-import { sendPasswordResetOtpEmail } from "../lib/email.js";
+import { canSendEmail, sendPasswordResetOtpEmail } from "../lib/email.js";
 
 const OTP_SALT_ROUNDS = 10;
+const PASSWORD_SALT_ROUNDS = 12;
 const OTP_EXPIRY_MS = 10 * 60 * 1000;
+const MAX_OTP_ATTEMPTS = 5;
+
+/** Wrong guesses per active code, keyed by OTP record id. Cleared when the code is used or burned. */
+const failedAttempts = new Map<string, number>();
 
 const GENERIC_FORGOT_PASSWORD_MESSAGE =
   "If an account exists for this email, you will receive a password reset code shortly.";
@@ -18,6 +23,10 @@ function normalizeEmail(email: string): string {
 }
 
 export async function requestPasswordResetOtp(email: string): Promise<string> {
+  if (!canSendEmail()) {
+    throw new PasswordResetError("Password reset is temporarily unavailable. Please contact support.", 503);
+  }
+
   const normalizedEmail = normalizeEmail(email);
 
   const user = await prisma.user.findUnique({
@@ -79,8 +88,19 @@ export async function resetPasswordWithOtp(
 
   const isValidOtp = await bcrypt.compare(otp, record.otpHash);
   if (!isValidOtp) {
+    const attempts = (failedAttempts.get(record.id) ?? 0) + 1;
+    if (attempts >= MAX_OTP_ATTEMPTS) {
+      failedAttempts.delete(record.id);
+      await prisma.passwordResetOtp.update({
+        where: { id: record.id },
+        data: { usedAt: new Date() },
+      });
+      throw new PasswordResetError("Too many wrong codes. Please request a new reset code.");
+    }
+    failedAttempts.set(record.id, attempts);
     throw new PasswordResetError("Invalid or expired reset code");
   }
+  failedAttempts.delete(record.id);
 
   const user = await prisma.user.findUnique({
     where: { email: normalizedEmail },
@@ -91,7 +111,7 @@ export async function resetPasswordWithOtp(
     throw new PasswordResetError("Invalid or expired reset code");
   }
 
-  const passwordHash = await bcrypt.hash(password, OTP_SALT_ROUNDS);
+  const passwordHash = await bcrypt.hash(password, PASSWORD_SALT_ROUNDS);
 
   await prisma.$transaction([
     prisma.user.update({
@@ -115,7 +135,10 @@ export async function resetPasswordWithOtp(
 }
 
 export class PasswordResetError extends Error {
-  constructor(message: string) {
+  constructor(
+    message: string,
+    public statusCode = 400
+  ) {
     super(message);
     this.name = "PasswordResetError";
   }

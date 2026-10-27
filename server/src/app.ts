@@ -1,28 +1,35 @@
 import cors from "cors";
 import express from "express";
 import session from "express-session";
+import helmet from "helmet";
 import { env } from "./lib/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
+import { apiLimiter } from "./middleware/rateLimit.js";
 import { apiRouter } from "./routes/index.js";
 
 export function createApp() {
   const app = express();
 
-  const allowedOrigins = env.corsOrigin
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean);
+  app.disable("x-powered-by");
+  app.set("trust proxy", env.trustProxy);
+
+  app.use(
+    helmet({
+      // Product photos are loaded from aromawrap.co.in and www.aromawrap.co.in.
+      crossOriginResourcePolicy: { policy: "same-site" },
+    })
+  );
 
   app.use(
     cors({
-      origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+      origin: env.corsOrigins,
       credentials: true,
     })
   );
 
-  app.use(express.json({ limit: "10mb" }));
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({ limit: "100kb" }));
+  app.use(express.urlencoded({ extended: false, limit: "100kb" }));
 
   app.use(
     session({
@@ -30,6 +37,7 @@ export function createApp() {
       secret: env.sessionSecret,
       resave: false,
       saveUninitialized: false,
+      proxy: env.trustProxy > 0,
       cookie: {
         httpOnly: true,
         secure: env.isProduction,
@@ -39,8 +47,19 @@ export function createApp() {
     })
   );
 
-  app.use("/uploads", express.static(env.uploadDir));
-  app.use("/api", apiRouter);
+  app.use(
+    "/uploads",
+    express.static(env.uploadDir, {
+      dotfiles: "deny",
+      index: false,
+      redirect: false,
+      setHeaders: (res) => {
+        res.setHeader("X-Content-Type-Options", "nosniff");
+        res.setHeader("Content-Security-Policy", "default-src 'none'; img-src 'self'; sandbox");
+      },
+    })
+  );
+  app.use("/api", apiLimiter, apiRouter);
 
   app.use(notFound);
   app.use(errorHandler);
