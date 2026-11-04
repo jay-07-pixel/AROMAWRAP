@@ -1,11 +1,11 @@
 import { Facebook, Instagram, Twitter, Youtube, Mail, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const CONTACT_EMAIL = "contact@aromawrap.co.in";
+const CONTACT_EMAIL = "contact@sugandhshoppee.com";
 const CONTACT_ADDRESS =
-  "3063, Shreehari Nikitan, Gajanan Nagar, Hingna Rd, Near Electric Zone Square, Nagpur, Maharashtra 440016";
+  "Shree Sawaram Incense, K-32/1/1, Hingna MIDC, Nagpur - 440016";
 const MAPS_URL =
-  "https://www.google.com/maps/search/?api=1&query=3063+Shreehari+Nikitan+Gajanan+Nagar+Hingna+Rd+Near+Electric+Zone+Square+Nagpur+Maharashtra+440016";
+  "https://www.google.com/maps/search/?api=1&query=Shree+Sawaram+Incense+K-32/1/1+Hingna+MIDC+Nagpur+440016";
 
 export const Footer = () => {
   return (

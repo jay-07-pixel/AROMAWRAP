@@ -6,7 +6,7 @@ The React frontend calls this API for auth, products, cart, wishlist, orders, re
 
 ## Implemented modules
 
-- Authentication (`/api/auth/*`) — register, login, logout, password reset OTP
+- Authentication (`/api/auth/*`) — register, login, Google Sign-In, logout, password reset OTP
 - Products (`/api/products/*`) — CRUD, slug lookup, search, pagination
 - Reviews (`/api/products/:productId/reviews/*`) — list, submit, get own review
 - Cart (`/api/cart/*`)
@@ -57,6 +57,7 @@ Optional:
 - `SMTP_*` — password-reset emails. Required outside `NODE_ENV=development`; in development only, the code is printed to the console if unset
 - `CORS_ORIGIN` — required in production, `https://` origins only
 - `TRUST_PROXY` — reverse proxies in front of Express (defaults to `1` in production)
+- `GOOGLE_CLIENT_ID` — Google Identity Services web Client ID (same as frontend `VITE_GOOGLE_CLIENT_ID`)
 
 ## Setup
 
@@ -76,6 +77,7 @@ API runs at **http://localhost:3001**.
 |--------|------|-------------|
 | POST | `/register` | Create account |
 | POST | `/login` | Start session |
+| POST | `/google` | Sign in / sign up with a Google ID token |
 | POST | `/logout` | End session |
 | GET | `/me` | Current user or null |
 | GET | `/session` | Session user (auth required) |

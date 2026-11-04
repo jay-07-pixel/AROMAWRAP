@@ -1,7 +1,17 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma.js";
-import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from "../auth/schemas.js";
+import {
+  googleCredentialSchema,
+  loginSchema,
+  registerSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "../auth/schemas.js";
+import {
+  GoogleAuthError,
+  signInOrRegisterWithGoogle,
+} from "../auth/googleAuth.js";
 import {
   PasswordResetError,
   requestPasswordResetOtp,
@@ -11,6 +21,7 @@ import { env } from "../lib/env.js";
 import {
   forgotPasswordEmailLimiter,
   forgotPasswordLimiter,
+  googleAuthLimiter,
   loginEmailLimiter,
   loginLimiter,
   registerLimiter,
@@ -84,10 +95,13 @@ authRouter.post("/login", loginLimiter, loginEmailLimiter, validateBody(loginSch
     });
 
     const isValid = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
-    if (!user || !isValid) {
+    if (!user || !user.passwordHash || !isValid) {
+      const googleOnly = Boolean(user && !user.passwordHash && user.googleId);
       res.status(401).json({
         success: false,
-        error: "Invalid email or password",
+        error: googleOnly
+          ? "This account uses Google Sign-In. Please continue with Google."
+          : "Invalid email or password",
       });
       return;
     }
@@ -114,6 +128,38 @@ authRouter.post("/login", loginLimiter, loginEmailLimiter, validateBody(loginSch
     next(error);
   }
 });
+
+authRouter.post(
+  "/google",
+  googleAuthLimiter,
+  validateBody(googleCredentialSchema),
+  async (req, res, next) => {
+    try {
+      const { user, isNewUser } = await signInOrRegisterWithGoogle(req.body.credential);
+
+      await new Promise<void>((resolve, reject) => {
+        req.session.regenerate((error) => (error ? reject(error) : resolve()));
+      });
+      req.session.userId = user.id;
+
+      res.status(isNewUser ? 201 : 200).json({
+        success: true,
+        isNewUser,
+        profileComplete: Boolean(user.phone),
+        user,
+      });
+    } catch (error) {
+      if (error instanceof GoogleAuthError) {
+        res.status(error.statusCode).json({
+          success: false,
+          error: error.message,
+        });
+        return;
+      }
+      next(error);
+    }
+  }
+);
 
 authRouter.post("/logout", (req, res) => {
   req.session.destroy((destroyError) => {

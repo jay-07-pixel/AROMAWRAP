@@ -423,6 +423,15 @@ All `VITE_` values are bundled into the public JavaScript. Never put secrets in 
 | `TRUST_PROXY` | No | Reverse proxies in front of Express. Defaults to `1` in production (nginx), `0` otherwise |
 | `UPLOAD_DIR` | No | Upload storage directory (default `uploads`) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | **Yes in production** | Password-reset emails. Without SMTP, password reset is disabled except with `NODE_ENV=development`, where the code is printed to the console |
+| `GOOGLE_CLIENT_ID` | No | Same Google web Client ID as `VITE_GOOGLE_CLIENT_ID`. Leave empty to disable Google Sign-In |
+
+### Frontend Google Sign-In (`.env.local`)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VITE_GOOGLE_CLIENT_ID` | No | Google Identity Services web Client ID (public). Authorized JS origins must include `http://localhost:8080` and `https://aromawrap.co.in` |
+
+Create the Client ID in [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → Create credentials → OAuth client ID → Web application. No client secret is needed for this flow.
 
 Generate a session secret with:
 

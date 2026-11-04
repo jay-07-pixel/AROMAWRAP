@@ -15,9 +15,10 @@ import { useWishlist } from "@/context/WishlistContext";
 import { motion } from "framer-motion";
 import { OrderSkeleton } from "@/components/OrderSkeleton";
 import { useAuth } from "@/context/AuthContext";
-import { signIn, signUp, logout, updateUserProfile, addAddress, isAdminUser } from "@/services/authService";
+import { signIn, signInWithGoogle, signUp, logout, updateUserProfile, addAddress, isAdminUser } from "@/services/authService";
 import { ApiError } from "@/lib/api";
 import { subscribeToUserOrders } from "@/services/orderService";
+import { AuthDivider, GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 /** UPI online flow: messages while admin has not decided yet, or after approve / reject */
 const OrderUPIPaymentNotice = ({ order }: { order: any }) => {
@@ -76,6 +77,8 @@ const AccountPage = () => {
   const [addressState, setAddressState] = useState("");
   const [addressPincode, setAddressPincode] = useState("");
   const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [accountTab, setAccountTab] = useState("profile");
+  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
 
   useEffect(() => {
     // Load user orders when logged in and subscribe to real-time updates
@@ -112,8 +115,56 @@ const AccountPage = () => {
         setAddressState(defaultAddress.state || "");
         setAddressPincode(defaultAddress.pincode || "");
       }
+
+      const incomplete =
+        !userProfile.phone?.trim() ||
+        !userProfile.addresses ||
+        userProfile.addresses.length === 0;
+      if (incomplete) {
+        setShowCompleteProfile(true);
+      }
     }
   }, [userProfile]);
+
+  const handleGoogleCredential = async (credential: string) => {
+    setIsLoggingIn(true);
+    try {
+      const { profile, isNewUser, needsProfileDetails } = await signInWithGoogle(credential);
+
+      if (isAdminUser(profile.email, profile)) {
+        toast({
+          title: "Welcome Admin!",
+          description: "Redirecting to admin dashboard...",
+        });
+        navigate("/admin");
+        return;
+      }
+
+      toast({
+        title: isNewUser ? "Account Created!" : "Login Successful!",
+        description: needsProfileDetails
+          ? "Name and email are saved from Google. Please add your phone and address."
+          : "Welcome back to AromaWrap",
+      });
+
+      if (needsProfileDetails) {
+        setShowCompleteProfile(true);
+        setAccountTab("profile");
+      }
+    } catch (error: unknown) {
+      console.error("Google sign-in error:", error);
+      toast({
+        title: "Google Sign-In Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Could not sign in with Google. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,6 +324,9 @@ const AccountPage = () => {
         title: "Profile Updated! ✅",
         description: "Your personal information has been saved",
       });
+      if (profilePhone.trim() && userProfile?.addresses?.length) {
+        setShowCompleteProfile(false);
+      }
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
@@ -288,10 +342,21 @@ const AccountPage = () => {
   const handleSaveAddress = async () => {
     if (!user) return;
 
+    const phone = profilePhone.trim() || userProfile?.phone?.trim() || "";
+
     if (!addressStreet.trim() || !addressCity.trim() || !addressState.trim() || !addressPincode.trim()) {
       toast({
         title: "Error",
         description: "Please fill in all address fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!phone) {
+      toast({
+        title: "Error",
+        description: "Please add your phone number in Personal Information first",
         variant: "destructive",
       });
       return;
@@ -302,7 +367,7 @@ const AccountPage = () => {
     try {
       const newAddress = {
         name: profileName || userProfile?.displayName || user.email?.split("@")[0] || "",
-        phone: profilePhone || "",
+        phone,
         address: addressStreet.trim(),
         city: addressCity.trim(),
         state: addressState.trim(),
@@ -316,6 +381,9 @@ const AccountPage = () => {
         title: "Address Saved! ✅",
         description: "Your shipping address has been updated",
       });
+      if (profilePhone.trim() || userProfile?.phone) {
+        setShowCompleteProfile(false);
+      }
     } catch (error) {
       console.error("Error saving address:", error);
       toast({
@@ -408,6 +476,12 @@ const AccountPage = () => {
                       >
                         {isLoggingIn ? "Logging in..." : "Login"}
                       </Button>
+                      <AuthDivider />
+                      <GoogleSignInButton
+                        onCredential={handleGoogleCredential}
+                        disabled={isLoggingIn}
+                        label="signin_with"
+                      />
                       <p className="text-sm text-center text-muted-foreground">
                         Don't have an account?{" "}
                         <button type="button" className="text-[#DC143C] font-semibold hover:underline">
@@ -501,6 +575,12 @@ const AccountPage = () => {
                       >
                         {isLoggingIn ? "Creating Account..." : "Create Account"}
                       </Button>
+                      <AuthDivider />
+                      <GoogleSignInButton
+                        onCredential={handleGoogleCredential}
+                        disabled={isLoggingIn}
+                        label="signup_with"
+                      />
                       <p className="text-sm text-center text-muted-foreground">
                         Already have an account?{" "}
                         <button type="button" className="text-[#DC143C] font-semibold hover:underline">
@@ -530,8 +610,17 @@ const AccountPage = () => {
         <div className="container mx-auto px-3 sm:px-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3 sm:gap-6 min-w-0">
-              <div className="h-14 w-14 sm:h-20 sm:w-20 shrink-0 rounded-full bg-gradient-to-br from-[#DC143C]/20 to-[#DC143C]/30 flex items-center justify-center">
-                <User className="h-7 w-7 sm:h-10 sm:w-10 text-[#DC143C]" />
+              <div className="h-14 w-14 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-[#DC143C]/20 to-[#DC143C]/30 flex items-center justify-center">
+                {userProfile?.photoURL || user?.photoURL ? (
+                  <img
+                    src={userProfile?.photoURL || user?.photoURL || ""}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <User className="h-7 w-7 sm:h-10 sm:w-10 text-[#DC143C]" />
+                )}
               </div>
               <div className="min-w-0">
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#DC143C] mb-0.5 sm:mb-1 truncate">
@@ -555,7 +644,15 @@ const AccountPage = () => {
       {/* Account Content */}
       <section className="flex-1 py-4 sm:py-8 bg-background">
         <div className="container mx-auto px-3 sm:px-4">
-          <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
+          <Tabs value={accountTab} onValueChange={setAccountTab} className="space-y-4 sm:space-y-6">
+            {showCompleteProfile && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+                <p className="font-medium">Complete your profile for faster checkout</p>
+                <p className="mt-1 text-amber-900/90">
+                  Google saved your name and email. Add your phone number and shipping address below.
+                </p>
+              </div>
+            )}
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1 bg-muted/50 p-1">
               <TabsTrigger
                 value="profile"

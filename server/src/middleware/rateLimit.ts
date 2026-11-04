@@ -35,6 +35,9 @@ export const loginEmailLimiter = limiter(60 * MINUTE, 20, "Too many login attemp
 
 export const registerLimiter = limiter(60 * MINUTE, 5, "Too many accounts created. Please try again later.");
 
+/** Google Sign-In / Sign-Up attempts per IP. */
+export const googleAuthLimiter = limiter(15 * MINUTE, 20, "Too many Google sign-in attempts. Please try again later.");
+
 /** Reset-code emails, per IP and per email address. */
 export const forgotPasswordLimiter = limiter(60 * MINUTE, 5, "Too many reset requests. Please try again later.");
 export const forgotPasswordEmailLimiter = limiter(60 * MINUTE, 3, "Too many reset requests for this email. Please try again later.", {

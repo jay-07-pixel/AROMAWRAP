@@ -4,6 +4,8 @@ import {
 
   apiGetMe,
 
+  apiGoogleSignIn,
+
   apiLogin,
 
   apiLogout,
@@ -338,6 +340,52 @@ export const signIn = async (
   } catch (error) {
 
     console.error("Error signing in:", error);
+
+    throw error;
+
+  }
+
+};
+
+
+
+export const signInWithGoogle = async (
+
+  credential: string
+
+): Promise<{ profile: UserProfile; isNewUser: boolean; needsProfileDetails: boolean }> => {
+
+  try {
+
+    const result = await apiGoogleSignIn(credential);
+
+    await notifyAuthSessionChanged();
+
+    const profile = await buildUserProfileFromApi();
+
+    if (!profile) {
+
+      throw new Error("Failed to load user profile");
+
+    }
+
+    const needsProfileDetails =
+
+      !profile.phone?.trim() || !profile.addresses || profile.addresses.length === 0;
+
+    return {
+
+      profile,
+
+      isNewUser: result.isNewUser,
+
+      needsProfileDetails,
+
+    };
+
+  } catch (error) {
+
+    console.error("Error signing in with Google:", error);
 
     throw error;
 

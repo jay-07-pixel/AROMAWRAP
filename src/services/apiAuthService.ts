@@ -42,6 +42,29 @@ export async function apiRegister(
   return data.user;
 }
 
+type GoogleAuthResponse = ApiSuccessResponse<{
+  user: ApiUser;
+  isNewUser: boolean;
+  profileComplete: boolean;
+}>;
+
+export async function apiGoogleSignIn(credential: string): Promise<{
+  user: ApiUser;
+  isNewUser: boolean;
+  profileComplete: boolean;
+}> {
+  const data = await apiFetch<GoogleAuthResponse>("/api/auth/google", {
+    method: "POST",
+    body: JSON.stringify({ credential }),
+  });
+
+  return {
+    user: data.user,
+    isNewUser: data.isNewUser,
+    profileComplete: data.profileComplete,
+  };
+}
+
 export async function apiLogout(): Promise<void> {
   await apiFetch<LogoutResponse>("/api/auth/logout", {
     method: "POST",

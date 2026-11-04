@@ -28,7 +28,13 @@ export const resetPasswordSchema = z.object({
   password: newPasswordSchema,
 });
 
+/** Google Identity Services ID token from the browser button / One Tap. */
+export const googleCredentialSchema = z.object({
+  credential: z.string().trim().min(20).max(8192),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type GoogleCredentialInput = z.infer<typeof googleCredentialSchema>;
