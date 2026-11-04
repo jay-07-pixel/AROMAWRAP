@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { createOrder, type CreateOrderInput } from "@/services/orderService";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ShoppingBag, CreditCard, Truck, MapPin, Phone, Mail, User, Lock, ShieldCheck, Package, QrCode } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +18,7 @@ import UpiPaymentModal from "@/components/UpiPaymentModal";
 
 const CheckoutPage = () => {
   const { items, totalPrice, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -26,6 +26,7 @@ const CheckoutPage = () => {
   const [isPincodeFetching, setIsPincodeFetching] = useState(false);
   const [showUpiModal, setShowUpiModal] = useState(false);
   const [pendingOrderData, setPendingOrderData] = useState<CreateOrderInput | null>(null);
+  const [hasPrefillApplied, setHasPrefillApplied] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -37,6 +38,26 @@ const CheckoutPage = () => {
     state: "",
     pincode: "",
   });
+
+  // Prefill once from saved profile + default address
+  useEffect(() => {
+    if (!user || !userProfile || hasPrefillApplied) return;
+
+    const defaultAddress =
+      userProfile.addresses?.find((addr) => addr.isDefault) ||
+      userProfile.addresses?.[0];
+
+    setFormData((prev) => ({
+      fullName: prev.fullName || defaultAddress?.name || userProfile.displayName || "",
+      email: prev.email || userProfile.email || user.email || "",
+      phone: prev.phone || defaultAddress?.phone || userProfile.phone || "",
+      address: prev.address || defaultAddress?.address || "",
+      city: prev.city || defaultAddress?.city || "",
+      state: prev.state || defaultAddress?.state || "",
+      pincode: prev.pincode || defaultAddress?.pincode || "",
+    }));
+    setHasPrefillApplied(true);
+  }, [user, userProfile, hasPrefillApplied]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

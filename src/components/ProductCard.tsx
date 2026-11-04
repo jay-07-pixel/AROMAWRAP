@@ -51,11 +51,13 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
   }, [lcp, imageSrc]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     addItem({ id, name, price, image });
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     toggleWishlist({ id, name, price, originalPrice, image, badge });
   };
@@ -65,6 +67,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
   };
 
   const handleQuickView = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     setIsQuickViewOpen(true);
   };
@@ -103,10 +106,9 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
       <div 
         className={
           lcp
-            ? "group bg-white rounded-lg overflow-hidden transition-shadow duration-300 cursor-pointer flex flex-col h-full"
-            : "group bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer animate-in fade-in zoom-in-95 hover:scale-[1.02] flex flex-col h-full"
+            ? "group bg-white rounded-lg overflow-hidden transition-shadow duration-300 flex flex-col h-full"
+            : "group bg-white rounded-lg overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95 hover:scale-[1.02] flex flex-col h-full"
         }
-        onClick={handleProductClick}
         style={
           lcp
             ? { boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }
@@ -117,8 +119,19 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
               }
         }
       >
-        {/* Product Image Container */}
-        <div className="relative aspect-[3/4] overflow-hidden flex-shrink-0 bg-gray-100">
+        {/* Product Image Container — click opens product page */}
+        <div
+          className="relative aspect-[3/4] overflow-hidden flex-shrink-0 bg-gray-100 cursor-pointer"
+          onClick={handleProductClick}
+          role="link"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleProductClick();
+            }
+          }}
+        >
           {/* Loading Placeholder */}
           {imageLoading && (
             <div className="absolute inset-0 bg-gradient-to-br from-muted/80 to-muted animate-pulse" aria-hidden />
@@ -148,6 +161,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
           
           {/* Quick View Button - Center (appears on hover) */}
           <motion.button
+            type="button"
             initial={{ opacity: 0, scale: 0.8 }}
             whileHover={{ scale: 1.05 }}
             onClick={handleQuickView}
@@ -159,6 +173,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
           
           {/* Wishlist Button - Top Left */}
           <motion.button
+            type="button"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={handleToggleWishlist}
@@ -174,35 +189,38 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
       
       {/* Product Info */}
       <div className="p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3 flex flex-col flex-grow">
-        {/* Product Name */}
-        <h3 className="font-medium text-xs sm:text-sm md:text-base text-gray-900 line-clamp-2 text-center min-h-[2.5rem] sm:min-h-[3rem] flex items-center justify-center">
+        {/* Product Name — click opens product page */}
+        <h3
+          className="font-medium text-xs sm:text-sm md:text-base text-gray-900 line-clamp-2 text-center min-h-[2.5rem] sm:min-h-[3rem] flex items-center justify-center cursor-pointer"
+          onClick={handleProductClick}
+        >
           {name}
         </h3>
         
-        {/* Combined Button and Pricing Box */}
-        <div className="rounded-md sm:rounded-lg p-2 sm:p-3 md:p-4 transition-all duration-300 hover:scale-105 shadow-md bg-primary hover:bg-secondary mt-auto">
-          {/* Add to Cart Button */}
-          <button 
-            className="w-full text-white font-semibold sm:font-bold text-[10px] sm:text-xs md:text-sm lg:text-base flex items-center justify-center gap-1 sm:gap-2 mb-2 sm:mb-3" 
-            onClick={handleAddToCart}
-          >
+        {/* Add to Cart + price — never navigates */}
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          className="rounded-md sm:rounded-lg p-2 sm:p-3 md:p-4 transition-all duration-300 hover:scale-105 shadow-md bg-primary hover:bg-secondary mt-auto w-full"
+        >
+          <span className="w-full text-white font-semibold sm:font-bold text-[10px] sm:text-xs md:text-sm lg:text-base flex items-center justify-center gap-1 sm:gap-2 mb-2 sm:mb-3">
             <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
             <span className="hidden sm:inline">ADD TO CART</span>
             <span className="sm:hidden">ADD</span>
-          </button>
+          </span>
           
           {/* Pricing */}
-          <div className="flex justify-center items-center gap-1 sm:gap-2 md:gap-4">
+          <span className="flex justify-center items-center gap-1 sm:gap-2 md:gap-4">
             {originalPrice && (
-              <div className="text-[10px] sm:text-xs md:text-sm lg:text-base text-white/80 line-through">
+              <span className="text-[10px] sm:text-xs md:text-sm lg:text-base text-white/80 line-through">
                 ₹{originalPrice.toLocaleString()}
-              </div>
+              </span>
             )}
-            <div className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white">
+            <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white">
               ₹{price.toLocaleString()}
-            </div>
-          </div>
-        </div>
+            </span>
+          </span>
+        </button>
       </div>
     </div>
 
