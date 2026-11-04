@@ -37,6 +37,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
 import { isLegacyProductId } from "@/lib/legacyProducts";
+import { formatWeightLabel, isProductPurchasable } from "@/lib/productAvailability";
 
 function StarDisplay({ rating, size = "h-4 w-4" }: { rating: number; size?: string }) {
   const filled = renderStarCount(rating);
@@ -104,7 +105,7 @@ const ProductPage = () => {
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [myReview, setMyReview] = useState<ProductReview | null>(null);
-  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewRating, setReviewRating] = useState(0);
   const [reviewTitle, setReviewTitle] = useState("");
   const [reviewComment, setReviewComment] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
@@ -221,7 +222,7 @@ const ProductPage = () => {
           setReviewTitle(review.title || "");
           setReviewComment(review.comment || "");
         } else {
-          setReviewRating(5);
+          setReviewRating(0);
           setReviewTitle("");
           setReviewComment("");
         }
@@ -256,6 +257,15 @@ const ProductPage = () => {
 
     if (!user) {
       navigate("/account");
+      return;
+    }
+
+    if (reviewRating < 1) {
+      toast({
+        title: "Pick a rating",
+        description: "Please tap a star before submitting your review.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -337,8 +347,18 @@ const ProductPage = () => {
   const rating = product.rating ?? 0;
   const reviewCount = product.reviews ?? 0;
   const ratingLabel = reviewCount > 0 ? rating.toFixed(1) : "—";
+  const canPurchase = isProductPurchasable(product.category);
+  const weightLabel = formatWeightLabel(product.specifications);
 
   const handleAddToCart = () => {
+    if (!product) return;
+    if (!isProductPurchasable(product.category)) {
+      toast({
+        title: "Coming Soon",
+        description: "Dhoop sticks are coming soon. Only Agarbatti can be ordered right now.",
+      });
+      return;
+    }
     addItem({
       id: product.id,
       name: product.name,
@@ -378,7 +398,9 @@ const ProductPage = () => {
     }
   };
 
-  const headerStarValue = user ? reviewRating : renderStarCount(rating);
+  // Empty until the signed-in user rates (or until their saved rating loads).
+  // Guests also see empty stars; tapping sends them to sign in.
+  const headerStarValue = user ? reviewRating : 0;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -505,18 +527,23 @@ const ProductPage = () => {
                     <span className="text-2xl sm:text-3xl font-bold text-primary shrink-0">
                       ₹{product.price}
                     </span>
-                    {product.originalPrice && (
+                    {product.originalPrice != null &&
+                      Number(product.originalPrice) > Number(product.price) && (
                       <span className="text-base sm:text-xl text-muted-foreground line-through shrink-0">
                         ₹{product.originalPrice}
                       </span>
                     )}
-                    {product.badge && (
+                    {(canPurchase ? product.badge : "Coming Soon") && (
                       <Badge className="bg-primary text-white px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-bold shrink-0">
-                        {product.badge}
+                        {canPurchase ? product.badge : "Coming Soon"}
                       </Badge>
+                    )}
+                    {weightLabel && (
+                      <span className="text-sm text-muted-foreground shrink-0">{weightLabel}</span>
                     )}
                   </div>
 
+                  {canPurchase && (
                   <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto shrink-0">
                     <span className="font-medium text-foreground text-sm">Qty:</span>
                     <div className="flex items-center gap-1 border-2 border-primary/20 rounded-lg bg-white shadow-sm">
@@ -542,26 +569,34 @@ const ProductPage = () => {
                       </Button>
                     </div>
                   </div>
+                  )}
                 </div>
               </div>
 
               <div className="space-y-2">
+                {!canPurchase && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                    Dhoop sticks are coming soon. Only Agarbatti orders can be placed right now.
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   <Button
                     size="lg"
-                    className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-bold py-3 text-base sm:text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-bold py-3 text-base sm:text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-60"
                     onClick={handleAddToCart}
+                    disabled={!canPurchase}
                   >
                     <ShoppingCart className="h-5 w-5 mr-2 shrink-0" />
-                    Add to Cart
+                    {canPurchase ? "Add to Cart" : "Coming Soon"}
                   </Button>
 
                   <Button
                     size="lg"
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 text-base sm:text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 text-base sm:text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-60"
+                    disabled={!canPurchase}
                     onClick={() => {
                       handleAddToCart();
-                      alert("Redirecting to checkout...");
+                      if (canPurchase) navigate("/checkout");
                     }}
                   >
                     Buy Now

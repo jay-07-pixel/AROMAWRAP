@@ -13,6 +13,8 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { isProductPurchasable } from "@/lib/productAvailability";
+import { toast } from "@/hooks/use-toast";
 
 interface QuickViewModalProps {
   isOpen: boolean;
@@ -25,6 +27,7 @@ interface QuickViewModalProps {
     image: string;
     badge?: string;
     description?: string;
+    category?: string;
     slug?: string;
     rating?: number;
     reviews?: number;
@@ -39,8 +42,16 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
   if (!product) return null;
 
   const inWishlist = isInWishlist(product.id);
+  const canPurchase = isProductPurchasable(product.category);
 
   const handleAddToCart = () => {
+    if (!canPurchase) {
+      toast({
+        title: "Coming Soon",
+        description: "Dhoop sticks are coming soon. Only Agarbatti can be ordered right now.",
+      });
+      return;
+    }
     addItem({
       id: product.id,
       name: product.name,
@@ -180,10 +191,11 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
                 <div className="grid grid-cols-5 gap-3">
                   <Button
                     onClick={handleAddToCart}
-                    className="col-span-4 bg-primary hover:bg-secondary h-12 text-base"
+                    disabled={!canPurchase}
+                    className="col-span-4 bg-primary hover:bg-secondary h-12 text-base disabled:opacity-60"
                   >
                     <ShoppingCart className="h-5 w-5 mr-2" />
-                    Add to Cart
+                    {canPurchase ? "Add to Cart" : "Coming Soon"}
                   </Button>
                   <Button
                     variant="outline"

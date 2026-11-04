@@ -54,6 +54,14 @@ cartRouter.post(
         return;
       }
 
+      if (product.category.toLowerCase().includes("dhoop")) {
+        res.status(409).json({
+          success: false,
+          error: "Dhoop sticks are coming soon. Only Agarbatti can be ordered right now.",
+        });
+        return;
+      }
+
       const cart = await getOrCreateCart(userId);
       const existingItem = await prisma.cartItem.findUnique({
         where: {

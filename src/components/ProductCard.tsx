@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { QuickViewModal } from "@/components/QuickViewModal";
+import { isProductPurchasable } from "@/lib/productAvailability";
+import { toast } from "@/hooks/use-toast";
 
 interface ProductCardProps {
   id: string;
@@ -17,6 +19,7 @@ interface ProductCardProps {
   image: string;
   badge?: string;
   description?: string;
+  category?: string;
   slug?: string;
   rating?: number;
   reviews?: number;
@@ -26,11 +29,13 @@ interface ProductCardProps {
   lcp?: boolean;
 }
 
-export const ProductCard = ({ id, name, price, originalPrice, image, badge, description, slug, rating, reviews, priority = false, lcp = false }: ProductCardProps) => {
+export const ProductCard = ({ id, name, price, originalPrice, image, badge, description, category, slug, rating, reviews, priority = false, lcp = false }: ProductCardProps) => {
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
   const inWishlist = isInWishlist(id);
+  const canPurchase = isProductPurchasable(category);
+  const displayBadge = canPurchase ? badge : "Coming Soon";
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState<string>(image);
   const [imageLoading, setImageLoading] = useState(true);
@@ -53,6 +58,13 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!canPurchase) {
+      toast({
+        title: "Coming Soon",
+        description: "Dhoop sticks are coming soon. Only Agarbatti can be ordered right now.",
+      });
+      return;
+    }
     addItem({ id, name, price, image });
   };
 
@@ -185,6 +197,12 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
           >
             <Heart className={`h-3 w-3 sm:h-4 sm:w-4 ${inWishlist ? 'fill-current' : ''}`} />
           </motion.button>
+
+          {displayBadge && (
+            <Badge className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-primary text-primary-foreground shadow-md text-[10px] sm:text-xs">
+              {displayBadge}
+            </Badge>
+          )}
         </div>
       
       {/* Product Info */}
@@ -196,28 +214,42 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
         >
           {name}
         </h3>
+        {canPurchase && (
+          <p className="text-center text-[10px] sm:text-xs text-muted-foreground -mt-1">100 gm</p>
+        )}
         
         {/* Add to Cart + price — never navigates */}
         <button
           type="button"
           onClick={handleAddToCart}
-          className="rounded-md sm:rounded-lg p-2 sm:p-3 md:p-4 transition-all duration-300 hover:scale-105 shadow-md bg-primary hover:bg-secondary mt-auto w-full"
+          disabled={!canPurchase}
+          className={`rounded-md sm:rounded-lg p-2 sm:p-3 md:p-4 transition-all duration-300 shadow-md mt-auto w-full ${
+            canPurchase
+              ? "hover:scale-105 bg-primary hover:bg-secondary"
+              : "bg-muted cursor-not-allowed opacity-90"
+          }`}
         >
-          <span className="w-full text-white font-semibold sm:font-bold text-[10px] sm:text-xs md:text-sm lg:text-base flex items-center justify-center gap-1 sm:gap-2 mb-2 sm:mb-3">
+          <span className={`w-full font-semibold sm:font-bold text-[10px] sm:text-xs md:text-sm lg:text-base flex items-center justify-center gap-1 sm:gap-2 mb-2 sm:mb-3 ${
+            canPurchase ? "text-white" : "text-foreground"
+          }`}>
             <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
-            <span className="hidden sm:inline">ADD TO CART</span>
-            <span className="sm:hidden">ADD</span>
+            <span className="hidden sm:inline">{canPurchase ? "ADD TO CART" : "COMING SOON"}</span>
+            <span className="sm:hidden">{canPurchase ? "ADD" : "SOON"}</span>
           </span>
           
           {/* Pricing */}
-          <span className="flex justify-center items-center gap-1 sm:gap-2 md:gap-4">
-            {originalPrice && (
-              <span className="text-[10px] sm:text-xs md:text-sm lg:text-base text-white/80 line-through">
-                ₹{originalPrice.toLocaleString()}
+          <span className={`flex justify-center items-center gap-1 sm:gap-2 md:gap-4 ${
+            canPurchase ? "text-white" : "text-foreground"
+          }`}>
+            {originalPrice != null && Number(originalPrice) > Number(price) && (
+              <span className={`text-[10px] sm:text-xs md:text-sm lg:text-base line-through ${
+                canPurchase ? "text-white/80" : "text-muted-foreground"
+              }`}>
+                ₹{Number(originalPrice).toLocaleString()}
               </span>
             )}
-            <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white">
-              ₹{price.toLocaleString()}
+            <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold">
+              ₹{Number(price).toLocaleString()}
             </span>
           </span>
         </button>
@@ -228,7 +260,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
     <QuickViewModal
       isOpen={isQuickViewOpen}
       onClose={() => setIsQuickViewOpen(false)}
-      product={{ id, name, price, originalPrice, image, badge, description, slug, rating, reviews }}
+      product={{ id, name, price, originalPrice, image, badge: displayBadge, description, category, slug, rating, reviews }}
     />
   </>
   );

@@ -14,6 +14,7 @@ import {
 import { ArrowLeft, Filter, SortAsc, ChevronDown } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { listProducts, mapUiSortToApiSort, type ProductListItem } from "@/services/productService";
+import { resolveCategoryFilter } from "@/lib/productAvailability";
 import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
 import { useEffect, useMemo, useState } from "react";
 
@@ -55,7 +56,7 @@ const CategoryPage = () => {
 
       try {
         const { items, pagination } = await listProducts({
-          category,
+          category: resolveCategoryFilter(category) ?? category,
           sort: mapUiSortToApiSort(sortBy),
           page,
           limit: 20,
@@ -93,7 +94,8 @@ const CategoryPage = () => {
     // Convert URL parameter to display name
     const categoryMap: { [key: string]: string } = {
       "agarbatti": "Agarbatti",
-      "sandalwood-dhoop": "Dhoop",
+      "dhoop": "Dhoop Sticks",
+      "sandalwood-dhoop": "Dhoop Sticks",
     };
     
     return categoryMap[categoryParam] || categoryParam.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());

@@ -258,7 +258,7 @@ export const Header = () => {
                           if (category.name === "Agarbatti") {
                             navigate("/category/agarbatti");
                           } else if (category.name === "Dhoop Sticks") {
-                            navigate("/category/sandalwood-dhoop");
+                            navigate("/category/dhoop");
                           }
                         }}
                       >

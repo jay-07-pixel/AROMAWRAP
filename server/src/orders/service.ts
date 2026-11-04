@@ -123,7 +123,7 @@ export async function createOrderFromCart(
 
     const products = await tx.product.findMany({
       where: { id: { in: cart.items.map((item) => item.productId) } },
-      select: { id: true, name: true, price: true },
+      select: { id: true, name: true, price: true, category: true },
     });
     const productsById = new Map(products.map((product) => [product.id, product]));
 
@@ -131,6 +131,12 @@ export async function createOrderFromCart(
       const product = productsById.get(item.productId);
       if (!product) {
         throw new OrderError("An item in your cart is no longer available. Please review your cart.", 409);
+      }
+      if (product.category.toLowerCase().includes("dhoop")) {
+        throw new OrderError(
+          "Dhoop sticks are coming soon. Please remove them from your cart. Only Agarbatti can be ordered right now.",
+          409
+        );
       }
       return {
         productId: item.productId,

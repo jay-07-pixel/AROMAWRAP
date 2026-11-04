@@ -1,4 +1,5 @@
 import { ApiError } from "@/lib/api";
+import { isDhoopCategory, parseSpecifications } from "@/lib/productAvailability";
 import {
   createProductApi,
   deleteProductApi,
@@ -163,6 +164,7 @@ function mapPartialProductToUpdateInput(
 
 export function mapApiProductToListItem(product: ApiProduct): ProductListItem {
   const images = getImageUrls(product);
+  const comingSoon = isDhoopCategory(product.category);
 
   return {
     id: product.id,
@@ -170,7 +172,7 @@ export function mapApiProductToListItem(product: ApiProduct): ProductListItem {
     price: product.price,
     originalPrice: product.originalPrice ?? undefined,
     image: images[0],
-    badge: product.badge ?? undefined,
+    badge: comingSoon ? "Coming Soon" : product.badge ?? undefined,
     category: product.category,
     slug: product.slug || product.id,
     rating: product.rating ?? undefined,
@@ -180,6 +182,7 @@ export function mapApiProductToListItem(product: ApiProduct): ProductListItem {
 
 export function mapApiProductToDetail(product: ApiProduct): Product {
   const images = getImageUrls(product);
+  const comingSoon = isDhoopCategory(product.category);
 
   return {
     id: product.id,
@@ -190,13 +193,13 @@ export function mapApiProductToDetail(product: ApiProduct): Product {
     description: product.description,
     image: images[0],
     images,
-    badge: product.badge ?? undefined,
+    badge: comingSoon ? "Coming Soon" : product.badge ?? undefined,
     category: product.category,
     stock: product.stock,
     rating: product.rating ?? 0,
     reviews: product.reviewsCount ?? 0,
     features: [],
-    specifications: {},
+    specifications: parseSpecifications(product.description),
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
   };
