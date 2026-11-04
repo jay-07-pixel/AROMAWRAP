@@ -447,12 +447,12 @@ const ProductPage = () => {
                   loading="eager"
                   decoding="async"
                   className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
-                    !canPurchase ? "blur-2xl scale-125 brightness-95" : ""
+                    !canPurchase ? "blur-md scale-110" : ""
                   }`}
                 />
                 {!canPurchase && (
                   <div
-                    className="absolute inset-0 z-[1] bg-white/35 backdrop-blur-md flex items-center justify-center"
+                    className="absolute inset-0 z-[1] bg-white/25 backdrop-blur-[2px] flex items-center justify-center"
                     aria-hidden
                   >
                     <span className="rounded-full bg-white/85 px-4 py-1.5 text-xs sm:text-sm font-semibold text-foreground shadow-sm">
@@ -478,10 +478,10 @@ const ProductPage = () => {
                       alt={`${product.name} ${index + 1}`}
                       loading={index < 2 ? "eager" : "lazy"}
                       decoding="async"
-                      className={`w-full h-full object-cover ${!canPurchase ? "blur-xl scale-125" : ""}`}
+                      className={`w-full h-full object-cover ${!canPurchase ? "blur-md scale-110" : ""}`}
                     />
                     {!canPurchase && (
-                      <span className="absolute inset-0 bg-white/40 backdrop-blur-sm" aria-hidden />
+                      <span className="absolute inset-0 bg-white/25 backdrop-blur-[1px]" aria-hidden />
                     )}
                   </button>
                 ))}
@@ -539,22 +539,30 @@ const ProductPage = () => {
               <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-3 sm:p-4 border border-primary/10">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
-                    <span className="text-2xl sm:text-3xl font-bold text-primary shrink-0">
-                      ₹{product.price}
-                    </span>
-                    {product.originalPrice != null &&
-                      Number(product.originalPrice) > Number(product.price) && (
-                      <span className="text-base sm:text-xl text-muted-foreground line-through shrink-0">
-                        ₹{product.originalPrice}
-                      </span>
-                    )}
-                    {(canPurchase ? product.badge : "Coming Soon") && (
+                    {canPurchase ? (
+                      <>
+                        <span className="text-2xl sm:text-3xl font-bold text-primary shrink-0">
+                          ₹{product.price}
+                        </span>
+                        {product.originalPrice != null &&
+                          Number(product.originalPrice) > Number(product.price) && (
+                          <span className="text-base sm:text-xl text-muted-foreground line-through shrink-0">
+                            ₹{product.originalPrice}
+                          </span>
+                        )}
+                        {product.badge && (
+                          <Badge className="bg-primary text-white px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-bold shrink-0">
+                            {product.badge}
+                          </Badge>
+                        )}
+                        {weightLabel && (
+                          <span className="text-sm text-muted-foreground shrink-0">{weightLabel}</span>
+                        )}
+                      </>
+                    ) : (
                       <Badge className="bg-primary text-white px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-bold shrink-0">
-                        {canPurchase ? product.badge : "Coming Soon"}
+                        Coming Soon
                       </Badge>
-                    )}
-                    {weightLabel && (
-                      <span className="text-sm text-muted-foreground shrink-0">{weightLabel}</span>
                     )}
                   </div>
 

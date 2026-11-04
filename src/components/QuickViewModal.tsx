@@ -96,12 +96,12 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
               loading="eager"
               decoding="async"
               className={`w-full h-full object-cover min-h-[300px] md:min-h-[500px] ${
-                !canPurchase ? "blur-2xl scale-125 brightness-95" : ""
+                !canPurchase ? "blur-md scale-110" : ""
               }`}
             />
             {!canPurchase && (
               <div
-                className="absolute inset-0 z-[1] bg-white/35 backdrop-blur-md flex items-center justify-center"
+                className="absolute inset-0 z-[1] bg-white/25 backdrop-blur-[2px] flex items-center justify-center"
                 aria-hidden
               >
                 <span className="rounded-full bg-white/85 px-4 py-1.5 text-sm font-semibold text-foreground shadow-sm">
@@ -152,17 +152,21 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
                 <p className="text-sm text-muted-foreground">No reviews yet</p>
               )}
 
-              {/* Price */}
-              <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-bold text-primary">
-                  ₹{product.price}
-                </span>
-                {product.originalPrice && (
-                  <span className="text-xl text-gray-500 line-through">
-                    ₹{product.originalPrice}
+              {/* Price — hidden for Coming Soon / Dhoop */}
+              {canPurchase ? (
+                <div className="flex items-baseline gap-3">
+                  <span className="text-4xl font-bold text-primary">
+                    ₹{product.price}
                   </span>
-                )}
-              </div>
+                  {product.originalPrice && (
+                    <span className="text-xl text-gray-500 line-through">
+                      ₹{product.originalPrice}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <p className="text-lg font-semibold text-muted-foreground">Price coming soon</p>
+              )}
 
               <Separator />
 

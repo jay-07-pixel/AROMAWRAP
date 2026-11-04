@@ -162,7 +162,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
             decoding="async"
             className={`w-full h-full object-cover ${lcp ? "transition-transform duration-300 group-hover:scale-105" : "transition-all duration-300 group-hover:scale-105"} ${
               imageLoading ? 'opacity-0' : 'opacity-100'
-            } ${hidePackaging ? "blur-2xl scale-125 brightness-95" : ""}`}
+            } ${hidePackaging ? "blur-md scale-110" : ""}`}
             onLoad={() => setImageLoading(false)}
             onError={(e) => {
               console.error('Image failed to load:', imageSrc, e);
@@ -172,10 +172,10 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
             }}
           />
 
-          {/* Soft frost layer so Dhoop packaging cannot be read */}
+          {/* Light frost so Dhoop packaging stays unreadable */}
           {hidePackaging && (
             <div
-              className="absolute inset-0 z-[1] bg-white/35 backdrop-blur-md pointer-events-none flex items-center justify-center"
+              className="absolute inset-0 z-[1] bg-white/25 backdrop-blur-[2px] pointer-events-none flex items-center justify-center"
               aria-hidden
             >
               <span className="rounded-full bg-white/80 px-3 py-1 text-[10px] sm:text-xs font-semibold text-foreground shadow-sm">
@@ -242,29 +242,27 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
               : "bg-muted cursor-not-allowed opacity-90"
           }`}
         >
-          <span className={`w-full font-semibold sm:font-bold text-[10px] sm:text-xs md:text-sm lg:text-base flex items-center justify-center gap-1 sm:gap-2 mb-2 sm:mb-3 ${
-            canPurchase ? "text-white" : "text-foreground"
+          <span className={`w-full font-semibold sm:font-bold text-[10px] sm:text-xs md:text-sm lg:text-base flex items-center justify-center gap-1 sm:gap-2 ${
+            canPurchase ? "text-white mb-2 sm:mb-3" : "text-foreground"
           }`}>
             <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
             <span className="hidden sm:inline">{canPurchase ? "ADD TO CART" : "COMING SOON"}</span>
             <span className="sm:hidden">{canPurchase ? "ADD" : "SOON"}</span>
           </span>
           
-          {/* Pricing */}
-          <span className={`flex justify-center items-center gap-1 sm:gap-2 md:gap-4 ${
-            canPurchase ? "text-white" : "text-foreground"
-          }`}>
-            {originalPrice != null && Number(originalPrice) > Number(price) && (
-              <span className={`text-[10px] sm:text-xs md:text-sm lg:text-base line-through ${
-                canPurchase ? "text-white/80" : "text-muted-foreground"
-              }`}>
-                ₹{Number(originalPrice).toLocaleString()}
+          {/* Pricing — hidden for Coming Soon / Dhoop */}
+          {canPurchase && (
+            <span className="flex justify-center items-center gap-1 sm:gap-2 md:gap-4 text-white">
+              {originalPrice != null && Number(originalPrice) > Number(price) && (
+                <span className="text-[10px] sm:text-xs md:text-sm lg:text-base text-white/80 line-through">
+                  ₹{Number(originalPrice).toLocaleString()}
+                </span>
+              )}
+              <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold">
+                ₹{Number(price).toLocaleString()}
               </span>
-            )}
-            <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold">
-              ₹{Number(price).toLocaleString()}
             </span>
-          </span>
+          )}
         </button>
       </div>
     </div>
