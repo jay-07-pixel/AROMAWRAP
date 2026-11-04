@@ -59,6 +59,15 @@ function loadGoogleScript(): Promise<void> {
   return gisScriptPromise;
 }
 
+function measureButtonWidth(el: HTMLElement): number {
+  const raw =
+    el.clientWidth ||
+    el.parentElement?.clientWidth ||
+    Math.min(window.innerWidth - 48, 400);
+  // Google's button API accepts roughly 200–400px
+  return Math.max(200, Math.min(Math.floor(raw), 400));
+}
+
 type GoogleSignInButtonProps = {
   onCredential: (credential: string) => void | Promise<void>;
   disabled?: boolean;
@@ -71,6 +80,7 @@ export function GoogleSignInButton({
   label = "continue_with",
 }: GoogleSignInButtonProps) {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() || "";
+  const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
   const callbackRef = useRef(onCredential);
   const [ready, setReady] = useState(false);
@@ -84,34 +94,54 @@ export function GoogleSignInButton({
     if (!clientId) return;
 
     let cancelled = false;
+    let resizeObserver: ResizeObserver | null = null;
+    let lastWidth = 0;
+
+    const render = () => {
+      if (cancelled || !buttonRef.current || !containerRef.current || !window.google?.accounts?.id) {
+        return;
+      }
+
+      const width = measureButtonWidth(containerRef.current);
+      if (width === lastWidth && buttonRef.current.childElementCount > 0) return;
+      lastWidth = width;
+
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: (response) => {
+          if (response.credential) {
+            void callbackRef.current(response.credential);
+          }
+        },
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+
+      buttonRef.current.innerHTML = "";
+      window.google.accounts.id.renderButton(buttonRef.current, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        text: label,
+        shape: "rectangular",
+        logo_alignment: "left",
+        width,
+      });
+      setReady(true);
+    };
 
     loadGoogleScript()
       .then(() => {
-        if (cancelled || !buttonRef.current || !window.google?.accounts?.id) return;
-
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: (response) => {
-            if (response.credential) {
-              void callbackRef.current(response.credential);
-            }
-          },
-          auto_select: false,
-          cancel_on_tap_outside: true,
+        if (cancelled) return;
+        // Wait a frame so the layout width is real on mobile
+        requestAnimationFrame(() => {
+          render();
+          if (containerRef.current && typeof ResizeObserver !== "undefined") {
+            resizeObserver = new ResizeObserver(() => render());
+            resizeObserver.observe(containerRef.current);
+          }
+          window.addEventListener("resize", render);
         });
-
-        buttonRef.current.innerHTML = "";
-        const width = Math.min(buttonRef.current.offsetWidth || 320, 400);
-        window.google.accounts.id.renderButton(buttonRef.current, {
-          type: "standard",
-          theme: "outline",
-          size: "large",
-          text: label,
-          shape: "rectangular",
-          logo_alignment: "left",
-          width,
-        });
-        setReady(true);
       })
       .catch((error: unknown) => {
         if (!cancelled) {
@@ -121,6 +151,8 @@ export function GoogleSignInButton({
 
     return () => {
       cancelled = true;
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", render);
     };
   }, [clientId, label]);
 
@@ -139,7 +171,7 @@ export function GoogleSignInButton({
   }
 
   return (
-    <div className="relative w-full">
+    <div ref={containerRef} className="relative w-full max-w-full overflow-hidden">
       {!ready && (
         <Button type="button" variant="outline" className="w-full" disabled>
           Loading Google…
@@ -147,7 +179,9 @@ export function GoogleSignInButton({
       )}
       <div
         ref={buttonRef}
-        className={`flex w-full justify-center ${disabled ? "pointer-events-none opacity-60" : ""} ${ready ? "" : "absolute inset-0 overflow-hidden opacity-0"}`}
+        className={`flex w-full max-w-full justify-center overflow-hidden [&_iframe]:max-w-full ${
+          disabled ? "pointer-events-none opacity-60" : ""
+        } ${ready ? "" : "absolute inset-0 overflow-hidden opacity-0"}`}
         aria-hidden={!ready}
       />
     </div>

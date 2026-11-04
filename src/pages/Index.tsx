@@ -38,6 +38,7 @@ const Index = () => {
 
       try {
         const { items } = await listProducts({
+          category: "Agarbatti",
           sort: "newest",
           page: 1,
           limit: 4,

@@ -418,12 +418,12 @@ const AccountPage = () => {
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
 
-        <main className="flex-1 flex items-center justify-center py-12 px-4">
-          <div className="w-full max-w-4xl">
-            <Tabs defaultValue="login" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+        <main className="flex-1 flex items-center justify-center py-8 sm:py-12 px-3 sm:px-4 overflow-x-hidden">
+          <div className="w-full max-w-md sm:max-w-lg">
+            <Tabs defaultValue="login" className="space-y-4 sm:space-y-6">
+              <TabsList className="grid w-full grid-cols-2 h-11">
+                <TabsTrigger value="login" className="text-sm sm:text-base">Login</TabsTrigger>
+                <TabsTrigger value="signup" className="text-sm sm:text-base">Sign Up</TabsTrigger>
               </TabsList>
 
               {/* Login Form */}

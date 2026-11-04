@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { QuickViewModal } from "@/components/QuickViewModal";
-import { isProductPurchasable } from "@/lib/productAvailability";
+import { isDhoopCategory, isProductPurchasable } from "@/lib/productAvailability";
 import { toast } from "@/hooks/use-toast";
 
 interface ProductCardProps {
@@ -35,6 +35,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
   const navigate = useNavigate();
   const inWishlist = isInWishlist(id);
   const canPurchase = isProductPurchasable(category);
+  const hidePackaging = isDhoopCategory(category);
   const displayBadge = canPurchase ? badge : "Coming Soon";
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState<string>(image);
@@ -161,7 +162,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
             decoding="async"
             className={`w-full h-full object-cover ${lcp ? "transition-transform duration-300 group-hover:scale-105" : "transition-all duration-300 group-hover:scale-105"} ${
               imageLoading ? 'opacity-0' : 'opacity-100'
-            }`}
+            } ${hidePackaging ? "blur-2xl scale-125 brightness-95" : ""}`}
             onLoad={() => setImageLoading(false)}
             onError={(e) => {
               console.error('Image failed to load:', imageSrc, e);
@@ -170,6 +171,18 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
               setImageLoading(false);
             }}
           />
+
+          {/* Soft frost layer so Dhoop packaging cannot be read */}
+          {hidePackaging && (
+            <div
+              className="absolute inset-0 z-[1] bg-white/35 backdrop-blur-md pointer-events-none flex items-center justify-center"
+              aria-hidden
+            >
+              <span className="rounded-full bg-white/80 px-3 py-1 text-[10px] sm:text-xs font-semibold text-foreground shadow-sm">
+                Coming Soon
+              </span>
+            </div>
+          )}
           
           {/* Quick View Button - Center (appears on hover) */}
           <motion.button
@@ -177,7 +190,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
             initial={{ opacity: 0, scale: 0.8 }}
             whileHover={{ scale: 1.05 }}
             onClick={handleQuickView}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white text-primary px-4 py-2 rounded-full shadow-xl font-semibold text-sm flex items-center gap-2"
+            className="absolute top-1/2 left-1/2 z-[2] -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white text-primary px-4 py-2 rounded-full shadow-xl font-semibold text-sm flex items-center gap-2"
           >
             <Eye className="h-4 w-4" />
             Quick View
@@ -189,7 +202,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={handleToggleWishlist}
-            className={`absolute top-2 left-2 sm:top-3 sm:left-3 p-1.5 sm:p-2 rounded-full shadow-lg transition-all duration-300 ${
+            className={`absolute top-2 left-2 z-[2] sm:top-3 sm:left-3 p-1.5 sm:p-2 rounded-full shadow-lg transition-all duration-300 ${
               inWishlist 
                 ? 'bg-red-500 text-white' 
                 : 'bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500'
@@ -199,7 +212,7 @@ export const ProductCard = ({ id, name, price, originalPrice, image, badge, desc
           </motion.button>
 
           {displayBadge && (
-            <Badge className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-primary text-primary-foreground shadow-md text-[10px] sm:text-xs">
+            <Badge className="absolute top-2 right-2 z-[2] sm:top-3 sm:right-3 bg-primary text-primary-foreground shadow-md text-[10px] sm:text-xs">
               {displayBadge}
             </Badge>
           )}

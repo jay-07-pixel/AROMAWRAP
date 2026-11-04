@@ -95,10 +95,22 @@ export const QuickViewModal = ({ isOpen, onClose, product }: QuickViewModalProps
               alt={product.name}
               loading="eager"
               decoding="async"
-              className="w-full h-full object-cover min-h-[300px] md:min-h-[500px]"
+              className={`w-full h-full object-cover min-h-[300px] md:min-h-[500px] ${
+                !canPurchase ? "blur-2xl scale-125 brightness-95" : ""
+              }`}
             />
+            {!canPurchase && (
+              <div
+                className="absolute inset-0 z-[1] bg-white/35 backdrop-blur-md flex items-center justify-center"
+                aria-hidden
+              >
+                <span className="rounded-full bg-white/85 px-4 py-1.5 text-sm font-semibold text-foreground shadow-sm">
+                  Coming Soon
+                </span>
+              </div>
+            )}
             {product.badge && (
-              <Badge className="absolute top-4 right-4 bg-primary text-white px-3 py-1">
+              <Badge className="absolute top-4 right-4 z-[2] bg-primary text-white px-3 py-1">
                 {product.badge}
               </Badge>
             )}

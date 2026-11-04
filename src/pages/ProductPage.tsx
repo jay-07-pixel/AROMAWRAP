@@ -446,8 +446,20 @@ const ProductPage = () => {
                   alt={product.name}
                   loading="eager"
                   decoding="async"
-                  className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+                  className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+                    !canPurchase ? "blur-2xl scale-125 brightness-95" : ""
+                  }`}
                 />
+                {!canPurchase && (
+                  <div
+                    className="absolute inset-0 z-[1] bg-white/35 backdrop-blur-md flex items-center justify-center"
+                    aria-hidden
+                  >
+                    <span className="rounded-full bg-white/85 px-4 py-1.5 text-xs sm:text-sm font-semibold text-foreground shadow-sm">
+                      Coming Soon
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-4 gap-2">
@@ -455,7 +467,7 @@ const ProductPage = () => {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-300 bg-gray-100 ${
+                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all duration-300 bg-gray-100 ${
                       selectedImage === index
                         ? "border-primary shadow-md"
                         : "border-gray-200 hover:border-primary/50"
@@ -466,8 +478,11 @@ const ProductPage = () => {
                       alt={`${product.name} ${index + 1}`}
                       loading={index < 2 ? "eager" : "lazy"}
                       decoding="async"
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover ${!canPurchase ? "blur-xl scale-125" : ""}`}
                     />
+                    {!canPurchase && (
+                      <span className="absolute inset-0 bg-white/40 backdrop-blur-sm" aria-hidden />
+                    )}
                   </button>
                 ))}
               </div>
