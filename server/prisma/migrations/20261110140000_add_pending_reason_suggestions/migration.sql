@@ -14,17 +14,24 @@ CREATE TABLE `PendingReasonSuggestion` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Seed from any existing order pending reasons
+-- Seed from any existing order pending reasons (ONLY_FULL_GROUP_BY safe)
 INSERT INTO `PendingReasonSuggestion` (`id`, `reason`, `reasonKey`, `usageCount`, `lastUsedAt`, `createdAt`, `updatedAt`)
 SELECT
   UUID(),
-  TRIM(`statusReason`),
-  SHA2(LOWER(TRIM(`statusReason`)), 256),
-  COUNT(*),
-  MAX(`updatedAt`),
+  src.reason,
+  src.reasonKey,
+  src.usageCount,
+  src.lastUsedAt,
   NOW(3),
   NOW(3)
-FROM `Order`
-WHERE `statusReason` IS NOT NULL
-  AND TRIM(`statusReason`) <> ''
-GROUP BY TRIM(`statusReason`);
+FROM (
+  SELECT
+    TRIM(`statusReason`) AS reason,
+    SHA2(LOWER(TRIM(`statusReason`)), 256) AS reasonKey,
+    COUNT(*) AS usageCount,
+    MAX(`updatedAt`) AS lastUsedAt
+  FROM `Order`
+  WHERE `statusReason` IS NOT NULL
+    AND TRIM(`statusReason`) <> ''
+  GROUP BY TRIM(`statusReason`), SHA2(LOWER(TRIM(`statusReason`)), 256)
+) AS src;
