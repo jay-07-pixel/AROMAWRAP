@@ -186,6 +186,7 @@ model Order {
   paymentStatus           PaymentStatus        @default(PENDING)
   onlinePaymentReview     OnlinePaymentReview?
   paymentRejectionReason  String?              @db.Text
+  statusReason            String?              @db.Text
   userClaimedPaidAt       DateTime?
   shippingName            String
   shippingEmail           String?
@@ -218,6 +219,20 @@ model OrderItem {
 
   @@index([orderId])
   @@index([productId])
+}
+
+/** Saved pending reasons so staff can reuse common updates. */
+model PendingReasonSuggestion {
+  id         String   @id @default(cuid())
+  reason     String   @db.Text
+  reasonKey  String   @unique @db.VarChar(64)
+  usageCount Int      @default(1)
+  lastUsedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([usageCount])
+  @@index([lastUsedAt])
 }
 
 model Review {

@@ -44,6 +44,7 @@ export function serializeOrder(order: OrderWithItems) {
     paymentStatus: order.paymentStatus,
     onlinePaymentReview: order.onlinePaymentReview,
     paymentRejectionReason: order.paymentRejectionReason,
+    statusReason: order.statusReason,
     userClaimedPaidAt: order.userClaimedPaidAt,
     shippingAddress: {
       name: order.shippingName,

@@ -5,9 +5,13 @@ import {
   getAllAdminOrdersApi,
   getOrderByIdApi,
   getOrdersApi,
+  getPendingReasonSuggestionsApi,
   updateOnlinePaymentReviewApi,
   updateOrderStatusApi,
+  type PendingReasonSuggestion,
 } from "./orderApiService";
+
+export type { PendingReasonSuggestion };
 
 export interface OrderItem {
   productId: string;
@@ -42,6 +46,7 @@ export interface Order {
   paymentStatus: "pending" | "paid" | "failed";
   onlinePaymentReview?: "pending" | "approved" | "rejected";
   paymentRejectionReason?: string;
+  statusReason?: string;
   userClaimedPaidAt?: OrderTimestamp;
   createdAt?: OrderTimestamp;
   updatedAt?: OrderTimestamp;
@@ -103,6 +108,7 @@ function mapApiOrder(api: ApiOrder): Order {
         )
       : undefined,
     paymentRejectionReason: api.paymentRejectionReason ?? undefined,
+    statusReason: api.statusReason ?? undefined,
     userClaimedPaidAt: toTimestampLike(api.userClaimedPaidAt),
     createdAt: toTimestampLike(api.createdAt),
     updatedAt: toTimestampLike(api.updatedAt),
@@ -202,12 +208,24 @@ export const getAllOrders = async (): Promise<Order[]> => {
 
 export const updateOrderStatus = async (
   id: string,
-  status: Order["status"]
+  status: Order["status"],
+  statusReason?: string
 ): Promise<void> => {
   try {
-    await updateOrderStatusApi(id, toApiOrderStatus(status));
+    await updateOrderStatusApi(id, toApiOrderStatus(status), statusReason);
   } catch (error) {
     console.error("Error updating order status:", error);
+    throw error;
+  }
+};
+
+export const getPendingReasonSuggestions = async (): Promise<
+  PendingReasonSuggestion[]
+> => {
+  try {
+    return await getPendingReasonSuggestionsApi();
+  } catch (error) {
+    console.error("Error loading pending reason suggestions:", error);
     throw error;
   }
 };

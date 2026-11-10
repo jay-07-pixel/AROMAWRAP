@@ -13,6 +13,10 @@ import {
 } from "../../orders/schemas.js";
 import { serializeAdminOrder } from "../../orders/serializer.js";
 import {
+  listPendingReasonSuggestions,
+  rememberPendingReason,
+} from "../../orders/pendingReasons.js";
+import {
   getAdminOrderById,
   listAdminOrders,
 } from "../../orders/service.js";
@@ -53,6 +57,18 @@ adminOrdersRouter.get(
   }
 );
 
+adminOrdersRouter.get("/pending-reasons", async (_req, res, next) => {
+  try {
+    const suggestions = await listPendingReasonSuggestions();
+    res.json({
+      success: true,
+      data: { suggestions },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 adminOrdersRouter.get("/:id", async (req, res, next) => {
   try {
     const orderId = getRouteParam(req.params.id);
@@ -81,7 +97,7 @@ adminOrdersRouter.patch(
   async (req, res, next) => {
     try {
       const orderId = getRouteParam(req.params.id);
-      const { status } = req.body;
+      const { status, statusReason } = req.body;
 
       const existing = await prisma.order.findUnique({
         where: { id: orderId },
@@ -95,9 +111,18 @@ adminOrdersRouter.patch(
         return;
       }
 
+      const pendingReason =
+        status === "PENDING" && typeof statusReason === "string"
+          ? statusReason.trim()
+          : null;
+
       const order = await prisma.order.update({
         where: { id: orderId },
-        data: { status },
+        data: {
+          status,
+          // Customer-visible note while pending; clear once order moves on
+          statusReason: pendingReason,
+        },
         include: {
           items: { orderBy: { id: "asc" } },
           user: {
@@ -109,6 +134,10 @@ adminOrdersRouter.patch(
           },
         },
       });
+
+      if (pendingReason) {
+        await rememberPendingReason(pendingReason);
+      }
 
       res.json({
         success: true,

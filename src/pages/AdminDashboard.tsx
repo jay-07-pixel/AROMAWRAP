@@ -65,7 +65,15 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { isAdminUser } from "@/services/authService";
-import { getAllOrders, getOrderById, updateOrderStatus, updateOnlinePaymentReview, Order } from "@/services/orderService";
+import {
+  getAllOrders,
+  getOrderById,
+  getPendingReasonSuggestions,
+  updateOrderStatus,
+  updateOnlinePaymentReview,
+  Order,
+  type PendingReasonSuggestion,
+} from "@/services/orderService";
 import {
   addProduct,
   deleteProduct,
@@ -198,6 +206,10 @@ const AdminDashboard = () => {
   const [isEditOrderOpen, setIsEditOrderOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [newOrderStatus, setNewOrderStatus] = useState<string>("");
+  const [statusReason, setStatusReason] = useState("");
+  const [pendingReasonSuggestions, setPendingReasonSuggestions] = useState<
+    PendingReasonSuggestion[]
+  >([]);
   const [upiRejectMode, setUpiRejectMode] = useState(false);
   const [upiRejectReason, setUpiRejectReason] = useState("");
   const [upiReviewLoading, setUpiReviewLoading] = useState(false);
@@ -208,6 +220,23 @@ const AdminDashboard = () => {
     setUpiRejectMode(false);
     setUpiRejectReason("");
   }, [selectedOrder?.id]);
+
+  useEffect(() => {
+    if (!isEditOrderOpen || !isAdmin) return;
+
+    let active = true;
+    getPendingReasonSuggestions()
+      .then((suggestions) => {
+        if (active) setPendingReasonSuggestions(suggestions);
+      })
+      .catch(() => {
+        if (active) setPendingReasonSuggestions([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isEditOrderOpen, isAdmin]);
 
   useEffect(() => {
     if (!loading) {
@@ -780,6 +809,7 @@ const AdminDashboard = () => {
                                     onClick={() => {
                                       setEditingOrder(order.orderData);
                                       setNewOrderStatus(order.orderData.status);
+                                      setStatusReason(order.orderData.statusReason || "");
                                       setIsEditOrderOpen(true);
                                     }}
                                   >
@@ -1119,6 +1149,13 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
+                  {selectedOrder.status === "pending" && selectedOrder.statusReason && (
+                    <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                      <p className="font-medium">Pending reason (visible to customer)</p>
+                      <p className="mt-1">{selectedOrder.statusReason}</p>
+                    </div>
+                  )}
+
                   {/* Order Items */}
                   <div>
                     <h3 className="font-semibold mb-3">Order Items ({selectedOrder.items.length})</h3>
@@ -1303,8 +1340,17 @@ const AdminDashboard = () => {
         </Dialog>
 
         {/* Edit Order Status Dialog */}
-        <Dialog open={isEditOrderOpen} onOpenChange={setIsEditOrderOpen}>
-          <DialogContent>
+        <Dialog
+          open={isEditOrderOpen}
+          onOpenChange={(open) => {
+            setIsEditOrderOpen(open);
+            if (!open) {
+              setEditingOrder(null);
+              setStatusReason("");
+            }
+          }}
+        >
+          <DialogContent className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 max-h-[85vh] overflow-y-auto data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[50%] data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[50%]">
             {editingOrder && (
               <>
                 <DialogHeader>
@@ -1334,6 +1380,46 @@ const AdminDashboard = () => {
                     </Select>
                   </div>
 
+                  {newOrderStatus === "pending" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="status-reason">Pending reason</Label>
+                      {pendingReasonSuggestions.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground">
+                            Suggestions from previous updates — click to reuse:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {pendingReasonSuggestions.map((suggestion) => (
+                              <button
+                                key={suggestion.id}
+                                type="button"
+                                onClick={() => setStatusReason(suggestion.reason)}
+                                className={`rounded-full border px-3 py-1 text-left text-xs transition-colors ${
+                                  statusReason.trim() === suggestion.reason
+                                    ? "border-[#DC143C] bg-[#DC143C]/10 text-[#DC143C]"
+                                    : "border-border bg-muted/40 text-foreground hover:border-[#DC143C]/50"
+                                }`}
+                                title={`Used ${suggestion.usageCount} time${suggestion.usageCount === 1 ? "" : "s"}`}
+                              >
+                                {suggestion.reason}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <Textarea
+                        id="status-reason"
+                        value={statusReason}
+                        onChange={(e) => setStatusReason(e.target.value)}
+                        placeholder="e.g. Pending for packaging / waiting for stock / confirming address"
+                        className="min-h-[96px] border-2 focus-visible:ring-[#DC143C]"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        This reason is shown to the customer, and saved as a suggestion for next time.
+                      </p>
+                    </div>
+                  )}
+
                   <div className="p-4 bg-muted/30 rounded-lg">
                     <p className="text-sm text-muted-foreground mb-2">Current Status:</p>
                     <p className="font-medium">{getStatusBadge(editingOrder.status.charAt(0).toUpperCase() + editingOrder.status.slice(1))}</p>
@@ -1346,6 +1432,7 @@ const AdminDashboard = () => {
                     onClick={() => {
                       setIsEditOrderOpen(false);
                       setEditingOrder(null);
+                      setStatusReason("");
                     }}
                   >
                     Cancel
@@ -1353,26 +1440,60 @@ const AdminDashboard = () => {
                   <Button
                     onClick={async () => {
                       if (!editingOrder.id) return;
-                      
+                      const nextStatus = newOrderStatus as Order["status"];
+                      const trimmedReason = statusReason.trim();
+
+                      if (nextStatus === "pending" && !trimmedReason) {
+                        toast({
+                          title: "Reason required",
+                          description: "Please write why this order is pending. Customers will see it.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+
                       try {
-                        await updateOrderStatus(editingOrder.id, newOrderStatus as Order['status']);
-                        
-                        // Update local state
-                        setRecentOrders(prevOrders =>
-                          prevOrders.map(order =>
+                        await updateOrderStatus(
+                          editingOrder.id,
+                          nextStatus,
+                          nextStatus === "pending" ? trimmedReason : undefined
+                        );
+
+                        setRecentOrders((prevOrders) =>
+                          prevOrders.map((order) =>
                             order.id === editingOrder.id
-                              ? { ...order, status: newOrderStatus.charAt(0).toUpperCase() + newOrderStatus.slice(1), orderData: { ...order.orderData, status: newOrderStatus as Order['status'] } }
+                              ? {
+                                  ...order,
+                                  status:
+                                    nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1),
+                                  orderData: {
+                                    ...order.orderData,
+                                    status: nextStatus,
+                                    statusReason:
+                                      nextStatus === "pending" ? trimmedReason : undefined,
+                                  },
+                                }
                               : order
                           )
                         );
 
+                        if (nextStatus === "pending") {
+                          try {
+                            const suggestions = await getPendingReasonSuggestions();
+                            setPendingReasonSuggestions(suggestions);
+                          } catch {
+                            /* ignore suggestion refresh errors */
+                          }
+                        }
+
                         toast({
                           title: "Order Updated! ✅",
-                          description: `Order status has been updated to ${newOrderStatus}`,
+                          description: `Order status has been updated to ${nextStatus}`,
                         });
 
                         setIsEditOrderOpen(false);
                         setEditingOrder(null);
+                        setStatusReason("");
                       } catch (error: any) {
                         toast({
                           title: "Update Failed",

@@ -50,6 +50,17 @@ const OrderUPIPaymentNotice = ({ order }: { order: any }) => {
   return null;
 };
 
+/** Admin note when an order is held as pending */
+const OrderPendingReasonNotice = ({ order }: { order: any }) => {
+  if (order.status !== "pending" || !order.statusReason) return null;
+  return (
+    <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+      <p className="font-medium">Order update</p>
+      <p className="mt-1">{order.statusReason}</p>
+    </div>
+  );
+};
+
 const AccountPage = () => {
   const navigate = useNavigate();
   const { items: wishlistItems } = useWishlist();
@@ -889,6 +900,7 @@ const AccountPage = () => {
                             </Badge>
                           </div>
 
+                          <OrderPendingReasonNotice order={order} />
                           <OrderUPIPaymentNotice order={order} />
 
                           {/* Order Items */}
@@ -1149,6 +1161,7 @@ const AccountPage = () => {
                           </div>
                         </CardHeader>
                         <CardContent className="pt-6">
+                          <OrderPendingReasonNotice order={order} />
                           <OrderUPIPaymentNotice order={order} />
                           <div className="grid gap-4 mb-4">
                             {order.items.slice(0, 3).map((item: any, idx: number) => (

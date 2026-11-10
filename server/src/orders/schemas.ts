@@ -36,9 +36,20 @@ export const createOrderSchema = shippingFieldsSchema
     }
   });
 
-export const updateOrderStatusSchema = z.object({
-  status: z.nativeEnum(OrderStatus),
-});
+export const updateOrderStatusSchema = z
+  .object({
+    status: z.nativeEnum(OrderStatus),
+    statusReason: z.string().trim().min(1).max(1000).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status === OrderStatus.PENDING && !data.statusReason) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please explain why this order is pending",
+        path: ["statusReason"],
+      });
+    }
+  });
 
 export const updatePaymentReviewSchema = z
   .object({

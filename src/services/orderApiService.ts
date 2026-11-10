@@ -31,6 +31,7 @@ export interface ApiOrder {
   paymentStatus: string;
   onlinePaymentReview: string | null;
   paymentRejectionReason: string | null;
+  statusReason: string | null;
   userClaimedPaidAt: string | null;
   shippingAddress: ApiOrderShippingAddress;
   createdAt: string;
@@ -134,15 +135,37 @@ export async function getAdminOrderByIdApi(
   return response.data;
 }
 
+export interface PendingReasonSuggestion {
+  id: string;
+  reason: string;
+  usageCount: number;
+  lastUsedAt: string;
+}
+
+export async function getPendingReasonSuggestionsApi(): Promise<
+  PendingReasonSuggestion[]
+> {
+  const response = await apiFetch<{
+    success: true;
+    data: { suggestions: PendingReasonSuggestion[] };
+  }>("/api/admin/orders/pending-reasons");
+  return response.data.suggestions;
+}
+
 export async function updateOrderStatusApi(
   orderId: string,
-  status: string
+  status: string,
+  statusReason?: string
 ): Promise<ApiAdminOrder> {
+  const body: { status: string; statusReason?: string } = { status };
+  if (statusReason) {
+    body.statusReason = statusReason;
+  }
   const response = await apiFetch<AdminOrderResponse>(
     `/api/admin/orders/${orderId}/status`,
     {
       method: "PATCH",
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(body),
     }
   );
   return response.data;
