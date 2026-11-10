@@ -870,7 +870,7 @@ const AccountPage = () => {
                                     : "Date not available"}
                                 </span>
                               </div>
-                              <p className="text-xs text-muted-foreground">Order #{order.id?.substring(0, 8)}...</p>
+                              <p className="text-xs text-muted-foreground">Order {order.orderNumber || order.id}</p>
                             </div>
                             <Badge
                               className={`self-start px-3 py-1 text-xs shrink-0 ${
@@ -1111,7 +1111,7 @@ const AccountPage = () => {
                               <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center text-base sm:text-lg">
                                 <span className="flex items-center gap-2 min-w-0">
                                   <Package className="h-5 w-5 text-[#DC143C] shrink-0" />
-                                  <span className="truncate">Order {order.id}</span>
+                                  <span className="truncate">Order {order.orderNumber || order.id}</span>
                                 </span>
                               </CardTitle>
                               <CardDescription className="flex items-center gap-2 mt-2">

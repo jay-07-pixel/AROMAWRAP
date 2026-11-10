@@ -190,14 +190,14 @@ const CheckoutPage = () => {
         paymentMethod: "cod",
       };
 
-      const orderId = await createOrder(orderData);
+      const { orderNumber } = await createOrder(orderData);
 
       // Clear cart silently after successful order (don't show "Cart cleared" toast)
       await clearCart(true);
       
       toast({
         title: "Order Placed Successfully! 🎉",
-        description: `Your order #${orderId} of ₹${finalTotal.toFixed(2)} has been confirmed. We'll send you a confirmation email shortly.`,
+        description: `Your order ${orderNumber} of ₹${finalTotal.toFixed(2)} has been confirmed. We'll send you a confirmation email shortly.`,
       });
       
       setIsProcessing(false);
@@ -217,7 +217,7 @@ const CheckoutPage = () => {
   const handleUpiPaymentConfirmed = async () => {
     if (!pendingOrderData) return;
 
-    const orderId = await createOrder({
+    const { orderNumber } = await createOrder({
       ...pendingOrderData,
       userClaimedPaidAt: new Date(),
     });
@@ -225,7 +225,7 @@ const CheckoutPage = () => {
 
     toast({
       title: "Order submitted",
-      description: `Order #${orderId} is placed. We will verify your UPI payment shortly. You will see updates on this page.`,
+      description: `Order ${orderNumber} is placed. We will verify your UPI payment shortly. You will see updates on this page.`,
     });
 
     setShowUpiModal(false);

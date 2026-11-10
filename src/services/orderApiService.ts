@@ -22,6 +22,7 @@ export interface ApiOrderShippingAddress {
 
 export interface ApiOrder {
   id: string;
+  orderNumber: string;
   userId: string;
   items: ApiOrderItem[];
   total: number;

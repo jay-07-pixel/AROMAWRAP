@@ -24,6 +24,7 @@ export interface OrderTimestamp {
 
 export interface Order {
   id?: string;
+  orderNumber?: string;
   userId: string;
   items: OrderItem[];
   total: number;
@@ -74,6 +75,7 @@ function toLowerEnum<T extends string>(value: string): T {
 function mapApiOrder(api: ApiOrder): Order {
   return {
     id: api.id,
+    orderNumber: api.orderNumber,
     userId: api.userId,
     items: api.items.map((item) => ({
       productId: item.productId,
@@ -115,7 +117,9 @@ function toApiOrderStatus(status: Order["status"]) {
   return status.toUpperCase();
 }
 
-export const createOrder = async (input: CreateOrderInput): Promise<string> => {
+export const createOrder = async (
+  input: CreateOrderInput
+): Promise<{ id: string; orderNumber: string }> => {
   try {
     const order = await createOrderApi({
       shippingName: input.shippingName,
@@ -128,7 +132,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<string> => {
       paymentMethod: toApiPaymentMethod(input.paymentMethod),
       userClaimedPaidAt: input.userClaimedPaidAt?.toISOString(),
     });
-    return order.id;
+    return { id: order.id, orderNumber: order.orderNumber };
   } catch (error) {
     console.error("Error creating order:", error);
     throw error;

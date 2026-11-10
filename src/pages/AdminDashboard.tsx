@@ -263,6 +263,7 @@ const AdminDashboard = () => {
 
           return {
             id: order.id || `ORD-${Date.now()}`,
+            orderNumber: order.orderNumber || order.id || `AW-????`,
             customer: order.shippingAddress.name,
             email: order.shippingAddress.email || order.shippingAddress.phone,
             product: productName,
@@ -748,7 +749,7 @@ const AdminDashboard = () => {
                         ) : recentOrders.length > 0 ? (
                           recentOrders.map((order) => (
                           <TableRow key={order.id}>
-                            <TableCell className="font-medium">{order.id}</TableCell>
+                            <TableCell className="font-medium">{order.orderNumber}</TableCell>
                             <TableCell>
                               <div>
                                 <p className="font-medium">{order.customer}</p>
@@ -1098,7 +1099,7 @@ const AdminDashboard = () => {
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Package className="h-5 w-5 text-[#DC143C]" />
-                    Order Details - {selectedOrder.id}
+                    Order Details - {selectedOrder.orderNumber || selectedOrder.id}
                   </DialogTitle>
                   <DialogDescription>
                     Complete order information and customer details
@@ -1312,7 +1313,7 @@ const AdminDashboard = () => {
                     Update Order Status
                   </DialogTitle>
                   <DialogDescription>
-                    Change the status of order {editingOrder.id}
+                    Change the status of order {editingOrder.orderNumber || editingOrder.id}
                   </DialogDescription>
                 </DialogHeader>
 

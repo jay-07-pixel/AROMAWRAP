@@ -35,6 +35,7 @@ export function serializeOrder(order: OrderWithItems) {
 
   return {
     id: order.id,
+    orderNumber: order.orderNumber,
     userId: order.userId,
     items,
     total: decimalToNumber(order.total) ?? 0,

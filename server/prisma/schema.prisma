@@ -177,6 +177,7 @@ model WishlistItem {
 
 model Order {
   id                      String               @id @default(cuid())
+  orderNumber             String               @unique
   userId                  String
   user                    User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   total                   Decimal              @db.Decimal(10, 2)

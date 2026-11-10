@@ -5,6 +5,7 @@ import {
   Prisma,
 } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
+import { allocateOrderNumber } from "./orderNumber.js";
 import type { AdminListOrdersQuery, CreateOrderInput } from "./schemas.js";
 
 const orderInclude = {
@@ -68,6 +69,7 @@ export function buildAdminOrderWhere(
     andFilters.push({
       OR: [
         { id: { contains: query.search } },
+        { orderNumber: { contains: query.search } },
         { shippingName: { contains: query.search } },
         { shippingEmail: { contains: query.search } },
         { shippingPhone: { contains: query.search } },
@@ -155,8 +157,11 @@ export async function createOrderFromCart(
 
     const isOnline = input.paymentMethod === PaymentMethod.ONLINE;
 
+    const orderNumber = await allocateOrderNumber(tx);
+
     const order = await tx.order.create({
       data: {
+        orderNumber,
         userId,
         total,
         paymentMethod: input.paymentMethod,
