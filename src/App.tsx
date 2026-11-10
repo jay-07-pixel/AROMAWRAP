@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
-import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import Index from "./pages/Index";
@@ -28,7 +27,6 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-        <RecentlyViewedProvider>
           <WishlistProvider>
             <CartProvider>
               <ScrollToTop />
@@ -51,7 +49,6 @@ const App = () => (
               </Routes>
             </CartProvider>
           </WishlistProvider>
-        </RecentlyViewedProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

@@ -18,7 +18,6 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/context/CartContext";
-import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 import {
   getProduct,
   getProductPath,
@@ -92,7 +91,6 @@ const ProductPage = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
-  const { addProduct } = useRecentlyViewed();
   const { user } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -162,20 +160,6 @@ const ProductPage = () => {
       navigate(getProductPath(product), { replace: true });
     }
   }, [product, productId, navigate]);
-
-  useEffect(() => {
-    if (product) {
-      addProduct({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        originalPrice: product.originalPrice,
-        image: product.image,
-        badge: product.badge,
-      });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product?.id]);
 
   useEffect(() => {
     if (!product?.id) {

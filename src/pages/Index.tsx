@@ -9,10 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Leaf, Recycle, Heart, Truck } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
 import { listProducts, type ProductListItem } from "@/services/productService";
-import { clearLegacyProductStorage, isValidStoreProductRef } from "@/lib/legacyProducts";
+import { clearLegacyProductStorage } from "@/lib/legacyProducts";
 import circularBestsellers from "@/assets/circular-bestsellers.jpg";
 import circularDhoop from "@/assets/circular-dhoop.jpg";
 
@@ -23,7 +22,6 @@ const Index = () => {
   const [bestSellers, setBestSellers] = useState<ProductListItem[]>([]);
   const [isLoadingBestSellers, setIsLoadingBestSellers] = useState(true);
   const [bestSellersError, setBestSellersError] = useState<string | null>(null);
-  const { products: recentlyViewed } = useRecentlyViewed();
 
   useEffect(() => {
     clearLegacyProductStorage();
@@ -225,41 +223,6 @@ const Index = () => {
         </div>
       </section>
 
-
-      {/* Recently Viewed Section */}
-      {recentlyViewed.filter(isValidStoreProductRef).length > 0 && (
-        <section className="py-6 sm:py-8 bg-gradient-to-b from-gray-50 to-white">
-          <div className="container mx-auto px-3 sm:px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="text-center mb-8"
-            >
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-primary">
-                Recently Viewed
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Products you've recently checked out
-              </p>
-            </motion.div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
-              {recentlyViewed.filter(isValidStoreProductRef).slice(0, 5).map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <ProductCard {...product} />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Why Choose Us Section */}
       <motion.section 
