@@ -1350,10 +1350,10 @@ const AdminDashboard = () => {
             }
           }}
         >
-          <DialogContent className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 max-h-[85vh] overflow-y-auto data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[50%] data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[50%]">
+          <DialogContent className="!flex left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg max-h-[calc(100dvh-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-0 overflow-hidden p-0 sm:rounded-lg">
             {editingOrder && (
               <>
-                <DialogHeader>
+                <DialogHeader className="shrink-0 space-y-1.5 border-b px-6 py-4 pr-12 text-left">
                   <DialogTitle className="flex items-center gap-2">
                     <Edit className="h-5 w-5 text-[#DC143C]" />
                     Update Order Status
@@ -1363,14 +1363,14 @@ const AdminDashboard = () => {
                   </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 py-4">
+                <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="order-status">Order Status</Label>
                     <Select value={newOrderStatus} onValueChange={setNewOrderStatus}>
                       <SelectTrigger className="border-2 focus:border-[#DC143C]">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper" className="z-[60]">
                         <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="processing">Processing</SelectItem>
                         <SelectItem value="shipped">Shipped</SelectItem>
@@ -1388,7 +1388,7 @@ const AdminDashboard = () => {
                           <p className="text-xs text-muted-foreground">
                             Suggestions from previous updates — click to reuse:
                           </p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex max-h-28 flex-wrap gap-2 overflow-y-auto">
                             {pendingReasonSuggestions.map((suggestion) => (
                               <button
                                 key={suggestion.id}
@@ -1412,7 +1412,7 @@ const AdminDashboard = () => {
                         value={statusReason}
                         onChange={(e) => setStatusReason(e.target.value)}
                         placeholder="e.g. Pending for packaging / waiting for stock / confirming address"
-                        className="min-h-[96px] border-2 focus-visible:ring-[#DC143C]"
+                        className="min-h-[72px] max-h-32 border-2 focus-visible:ring-[#DC143C]"
                       />
                       <p className="text-xs text-muted-foreground">
                         This reason is shown to the customer, and saved as a suggestion for next time.
@@ -1420,13 +1420,13 @@ const AdminDashboard = () => {
                     </div>
                   )}
 
-                  <div className="p-4 bg-muted/30 rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-2">Current Status:</p>
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <p className="mb-2 text-sm text-muted-foreground">Current Status:</p>
                     <p className="font-medium">{getStatusBadge(editingOrder.status.charAt(0).toUpperCase() + editingOrder.status.slice(1))}</p>
                   </div>
                 </div>
 
-                <DialogFooter>
+                <DialogFooter className="shrink-0 gap-2 border-t bg-background px-6 py-4 sm:space-x-2">
                   <Button
                     variant="outline"
                     onClick={() => {
