@@ -1350,9 +1350,15 @@ const AdminDashboard = () => {
             }
           }}
         >
-          <DialogContent className="!flex left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg max-h-[calc(100dvh-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-0 overflow-hidden p-0 sm:rounded-lg">
+          {/*
+            Full-viewport flex center (same pattern as UpiPaymentModal).
+            Avoids translate/slide animation bugs that park the panel at the bottom.
+          */}
+          <DialogContent
+            className="!fixed !inset-0 !left-0 !top-0 !m-0 !flex !h-[100dvh] !min-h-0 !w-full !max-w-none !translate-x-0 !translate-y-0 items-center justify-center overflow-y-auto overflow-x-hidden border-0 bg-transparent p-3 shadow-none sm:p-4 data-[state=open]:zoom-in-100 data-[state=closed]:zoom-out-100 data-[state=open]:slide-in-from-left-0 data-[state=open]:slide-in-from-top-0 data-[state=closed]:slide-out-to-left-0 data-[state=closed]:slide-out-to-top-0"
+          >
             {editingOrder && (
-              <>
+              <div className="relative flex w-full max-w-lg flex-col overflow-hidden rounded-lg border bg-background shadow-lg max-h-[min(88dvh,calc(100dvh-2rem))]">
                 <DialogHeader className="shrink-0 space-y-1.5 border-b px-6 py-4 pr-12 text-left">
                   <DialogTitle className="flex items-center gap-2">
                     <Edit className="h-5 w-5 text-[#DC143C]" />
@@ -1507,7 +1513,7 @@ const AdminDashboard = () => {
                     Update Status
                   </Button>
                 </DialogFooter>
-              </>
+              </div>
             )}
           </DialogContent>
         </Dialog>
