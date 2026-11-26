@@ -7,6 +7,7 @@ import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { SnowfallEffect } from "@/components/SnowfallEffect";
 import Index from "./pages/Index";
 import CategoryPage from "./pages/CategoryPage";
 import ProductPage from "./pages/ProductPage";
@@ -30,6 +31,7 @@ const App = () => (
           <WishlistProvider>
             <CartProvider>
               <ScrollToTop />
+              <SnowfallEffect />
               <Toaster />
               <Sonner />
               <Routes>
