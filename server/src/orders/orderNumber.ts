@@ -7,29 +7,26 @@ function formatOrderNumber(sequence: number): string {
   return `${ORDER_NUMBER_PREFIX}${sequence}`;
 }
 
-/** Allocate the next human-readable order number (AW-1001, AW-1002, ...). */
+/**
+ * Allocate the next human-readable order number (AW-1001, AW-1002, ...).
+ * Paired with a unique-constraint retry in createOrderFromCart so concurrent
+ * checkouts never fail with a duplicate orderNumber collision.
+ */
 export async function allocateOrderNumber(
-  tx: Prisma.TransactionClient
+  tx: Prisma.TransactionClient,
+  offset = 0
 ): Promise<string> {
   const rows = await tx.$queryRaw<Array<{ maxSeq: bigint | number | null }>>`
     SELECT MAX(CAST(SUBSTRING(orderNumber, 4) AS UNSIGNED)) AS maxSeq
     FROM \`Order\`
     WHERE orderNumber LIKE 'AW-%'
+    FOR UPDATE
   `;
 
   const rawMax = rows[0]?.maxSeq;
   const maxSeq =
     rawMax == null ? ORDER_NUMBER_START - 1 : Number(rawMax);
-  let next = Math.max(ORDER_NUMBER_START, maxSeq + 1);
+  const next = Math.max(ORDER_NUMBER_START, maxSeq + 1) + offset;
 
-  for (let attempt = 0; attempt < 8; attempt += 1) {
-    const candidate = formatOrderNumber(next + attempt);
-    const exists = await tx.order.findUnique({
-      where: { orderNumber: candidate },
-      select: { id: true },
-    });
-    if (!exists) return candidate;
-  }
-
-  return formatOrderNumber(ORDER_NUMBER_START + (Date.now() % 100000));
+  return formatOrderNumber(next);
 }

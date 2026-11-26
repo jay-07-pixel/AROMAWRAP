@@ -21,10 +21,19 @@ const shippingFieldsSchema = z.object({
   shippingPincode: z.string().trim().min(1).max(20),
 });
 
+const upiTransactionRefSchema = z
+  .string()
+  .trim()
+  .regex(
+    /^[A-Za-z0-9]{10,35}$/,
+    "Enter a valid UPI UTR / Transaction ID (10–35 letters or digits)"
+  );
+
 export const createOrderSchema = shippingFieldsSchema
   .extend({
     paymentMethod: z.nativeEnum(PaymentMethod),
     userClaimedPaidAt: z.coerce.date().optional(),
+    upiTransactionRef: upiTransactionRefSchema.optional(),
   })
   .superRefine((data, ctx) => {
     if (data.paymentMethod === PaymentMethod.COD && data.userClaimedPaidAt) {
@@ -32,6 +41,20 @@ export const createOrderSchema = shippingFieldsSchema
         code: z.ZodIssueCode.custom,
         message: "userClaimedPaidAt is only allowed for ONLINE payments",
         path: ["userClaimedPaidAt"],
+      });
+    }
+    if (data.paymentMethod === PaymentMethod.COD && data.upiTransactionRef) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "upiTransactionRef is only allowed for ONLINE payments",
+        path: ["upiTransactionRef"],
+      });
+    }
+    if (data.paymentMethod === PaymentMethod.ONLINE && !data.upiTransactionRef) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please enter your UPI UTR / Transaction ID after paying",
+        path: ["upiTransactionRef"],
       });
     }
   });

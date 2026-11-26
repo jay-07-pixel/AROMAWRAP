@@ -8,6 +8,7 @@ import {
   getCartForUser,
   getOrCreateCart,
 } from "../cart/service.js";
+import { writeLimiter } from "../middleware/rateLimit.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validateBody } from "../middleware/validate.js";
 
@@ -35,6 +36,7 @@ cartRouter.get("/", async (req, res, next) => {
 
 cartRouter.post(
   "/items",
+  writeLimiter,
   validateBody(addCartItemSchema),
   async (req, res, next) => {
     try {
@@ -62,6 +64,14 @@ cartRouter.post(
         return;
       }
 
+      if (product.stock <= 0) {
+        res.status(409).json({
+          success: false,
+          error: `"${product.name}" is currently out of stock.`,
+        });
+        return;
+      }
+
       const cart = await getOrCreateCart(userId);
       const existingItem = await prisma.cartItem.findUnique({
         where: {
@@ -72,11 +82,23 @@ cartRouter.post(
         },
       });
 
+      const desiredQuantity = Math.min(
+        (existingItem?.quantity ?? 0) + quantity,
+        MAX_LINE_QUANTITY
+      );
+      if (desiredQuantity > product.stock) {
+        res.status(409).json({
+          success: false,
+          error: `Only ${product.stock} left in stock for "${product.name}".`,
+        });
+        return;
+      }
+
       if (existingItem) {
         await prisma.cartItem.update({
           where: { id: existingItem.id },
           data: {
-            quantity: Math.min(existingItem.quantity + quantity, MAX_LINE_QUANTITY),
+            quantity: desiredQuantity,
             unitPrice: product.price,
           },
         });
@@ -85,7 +107,7 @@ cartRouter.post(
           data: {
             cartId: cart.id,
             productId,
-            quantity,
+            quantity: desiredQuantity,
             unitPrice: product.price,
             name: product.name,
             image: getPrimaryImageUrl(product),
@@ -108,6 +130,7 @@ cartRouter.post(
 
 cartRouter.patch(
   "/items/:id",
+  writeLimiter,
   validateBody(updateCartItemSchema),
   async (req, res, next) => {
     try {
@@ -120,6 +143,27 @@ cartRouter.patch(
         res.status(404).json({
           success: false,
           error: "Cart item not found",
+        });
+        return;
+      }
+
+      const product = await prisma.product.findUnique({
+        where: { id: item.productId },
+        select: { name: true, stock: true },
+      });
+
+      if (!product || product.stock <= 0) {
+        res.status(409).json({
+          success: false,
+          error: "This product is currently out of stock.",
+        });
+        return;
+      }
+
+      if (quantity > product.stock) {
+        res.status(409).json({
+          success: false,
+          error: `Only ${product.stock} left in stock for "${product.name}".`,
         });
         return;
       }
@@ -142,7 +186,7 @@ cartRouter.patch(
   }
 );
 
-cartRouter.delete("/items/:id", async (req, res, next) => {
+cartRouter.delete("/items/:id", writeLimiter, async (req, res, next) => {
   try {
     const userId = req.user!.id;
     const itemId = getRouteParam(req.params.id);
@@ -169,7 +213,7 @@ cartRouter.delete("/items/:id", async (req, res, next) => {
   }
 });
 
-cartRouter.delete("/", async (req, res, next) => {
+cartRouter.delete("/", writeLimiter, async (req, res, next) => {
   try {
     const userId = req.user!.id;
     const cart = await getOrCreateCart(userId);

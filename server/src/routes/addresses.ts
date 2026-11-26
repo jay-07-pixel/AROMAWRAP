@@ -11,6 +11,7 @@ import {
   setDefaultAddress,
   updateAddress,
 } from "../addresses/service.js";
+import { writeLimiter } from "../middleware/rateLimit.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validateBody } from "../middleware/validate.js";
 
@@ -36,7 +37,7 @@ addressesRouter.get("/", async (req, res, next) => {
   }
 });
 
-addressesRouter.post("/", validateBody(createAddressSchema), async (req, res, next) => {
+addressesRouter.post("/", writeLimiter, validateBody(createAddressSchema), async (req, res, next) => {
   try {
     const address = await createAddress(req.user!.id, req.body);
     res.status(201).json({
@@ -50,6 +51,7 @@ addressesRouter.post("/", validateBody(createAddressSchema), async (req, res, ne
 
 addressesRouter.patch(
   "/:id/default",
+  writeLimiter,
   async (req, res, next) => {
     try {
       const addressId = getRouteParam(req.params.id);
@@ -75,6 +77,7 @@ addressesRouter.patch(
 
 addressesRouter.patch(
   "/:id",
+  writeLimiter,
   validateBody(updateAddressSchema),
   async (req, res, next) => {
     try {
@@ -99,7 +102,7 @@ addressesRouter.patch(
   }
 );
 
-addressesRouter.delete("/:id", async (req, res, next) => {
+addressesRouter.delete("/:id", writeLimiter, async (req, res, next) => {
   try {
     const addressId = getRouteParam(req.params.id);
     const address = await deleteAddress(req.user!.id, addressId);

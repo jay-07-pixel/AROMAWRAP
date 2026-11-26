@@ -7,6 +7,7 @@ import {
   resolveUploadFilePath,
   toPublicUrl,
 } from "../uploads/paths.js";
+import { verifyUploadedImageFile } from "../uploads/verifyImage.js";
 import {
   handleMulterError,
   productImagesUpload,
@@ -35,23 +36,45 @@ uploadsRouter.post(
       next();
     });
   },
-  (req, res) => {
-    const files = req.files as Express.Multer.File[] | undefined;
+  async (req, res, next) => {
+    try {
+      const files = req.files as Express.Multer.File[] | undefined;
 
-    if (!files || files.length === 0) {
-      res.status(400).json({
-        success: false,
-        error: "At least one image is required",
+      if (!files || files.length === 0) {
+        res.status(400).json({
+          success: false,
+          error: "At least one image is required",
+        });
+        return;
+      }
+
+      for (const file of files) {
+        const isValid = await verifyUploadedImageFile(file.path, file.mimetype);
+        if (!isValid) {
+          await Promise.all(
+            files.map((f) =>
+              deleteUploadFile(toPublicUrl("products", f.filename), "products").catch(
+                () => false
+              )
+            )
+          );
+          res.status(400).json({
+            success: false,
+            error: "One or more files are not valid JPG, PNG, or WEBP images",
+          });
+          return;
+        }
+      }
+
+      res.status(201).json({
+        success: true,
+        data: files.map((file) => ({
+          url: toPublicUrl("products", file.filename),
+        })),
       });
-      return;
+    } catch (error) {
+      next(error);
     }
-
-    res.status(201).json({
-      success: true,
-      data: files.map((file) => ({
-        url: toPublicUrl("products", file.filename),
-      })),
-    });
   }
 );
 
@@ -117,8 +140,18 @@ uploadsRouter.post(
         return;
       }
 
-      const userId = req.user!.id;
       const url = toPublicUrl("users", file.filename);
+      const isValid = await verifyUploadedImageFile(file.path, file.mimetype);
+      if (!isValid) {
+        await deleteUploadFile(url, "users").catch(() => false);
+        res.status(400).json({
+          success: false,
+          error: "Uploaded file is not a valid JPG, PNG, or WEBP image",
+        });
+        return;
+      }
+
+      const userId = req.user!.id;
       const existingUser = await prisma.user.findUnique({
         where: { id: userId },
         select: { photoUrl: true },

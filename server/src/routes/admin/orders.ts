@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   OnlinePaymentReview,
+  OrderStatus,
   PaymentMethod,
   PaymentStatus,
 } from "@prisma/client";
@@ -21,6 +22,7 @@ import {
   listAdminOrders,
 } from "../../orders/service.js";
 import { requireAdmin } from "../../middleware/requireAdmin.js";
+import { AppError } from "../../middleware/errorHandler.js";
 import { validateBody, validateQuery } from "../../middleware/validate.js";
 
 export const adminOrdersRouter = Router();
@@ -101,6 +103,7 @@ adminOrdersRouter.patch(
 
       const existing = await prisma.order.findUnique({
         where: { id: orderId },
+        include: { items: true },
       });
 
       if (!existing) {
@@ -116,23 +119,57 @@ adminOrdersRouter.patch(
           ? statusReason.trim()
           : null;
 
-      const order = await prisma.order.update({
-        where: { id: orderId },
-        data: {
-          status,
-          // Customer-visible note while pending; clear once order moves on
-          statusReason: pendingReason,
-        },
-        include: {
-          items: { orderBy: { id: "asc" } },
-          user: {
-            select: {
-              id: true,
-              email: true,
-              displayName: true,
+      const movingToCancelled =
+        existing.status !== OrderStatus.CANCELLED &&
+        status === OrderStatus.CANCELLED;
+      const restoringFromCancelled =
+        existing.status === OrderStatus.CANCELLED &&
+        status !== OrderStatus.CANCELLED;
+
+      const order = await prisma.$transaction(async (tx) => {
+        if (movingToCancelled) {
+          for (const item of existing.items) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
+        } else if (restoringFromCancelled) {
+          for (const item of existing.items) {
+            const decremented = await tx.product.updateMany({
+              where: {
+                id: item.productId,
+                stock: { gte: item.quantity },
+              },
+              data: { stock: { decrement: item.quantity } },
+            });
+            if (decremented.count === 0) {
+              throw new AppError(
+                409,
+                `Not enough stock to re-open this order for "${item.productNameSnapshot}"`
+              );
+            }
+          }
+        }
+
+        return tx.order.update({
+          where: { id: orderId },
+          data: {
+            status,
+            // Customer-visible note while pending; clear once order moves on
+            statusReason: pendingReason,
+          },
+          include: {
+            items: { orderBy: { id: "asc" } },
+            user: {
+              select: {
+                id: true,
+                email: true,
+                displayName: true,
+              },
             },
           },
-        },
+        });
       });
 
       if (pendingReason) {

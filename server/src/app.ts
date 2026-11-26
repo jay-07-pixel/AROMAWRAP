@@ -3,6 +3,8 @@ import express from "express";
 import session from "express-session";
 import helmet from "helmet";
 import { env } from "./lib/env.js";
+import { PrismaSessionStore } from "./lib/sessionStore.js";
+import { csrfOriginCheck } from "./middleware/csrfOrigin.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
 import { apiLimiter } from "./middleware/rateLimit.js";
@@ -33,6 +35,7 @@ export function createApp() {
 
   app.use(
     session({
+      store: new PrismaSessionStore(),
       name: env.sessionName,
       secret: env.sessionSecret,
       resave: false,
@@ -59,7 +62,7 @@ export function createApp() {
       },
     })
   );
-  app.use("/api", apiLimiter, apiRouter);
+  app.use("/api", apiLimiter, csrfOriginCheck, apiRouter);
 
   app.use(notFound);
   app.use(errorHandler);

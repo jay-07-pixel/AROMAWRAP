@@ -1,6 +1,9 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
+import { AppError } from "../middleware/errorHandler.js";
 import type { CreateAddressInput, UpdateAddressInput } from "./schemas.js";
+
+const MAX_ADDRESSES_PER_USER = 10;
 
 type PrismaTx = Prisma.TransactionClient;
 
@@ -27,6 +30,12 @@ async function clearDefaultAddresses(userId: string, tx: PrismaTx) {
 export async function createAddress(userId: string, input: CreateAddressInput) {
   return prisma.$transaction(async (tx) => {
     const existingCount = await tx.address.count({ where: { userId } });
+    if (existingCount >= MAX_ADDRESSES_PER_USER) {
+      throw new AppError(
+        400,
+        `You can save up to ${MAX_ADDRESSES_PER_USER} addresses. Please delete an older address first.`
+      );
+    }
     const shouldBeDefault = input.isDefault || existingCount === 0;
 
     if (shouldBeDefault) {

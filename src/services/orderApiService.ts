@@ -32,6 +32,7 @@ export interface ApiOrder {
   onlinePaymentReview: string | null;
   paymentRejectionReason: string | null;
   statusReason: string | null;
+  upiTransactionRef: string | null;
   userClaimedPaidAt: string | null;
   shippingAddress: ApiOrderShippingAddress;
   createdAt: string;
@@ -56,6 +57,7 @@ export interface CreateOrderRequest {
   shippingPincode: string;
   paymentMethod: "COD" | "ONLINE";
   userClaimedPaidAt?: string;
+  upiTransactionRef?: string;
 }
 
 type OrderResponse = {

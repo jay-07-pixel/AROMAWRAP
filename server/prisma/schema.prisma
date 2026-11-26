@@ -57,14 +57,28 @@ model User {
 }
 
 model PasswordResetOtp {
-  id        String    @id @default(cuid())
-  email     String
-  otpHash   String
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
+  id             String    @id @default(cuid())
+  email          String
+  otpHash        String
+  failedAttempts Int       @default(0)
+  expiresAt      DateTime
+  usedAt         DateTime?
+  createdAt      DateTime  @default(now())
 
   @@index([email])
+  @@index([expiresAt])
+}
+
+/** Persistent Express sessions stored in MySQL so restarts keep logins and password resets can revoke sessions. */
+model Session {
+  sid       String   @id @db.VarChar(191)
+  userId    String?
+  data      String   @db.Text
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
   @@index([expiresAt])
 }
 
@@ -187,6 +201,7 @@ model Order {
   onlinePaymentReview     OnlinePaymentReview?
   paymentRejectionReason  String?              @db.Text
   statusReason            String?              @db.Text
+  upiTransactionRef       String?              @db.VarChar(64)
   userClaimedPaidAt       DateTime?
   shippingName            String
   shippingEmail           String?

@@ -8,6 +8,7 @@ import {
   getOrCreateWishlist,
   getWishlistForUser,
 } from "../wishlist/service.js";
+import { writeLimiter } from "../middleware/rateLimit.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validateBody } from "../middleware/validate.js";
 
@@ -35,6 +36,7 @@ wishlistRouter.get("/", async (req, res, next) => {
 
 wishlistRouter.post(
   "/items",
+  writeLimiter,
   validateBody(addWishlistItemSchema),
   async (req, res, next) => {
     try {
@@ -98,7 +100,7 @@ wishlistRouter.post(
   }
 );
 
-wishlistRouter.delete("/items/:id", async (req, res, next) => {
+wishlistRouter.delete("/items/:id", writeLimiter, async (req, res, next) => {
   try {
     const userId = req.user!.id;
     const itemId = getRouteParam(req.params.id);
@@ -125,7 +127,7 @@ wishlistRouter.delete("/items/:id", async (req, res, next) => {
   }
 });
 
-wishlistRouter.delete("/", async (req, res, next) => {
+wishlistRouter.delete("/", writeLimiter, async (req, res, next) => {
   try {
     const userId = req.user!.id;
     const wishlist = await getOrCreateWishlist(userId);

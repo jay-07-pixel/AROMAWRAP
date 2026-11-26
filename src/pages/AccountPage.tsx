@@ -26,7 +26,10 @@ const OrderUPIPaymentNotice = ({ order }: { order: any }) => {
   if (order.onlinePaymentReview === "pending") {
     return (
       <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-        You said you paid via UPI. The store is verifying your payment. You will see an update here soon.
+        <p>You said you paid via UPI. The store is verifying your payment. You will see an update here soon.</p>
+        {order.upiTransactionRef ? (
+          <p className="mt-1 font-mono text-xs">UTR: {order.upiTransactionRef}</p>
+        ) : null}
       </div>
     );
   }

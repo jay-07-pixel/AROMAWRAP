@@ -214,18 +214,19 @@ const CheckoutPage = () => {
   };
 
   // Called after user confirms UPI payment inside the modal
-  const handleUpiPaymentConfirmed = async () => {
+  const handleUpiPaymentConfirmed = async (upiTransactionRef: string) => {
     if (!pendingOrderData) return;
 
     const { orderNumber } = await createOrder({
       ...pendingOrderData,
       userClaimedPaidAt: new Date(),
+      upiTransactionRef,
     });
     await clearCart(true);
 
     toast({
       title: "Order submitted",
-      description: `Order ${orderNumber} is placed. We will verify your UPI payment shortly. You will see updates on this page.`,
+      description: `Order ${orderNumber} is placed (UTR: ${upiTransactionRef}). We will verify your UPI payment shortly.`,
     });
 
     setShowUpiModal(false);

@@ -101,6 +101,13 @@ export async function signInOrRegisterWithGoogle(credential: string): Promise<{
   });
 
   if (byEmail) {
+    if (byEmail.role === "ADMIN" && !byEmail.googleId) {
+      throw new GoogleAuthError(
+        "Admin accounts must sign in with email and password.",
+        403
+      );
+    }
+
     if (byEmail.googleId && byEmail.googleId !== google.googleId) {
       throw new GoogleAuthError("This email is already linked to a different Google account.");
     }

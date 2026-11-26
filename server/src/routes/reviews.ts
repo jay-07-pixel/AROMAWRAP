@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { OrderStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { writeLimiter } from "../middleware/rateLimit.js";
 import { requireAuth } from "../middleware/requireAuth.js";
@@ -92,10 +93,42 @@ reviewsRouter.post(
     try {
       const productId = getRouteParam(req.params.productId);
 
-      if (!(await productExists(productId))) {
+      const product = await prisma.product.findUnique({
+        where: { id: productId },
+        select: { id: true, category: true },
+      });
+
+      if (!product) {
         res.status(404).json({
           success: false,
           error: "Product not found",
+        });
+        return;
+      }
+
+      if (product.category.toLowerCase().includes("dhoop")) {
+        res.status(409).json({
+          success: false,
+          error: "Reviews are not open for Coming Soon products yet.",
+        });
+        return;
+      }
+
+      const purchased = await prisma.orderItem.findFirst({
+        where: {
+          productId,
+          order: {
+            userId: req.user!.id,
+            status: { not: OrderStatus.CANCELLED },
+          },
+        },
+        select: { id: true },
+      });
+
+      if (!purchased) {
+        res.status(403).json({
+          success: false,
+          error: "Only customers who have ordered this product can leave a review.",
         });
         return;
       }

@@ -96,12 +96,9 @@ authRouter.post("/login", loginLimiter, loginEmailLimiter, validateBody(loginSch
 
     const isValid = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
     if (!user || !user.passwordHash || !isValid) {
-      const googleOnly = Boolean(user && !user.passwordHash && user.googleId);
       res.status(401).json({
         success: false,
-        error: googleOnly
-          ? "This account uses Google Sign-In. Please continue with Google."
-          : "Invalid email or password",
+        error: "Invalid email or password",
       });
       return;
     }

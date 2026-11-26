@@ -3,6 +3,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Copy, Smartphone, AlertCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -21,9 +23,11 @@ interface UpiPaymentModalProps {
   open: boolean;
   amount: number;
   orderId?: string;
-  onConfirmPayment: () => Promise<void>;
+  onConfirmPayment: (upiTransactionRef: string) => Promise<void>;
   onClose: () => void;
 }
+
+const UPI_UTR_PATTERN = /^[A-Za-z0-9]{10,35}$/;
 
 const UpiPaymentModal = ({
   open,
@@ -35,7 +39,15 @@ const UpiPaymentModal = ({
   const { toast } = useToast();
   const [isConfirming, setIsConfirming] = useState(false);
   const [paid, setPaid] = useState(false);
+  const [upiRef, setUpiRef] = useState("");
   const [qrSize, setQrSize] = useState(168);
+
+  useEffect(() => {
+    if (!open) {
+      setUpiRef("");
+      setPaid(false);
+    }
+  }, [open]);
 
   useEffect(() => {
     const update = () => {
@@ -59,11 +71,31 @@ const UpiPaymentModal = ({
     toast({ title: "UPI ID Copied!", description: MERCHANT_UPI_ID });
   };
 
+  const cleanedUpiRef = upiRef.replace(/\s+/g, "").trim();
+  const isUpiRefValid = UPI_UTR_PATTERN.test(cleanedUpiRef);
+
   const handleConfirm = async () => {
+    if (!isUpiRefValid) {
+      toast({
+        title: "Enter UPI UTR / Transaction ID",
+        description: "Please enter the 12-digit UTR or Transaction ID shown in your UPI app after payment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsConfirming(true);
     try {
-      await onConfirmPayment();
+      await onConfirmPayment(cleanedUpiRef);
       setPaid(true);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Could not place order. Please try again.";
+      toast({
+        title: "Order Failed",
+        description: message,
+        variant: "destructive",
+      });
     } finally {
       setIsConfirming(false);
     }
@@ -164,8 +196,30 @@ const UpiPaymentModal = ({
             <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>
-                Complete the payment in your UPI app, then click <strong>"I Have Paid"</strong> to confirm your order.
+                Complete the payment in your UPI app, enter the <strong>UTR / Transaction ID</strong> below, then click <strong>&quot;I Have Paid&quot;</strong>.
               </span>
+            </div>
+
+            {/* UTR / Transaction ID input */}
+            <div className="space-y-1.5">
+              <Label htmlFor="upi-utr-input" className="text-xs font-semibold">
+                UPI UTR / Transaction ID <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="upi-utr-input"
+                type="text"
+                inputMode="text"
+                autoComplete="off"
+                maxLength={35}
+                placeholder="e.g. 432198765432 (12-digit UTR)"
+                value={upiRef}
+                onChange={(e) => setUpiRef(e.target.value.replace(/[^A-Za-z0-9]/g, ""))}
+                disabled={isConfirming}
+                className="font-mono text-sm"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Shown in GPay, PhonePe, or Paytm under &quot;UPI transaction ID / UTR&quot;.
+              </p>
             </div>
 
             {/* Confirm / Cancel */}
@@ -179,7 +233,7 @@ const UpiPaymentModal = ({
               </Button>
               <Button
                 onClick={handleConfirm}
-                disabled={isConfirming}
+                disabled={isConfirming || !isUpiRefValid}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
                 {isConfirming ? (

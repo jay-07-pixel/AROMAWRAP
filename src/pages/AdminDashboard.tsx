@@ -1226,6 +1226,14 @@ const AdminDashboard = () => {
                               selectedOrder.paymentStatus.slice(1)}
                         </p>
                       </div>
+                      {selectedOrder.upiTransactionRef && (
+                        <div className="p-3 bg-muted/30 rounded-lg md:col-span-2">
+                          <p className="text-sm text-muted-foreground">UPI UTR / Transaction ID</p>
+                          <p className="font-mono font-semibold break-all">
+                            {selectedOrder.upiTransactionRef}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 

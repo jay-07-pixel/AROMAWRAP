@@ -6,6 +6,7 @@ import {
   type UpdateProfileInput,
 } from "../profile/schemas.js";
 import { serializeProfile } from "../profile/serializer.js";
+import { writeLimiter } from "../middleware/rateLimit.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validateBody } from "../middleware/validate.js";
 
@@ -24,7 +25,7 @@ profileRouter.get("/", async (req, res, next) => {
   }
 });
 
-profileRouter.patch("/", validateBody(updateProfileSchema), async (req, res, next) => {
+profileRouter.patch("/", writeLimiter, validateBody(updateProfileSchema), async (req, res, next) => {
   try {
     const { displayName, phone, photoUrl } = req.body as UpdateProfileInput;
 

@@ -47,6 +47,7 @@ export interface Order {
   onlinePaymentReview?: "pending" | "approved" | "rejected";
   paymentRejectionReason?: string;
   statusReason?: string;
+  upiTransactionRef?: string;
   userClaimedPaidAt?: OrderTimestamp;
   createdAt?: OrderTimestamp;
   updatedAt?: OrderTimestamp;
@@ -62,6 +63,7 @@ export interface CreateOrderInput {
   shippingPincode: string;
   paymentMethod: "cod" | "online";
   userClaimedPaidAt?: Date;
+  upiTransactionRef?: string;
 }
 
 function toTimestampLike(value: string | null | undefined): OrderTimestamp | undefined {
@@ -109,6 +111,7 @@ function mapApiOrder(api: ApiOrder): Order {
       : undefined,
     paymentRejectionReason: api.paymentRejectionReason ?? undefined,
     statusReason: api.statusReason ?? undefined,
+    upiTransactionRef: api.upiTransactionRef ?? undefined,
     userClaimedPaidAt: toTimestampLike(api.userClaimedPaidAt),
     createdAt: toTimestampLike(api.createdAt),
     updatedAt: toTimestampLike(api.updatedAt),
@@ -137,6 +140,7 @@ export const createOrder = async (
       shippingPincode: input.shippingPincode,
       paymentMethod: toApiPaymentMethod(input.paymentMethod),
       userClaimedPaidAt: input.userClaimedPaidAt?.toISOString(),
+      upiTransactionRef: input.upiTransactionRef,
     });
     return { id: order.id, orderNumber: order.orderNumber };
   } catch (error) {

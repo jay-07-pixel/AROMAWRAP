@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
@@ -343,6 +343,16 @@ productsRouter.delete("/:id", requireAdmin, async (req, res, next) => {
       data: { id: existing.id },
     });
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      res.status(409).json({
+        success: false,
+        error: "Cannot delete this product because it is linked to existing orders.",
+      });
+      return;
+    }
     next(error);
   }
 });

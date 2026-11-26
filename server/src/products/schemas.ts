@@ -3,10 +3,26 @@ import { z } from "zod";
 const uploadedProductImagePathSchema = z
   .string()
   .trim()
-  .regex(/^\/uploads\/products\/[A-Za-z0-9-]+\.(jpg|jpeg|png|webp)$/i);
+  .regex(
+    /^\/(uploads\/products|products)\/[A-Za-z0-9._/-]+\.(jpg|jpeg|png|webp)$/i,
+    "Invalid local product image path"
+  )
+  .refine((value) => !value.includes(".."), "Invalid local product image path");
+
+const httpsImageUrlSchema = z
+  .string()
+  .trim()
+  .url()
+  .refine((value) => {
+    try {
+      return new URL(value).protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, "External product image URLs must use https://");
 
 const imageInputSchema = z.object({
-  imageUrl: z.union([z.string().url(), uploadedProductImagePathSchema]),
+  imageUrl: z.union([httpsImageUrlSchema, uploadedProductImagePathSchema]),
   sortOrder: z.number().int().min(0).optional(),
 });
 
