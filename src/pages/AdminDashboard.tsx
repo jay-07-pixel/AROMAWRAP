@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -58,6 +59,8 @@ import {
   Calendar,
   Copy,
   Link2,
+  Megaphone,
+  Save,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -74,6 +77,14 @@ import {
   Order,
   type PendingReasonSuggestion,
 } from "@/services/orderService";
+import {
+  ANNOUNCEMENT_THEMES,
+  getAnnouncementSettings,
+  updateAnnouncementSettings,
+  type AnnouncementIcon,
+  type AnnouncementItem,
+  type AnnouncementTheme,
+} from "@/services/announcementService";
 import {
   addProduct,
   deleteProduct,
@@ -213,6 +224,10 @@ const AdminDashboard = () => {
   const [upiRejectMode, setUpiRejectMode] = useState(false);
   const [upiRejectReason, setUpiRejectReason] = useState("");
   const [upiReviewLoading, setUpiReviewLoading] = useState(false);
+  const [bannerEnabled, setBannerEnabled] = useState(true);
+  const [bannerItems, setBannerItems] = useState<AnnouncementItem[]>([]);
+  const [isLoadingBanner, setIsLoadingBanner] = useState(true);
+  const [isSavingBanner, setIsSavingBanner] = useState(false);
 
   const isAdmin = !!user && isAdminUser(user.email, userProfile);
 
@@ -237,6 +252,29 @@ const AdminDashboard = () => {
       active = false;
     };
   }, [isEditOrderOpen, isAdmin]);
+
+  useEffect(() => {
+    if (loading || !isAdmin) return;
+
+    let active = true;
+    setIsLoadingBanner(true);
+    getAnnouncementSettings()
+      .then((settings) => {
+        if (!active) return;
+        setBannerEnabled(settings.enabled);
+        setBannerItems(settings.items);
+      })
+      .catch(() => {
+        if (active) setBannerItems([]);
+      })
+      .finally(() => {
+        if (active) setIsLoadingBanner(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [loading, isAdmin]);
 
   useEffect(() => {
     if (!loading) {
@@ -630,7 +668,7 @@ const AdminDashboard = () => {
           transition={{ delay: 0.2 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:w-auto lg:inline-grid mb-6">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:w-auto lg:inline-grid mb-6">
               <TabsTrigger value="overview" className="gap-2">
                 <TrendingUp className="h-4 w-4" />
                 Overview
@@ -642,6 +680,10 @@ const AdminDashboard = () => {
               <TabsTrigger value="products" className="gap-2">
                 <Package className="h-4 w-4" />
                 Products
+              </TabsTrigger>
+              <TabsTrigger value="banner" className="gap-2">
+                <Megaphone className="h-4 w-4" />
+                Banner
               </TabsTrigger>
             </TabsList>
 
@@ -956,6 +998,218 @@ const AdminDashboard = () => {
                       </TableBody>
                     </Table>
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Announcement Banner Tab */}
+            <TabsContent value="banner">
+              <Card>
+                <CardHeader>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Megaphone className="h-5 w-5 text-[#DC143C]" />
+                        Top Announcement Bar
+                      </CardTitle>
+                      <CardDescription>
+                        Edit the scrolling announcement messages or turn off the banner completely
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg border px-4 py-2 bg-muted/30">
+                      <Switch
+                        id="banner-enabled"
+                        checked={bannerEnabled}
+                        onCheckedChange={setBannerEnabled}
+                      />
+                      <Label htmlFor="banner-enabled" className="font-medium cursor-pointer">
+                        {bannerEnabled ? "Banner Visible" : "Banner Hidden"}
+                      </Label>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {isLoadingBanner ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Loading banner settings...
+                    </div>
+                  ) : (
+                    <>
+                      {!bannerEnabled && (
+                        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                          The announcement bar is currently <strong>hidden</strong> on the storefront. Click <strong>Save Banner</strong> to apply.
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        {bannerItems.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className="rounded-lg border p-4 space-y-3 bg-card"
+                          >
+                            <div
+                              className={`${ANNOUNCEMENT_THEMES[item.theme]?.bgClass ?? ANNOUNCEMENT_THEMES.crimson.bgClass} rounded-md px-4 py-2 text-white text-sm font-semibold text-center`}
+                            >
+                              {item.text || "Preview text..."}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                              <div className="md:col-span-6 space-y-1.5">
+                                <Label>Message {idx + 1}</Label>
+                                <Input
+                                  value={item.text}
+                                  maxLength={200}
+                                  placeholder="e.g. FREE Shipping on All Orders Above ₹499"
+                                  onChange={(e) => {
+                                    const next = [...bannerItems];
+                                    next[idx] = { ...next[idx], text: e.target.value };
+                                    setBannerItems(next);
+                                  }}
+                                />
+                              </div>
+
+                              <div className="md:col-span-2 space-y-1.5">
+                                <Label>Icon</Label>
+                                <Select
+                                  value={item.icon}
+                                  onValueChange={(value) => {
+                                    const next = [...bannerItems];
+                                    next[idx] = {
+                                      ...next[idx],
+                                      icon: value as AnnouncementIcon,
+                                    };
+                                    setBannerItems(next);
+                                  }}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="bag">Bag</SelectItem>
+                                    <SelectItem value="truck">Truck</SelectItem>
+                                    <SelectItem value="sparkles">Sparkles</SelectItem>
+                                    <SelectItem value="percent">Percent</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className="md:col-span-3 space-y-1.5">
+                                <Label>Color</Label>
+                                <Select
+                                  value={item.theme}
+                                  onValueChange={(value) => {
+                                    const next = [...bannerItems];
+                                    next[idx] = {
+                                      ...next[idx],
+                                      theme: value as AnnouncementTheme,
+                                    };
+                                    setBannerItems(next);
+                                  }}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="crimson">Crimson Red</SelectItem>
+                                    <SelectItem value="ocean">Ocean Blue</SelectItem>
+                                    <SelectItem value="purple">Royal Purple</SelectItem>
+                                    <SelectItem value="amber">Warm Amber</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className="md:col-span-1 flex justify-end">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-red-600 hover:text-red-700"
+                                  title="Remove message"
+                                  onClick={() => {
+                                    setBannerItems(bannerItems.filter((_, i) => i !== idx));
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={bannerItems.length >= 10}
+                          onClick={() =>
+                            setBannerItems([
+                              ...bannerItems,
+                              {
+                                text: "✨ New offer available now!",
+                                icon: "sparkles",
+                                theme: "crimson",
+                              },
+                            ])
+                          }
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Message
+                        </Button>
+
+                        <Button
+                          type="button"
+                          disabled={isSavingBanner}
+                          className="bg-[#DC143C] hover:bg-[#801030]"
+                          onClick={async () => {
+                            const cleaned = bannerItems
+                              .map((item) => ({ ...item, text: item.text.trim() }))
+                              .filter((item) => item.text.length > 0);
+
+                            if (bannerEnabled && cleaned.length === 0) {
+                              toast({
+                                title: "Add at least one message",
+                                description:
+                                  "Either add a banner message or toggle Banner Visible off.",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+
+                            setIsSavingBanner(true);
+                            try {
+                              const saved = await updateAnnouncementSettings({
+                                enabled: bannerEnabled,
+                                items: cleaned,
+                              });
+                              setBannerEnabled(saved.enabled);
+                              setBannerItems(saved.items);
+                              toast({
+                                title: "Banner Saved!",
+                                description: saved.enabled
+                                  ? "Your announcement bar is updated on the storefront."
+                                  : "Announcement bar is now hidden on the storefront.",
+                              });
+                            } catch (error: unknown) {
+                              toast({
+                                title: "Save Failed",
+                                description:
+                                  error instanceof Error
+                                    ? error.message
+                                    : "Could not save banner settings",
+                                variant: "destructive",
+                              });
+                            } finally {
+                              setIsSavingBanner(false);
+                            }
+                          }}
+                        >
+                          <Save className="h-4 w-4 mr-2" />
+                          {isSavingBanner ? "Saving..." : "Save Banner"}
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

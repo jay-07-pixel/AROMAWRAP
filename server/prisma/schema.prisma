@@ -267,3 +267,11 @@ model Review {
   @@index([userId])
   @@index([createdAt])
 }
+
+/** Admin-configurable top announcement bar (can be edited or hidden). */
+model AnnouncementSetting {
+  id        String   @id @default("default")
+  enabled   Boolean  @default(true)
+  items     Json
+  updatedAt DateTime @updatedAt
+}
